@@ -43,7 +43,7 @@
 
 Either use npm for the installation or reference the bundled file from the *_bundles* directory.
 
-`npm install pdf-annotate`
+`npm install annotpdf`
 
 ## <a name="GettingStarted"></a>Getting Started
 
