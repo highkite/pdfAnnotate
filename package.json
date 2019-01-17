@@ -1,0 +1,38 @@
+{
+        "name": "annotpdf",
+        "version": "1.0.0",
+        "description": "Javascript library for creating annotations in PDF documents",
+        "main": "index.js",
+        "scripts": {
+                "build": "tsc && webpack",
+                "test": "jest --config jestconfig.json"
+        },
+        "files": [
+                "lib/**/*"
+        ],
+        "keywords": [
+                "pdf",
+                "annotation",
+                "review"
+        ],
+        "author": "Thomas Osterland",
+        "license": "MIT",
+        "devDependencies": {
+                "@types/jest": "^23.3.12",
+                "@types/node": "^10.12.18",
+                "jest": "^23.6.0",
+                "ts-jest": "^23.10.5",
+                "ts-loader": "^5.3.3",
+                "typescript": "^3.2.2",
+                "webpack": "^4.28.1",
+                "webpack-cli": "^3.2.1"
+        },
+        "repository": {
+                "type": "git",
+                "url": "https://github.com/highkite/pdfAnnotate.git"
+        },
+        "bugs": {
+                "url": "https://github.com/highkite/pdfAnnotate.git/issues"
+        },
+        "homepage": "https://github.com/highkite/pdfAnnotate.git"
+}

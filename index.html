@@ -1,0 +1,41 @@
+<!-- index.htm -->
+<html>
+  <head>
+    <script src="./_bundles/main.js" async></script>
+  </head>
+  <body>
+    <div id="app"></div>
+     <button id="addTextAnnotation" type="button">Add Text Annotation</button>
+     <button id="download" type="button">Download</button>
+    <script>
+
+            let once = false
+            let pdfFactory = undefined
+
+            let fileLoad = function (filepath) {
+                    if (once)
+                            return
+
+                    once = true
+                    console.log("Load " + filepath)
+
+                    pdfAnnotate.AnnotationFactory.loadFile(filepath).then((factory) => {
+                            pdfFactory = factory
+                            console.log(factory)
+                    })
+            }
+
+            document.querySelector('#download').addEventListener('click', (evt) => {
+                    pdfFactory.download()
+            })
+
+            document.querySelector('#addTextAnnotation').addEventListener('click', (evt) => {
+                    pdfFactory.createTextAnnotation(0, [50, 50], "Test123", "John")
+            })
+
+            window.onload =  function(){
+                    fileLoad("./test.pdf")
+            }
+    </script>
+  </body>
+</html>

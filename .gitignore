@@ -1,0 +1,9 @@
+node_modules
+/lib
+
+*.swp
+*.swo
+
+*.pdf
+
+helper.js
