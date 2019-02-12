@@ -124,7 +124,7 @@ A text annotation is an icon, which shows a popup text when clicking on it.
 #### Parameters:
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
-| page |  number | The page number where the annotation must be added |
+| page |  number | The page number where the annotation must be added (starting with 0)|
 | rect  |   number array   |   Rectangle defining the coordinates \[x, y\] to place the annotation. It is also possible to specify \[x_1, y_1, x_2, y_2 \] to define the bounds of the annotation. |
 | contents | string |  The annotation text ('Pop up note' in the example) |
 | author | string |    The author name. ('Max' in the example) |
@@ -138,7 +138,7 @@ The highlight annotation emphasizes a selected text, with a semitransparent colo
 #### Parameters:
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
-| page |  number | The page number where the annotation must be added |
+| page |  number | The page number where the annotation must be added (starting with 0)|
 | rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the highlighting rectangle. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
@@ -152,7 +152,7 @@ The underline annotation underlines a selected text. However, see the remark: Th
 #### Parameters:
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
-| page |  number | The page number where the annotation must be added |
+| page |  number | The page number where the annotation must be added  (starting with 0)|
 | rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the highlighting rectangle. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
@@ -169,7 +169,7 @@ Uses a curly line for underlining a selected text.
 #### Parameters:
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
-| page |  number | The page number where the annotation must be added |
+| page |  number | The page number where the annotation must be added (starting with 0)|
 | rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the highlighting rectangle. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
@@ -184,7 +184,7 @@ Can be used to cross out the selected text.
 #### Parameters:
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
-| page |  number | The page number where the annotation must be added |
+| page |  number | The page number where the annotation must be added (starting with 0)|
 | rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the highlighting rectangle. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
@@ -205,7 +205,7 @@ Adds a circle annotation to the document.
 #### Parameters:
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
-| page |  number | The page number where the annotation must be added |
+| page |  number | The page number where the annotation must be added (starting with 0)|
 | rect  |   number array   |   The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the circle. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
@@ -220,7 +220,7 @@ Adds a square annotation to the document.
 #### Parameters:
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
-| page |  number | The page number where the annotation must be added |
+| page |  number | The page number where the annotation must be added (starting with 0)|
 | rect  |   number array   |   The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the square. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
@@ -235,7 +235,7 @@ Adds a polygon as depicted in the following figure.
 #### Parameters:
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
-| page |  number | The page number where the annotation must be added |
+| page |  number | The page number where the annotation must be added (starting with 0)|
 | rect  |   number array   |   The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the square. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
@@ -251,7 +251,7 @@ Adds a polygon line as depicted in the following figure.
 #### Parameters:
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
-| page |  number | The page number where the annotation must be added |
+| page |  number | The page number where the annotation must be added (starting with 0)|
 | rect  |   number array   |   The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the square. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
