@@ -8,7 +8,9 @@
                 "test": "jest --config jestconfig.json"
         },
         "files": [
-                "lib/**/*"
+                "lib/**/*",
+                "_bundles/**/*",
+                "examples/**/*"
         ],
         "keywords": [
                 "pdf",
