@@ -524,7 +524,6 @@ export class AnnotationFactory {
                 a.style = "display: none";
 
                 let extended_pdf = this.write()
-                console.log(extended_pdf)
                 let blob = new Blob([extended_pdf], {type: "application/pdf"})
                 let url = window.URL.createObjectURL(blob)
                 a.href = url

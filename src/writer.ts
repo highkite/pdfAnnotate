@@ -579,8 +579,6 @@ export class Writer {
                 let trailer = this.writeTrailer(ptr)
                 new_data = new_data.concat(trailer)
 
-                console.log(Util.convertAsciiToString(new_data))
-
                 let new_data_array = new Int8Array(new_data)
 
                 let ret_array = new Int8Array(this.data.length + new_data_array.length)
