@@ -96,6 +96,7 @@ export class Annotation {
                 this.author = Util.extractField(this.data, Util.T)
                 this.id = Util.extractField(this.data, Util.NM)
                 this.contents = Util.extractField(this.data, Util.CONTENTS)
+                this.quadPoints = Util.extractField(this.data, Util.QUADPOINTS)
         }
 }
 

@@ -192,6 +192,9 @@ test('extractField', () => {
 
         expect(Util.extractField(data, Util.SUBTYPE)).toEqual('Text')
         expect(Util.extractField(data, Util._TYPE)).toEqual('Annot')
+
+        // Test return value when asking for a non-existing field
+        expect(Util.extractField(data, Util.QUADPOINTS)).toBeUndefined()
 })
 
 test('extractNumbersArray', () => {

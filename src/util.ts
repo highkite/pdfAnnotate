@@ -302,7 +302,13 @@ export class Util {
 
                 data = data.slice(start_obj_ptr, end_obj_ptr)
 
-                let field_ptr = Util.locateSequence(field, data, 0, true) + field.length
+                let field_ptr = Util.locateSequence(field, data, 0, true)
+
+                if (field_ptr === -1)
+                        return undefined
+
+                field_ptr += field.length
+
                 let field_value_end_ptr = Util.locateSequence([47], data, field_ptr)
 
                 if (field_value_end_ptr === field_ptr + 1) {
