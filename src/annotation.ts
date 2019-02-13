@@ -95,18 +95,17 @@ export class AnnotationFactory {
          * and equally set in all types of annotations
          * */
         createBaseAnnotation (page : number, rect : number[], contents : string, author : string) : Annotation {
-                let annot : Annotation = {
-                        type : "/Annot",
-                        page : page,
-                        object_id : this.parser.getFreeObjectId(),
-                        id : this.generateUniqueIdentifier(),
-                        rect : rect,
-                        author : author,
-                        pageReference : this.parser.getPage(page),
-                        updateDate : Util.convertDateToPDFDate(new Date()),
-                        contents : contents,
-                        border : this.createDefaultBorder()
-                }
+                let annot : Annotation = new Annotation()
+                annot.type = "/Annot",
+                annot.page = page,
+                annot.object_id = this.parser.getFreeObjectId(),
+                annot.id = this.generateUniqueIdentifier(),
+                annot.rect = rect,
+                annot.author = author,
+                annot.pageReference = this.parser.getPage(page),
+                annot.updateDate = Util.convertDateToPDFDate(new Date()),
+                annot.contents = contents,
+                annot.border = this.createDefaultBorder()
 
                 return annot
         }
@@ -412,7 +411,7 @@ export class AnnotationFactory {
          * */
         getAnnotations () : Promise<Annotation[]> {
                 return new Promise((resolve) => {
-                        resolve([])
+                        resolve(this.parser.extractAnnotations().concat(this.annotations))
                 })
         }
 

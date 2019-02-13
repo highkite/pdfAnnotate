@@ -72,6 +72,31 @@ export class Annotation {
         line_ending? : string[]
         interior_color? : number[]
         measure? : any
+
+
+        constructor(private data : Int8Array = new Int8Array([])) {}
+
+        /**
+         * Extract the annotation object (partially)
+         * */
+        extract (ptr : number) {
+                // restrict the data array to the partition that actually contains the annotation data
+                let obj_end_ptr : number = Util.locateSequence(Util.ENDOBJ, this.data, ptr, true)
+
+                this.data = this.data.slice(ptr, obj_end_ptr)
+
+                this.object_id = Util.extractObjectId(this.data, 0)
+
+                this.type = "/" + Util.extractField(this.data, Util.SUBTYPE)
+                this.rect = Util.extractField(this.data, Util.RECT)
+                this.pageReference = Util.extractField(this.data, Util.P)
+                this.updateDate = Util.extractField(this.data, Util.M)
+                this.border = Util.extractField(this.data, Util.BORDER)
+                this.color = Util.extractField(this.data, Util.C)
+                this.author = Util.extractField(this.data, Util.T)
+                this.id = Util.extractField(this.data, Util.NM)
+                this.contents = Util.extractField(this.data, Util.CONTENTS)
+        }
 }
 
 /**
@@ -80,15 +105,13 @@ export class Annotation {
 export class CatalogObject {
         constructor (private data : Int8Array) { }
 
-        private static PAGES : number[] = [47, 80, 97, 103, 101, 115] // /Pages
-
         private pagesObjectId : ReferencePointer = {obj : -1, generation : -1 }
 
         /**
          * Extract the catalog object from the data at the given ptr
          * */
         extract (ptr : number) {
-                let ptr_pages_key = Util.locateSequence(CatalogObject.PAGES, this.data, ptr, true) + CatalogObject.PAGES.length
+                let ptr_pages_key = Util.locateSequence(Util.PAGES, this.data, ptr, true) + Util.PAGES.length
 
                 this.pagesObjectId = Util.extractReferenceTyped(this.data, ptr_pages_key)
         }
@@ -102,11 +125,6 @@ export class CatalogObject {
  * Represents the PageTree object of the PDF document
  * */
 export class PageTree {
-        public static COUNT : number[] = [47, 67, 111, 117, 110, 116]
-        public static KIDS : number[] = [47, 75, 105, 100, 115]
-        public static TYPE : number[] = [47, 84, 121, 112, 101]
-        public static ENDOBJ : number[] = [101, 110, 100, 111, 98, 106]
-        public static PAGE : number[] = [47, 80, 97, 103, 101]
 
         private id : number = -1
 
@@ -131,11 +149,11 @@ export class PageTree {
 
                 let ptr = xref.pointer
 
-                ptr = Util.locateSequence(PageTree.ENDOBJ, this.data, ptr, true)
+                ptr = Util.locateSequence(Util.ENDOBJ, this.data, ptr, true)
 
                 let _data = this.data.slice(xref.pointer, ptr)
 
-                return (-1 !== Util.locateSequence(PageTree.PAGE, _data, 0, true))
+                return (-1 !== Util.locateSequence(Util.PAGE, _data, 0, true))
         }
 
         /**
@@ -157,7 +175,7 @@ export class PageTree {
 
                                 let ptr = xref.pointer
 
-                                let kids_index = Util.locateSequence(PageTree.KIDS, this.data, ptr, true) + PageTree.KIDS.length
+                                let kids_index = Util.locateSequence(Util.KIDS, this.data, ptr, true) + Util.KIDS.length
 
                                 let array_data = Util.extractArraySequence(this.data, kids_index + 1)
 
@@ -170,14 +188,14 @@ export class PageTree {
          * Extract the object data at the given pointer
          * */
         extract (ptr : number) {
-                let key_index = Util.locateSequence(PageTree.COUNT, this.data, ptr, true) + PageTree.COUNT.length
+                let key_index = Util.locateSequence(Util.COUNT, this.data, ptr, true) + Util.COUNT.length
 
                 // The complete page count is specified in the top level pagetree
                 this.pageCount = Util.extractNumber(this.data, key_index)
 
                 // it is possible that an object of type /Pages references again to objects of types /Pages so we must
                 // apply a recursive evaluation
-                let kids_index = Util.locateSequence(PageTree.KIDS, this.data, ptr, true) + PageTree.KIDS.length
+                let kids_index = Util.locateSequence(Util.KIDS, this.data, ptr, true) + Util.KIDS.length
 
                 let array_data = Util.extractArraySequence(this.data, kids_index + 1)
 
@@ -205,9 +223,6 @@ export class PageTree {
  * Represents a page object in the PDF document
  * */
 export class Page {
-        private static ENDOBJ : number[] = [101, 110, 100, 111, 98, 106]
-        private static ANNOTS : number[] = [47, 65, 110, 110, 111, 116, 115]
-
         public object_id : ReferencePointer | undefined // The object id and generation of the object
 
         public annots : ReferencePointer[] = []
@@ -255,16 +270,16 @@ export class Page {
 
                 this.object_id = { obj : object_id, generation : object_gen }
 
-                let end_ptr = Util.locateSequence(Page.ENDOBJ, this.data, ptr, true)
+                let end_ptr = Util.locateSequence(Util.ENDOBJ, this.data, ptr, true)
 
                 let _data = this.data.slice(ptr, end_ptr)
 
-                let annots_ptr = Util.locateSequence(Page.ANNOTS, _data, 0, true)
+                let annots_ptr = Util.locateSequence(Util.ANNOTS, _data, 0, true)
 
                 if (-1 !== annots_ptr) {
                         this.hasAnnotsField = true
 
-                        annots_ptr += Page.ANNOTS.length + 1
+                        annots_ptr += Util.ANNOTS.length + 1
                         annots_ptr = Util.skipDelimiter(_data, annots_ptr)
 
                         if (_data[annots_ptr] === Util.ARRAY_START[0]) {
@@ -361,8 +376,10 @@ export class PDFDocumentParser {
         /**
          * Returns the annotations that exist in the document
          * */
-        extractAnnotations () {
+        extractAnnotations () : Annotation[] {
+                let annots : Annotation[] = []
                 let pt : PageTree = this.getPageTree()
+                let obj_table = this.documentHistory.createObjectLookupTable()
 
                 let pageCount : number = pt.getPageCount()
 
@@ -370,7 +387,16 @@ export class PDFDocumentParser {
                         let page : Page = this.getPage(i)
 
                         let annotationReferences : ReferencePointer[] = page.annots
+
+                        for (let refPtr of annotationReferences) {
+                                let a = new Annotation(this.data)
+                                a.extract(obj_table[refPtr.obj].pointer)
+                                a.page = i
+                                annots.push(a)
+                        }
                 }
+
+                return annots
         }
 
 }

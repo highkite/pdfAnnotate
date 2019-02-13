@@ -106,3 +106,17 @@ test('getPage',  () => {
         expect(pg.annots[1].obj).toBe(8)
         expect(pg.annots[1].generation).toBe(0)
 })
+
+test('extractAnnotations', () => {
+        let doc = new PDFDocumentParser(new Int8Array(testDocument))
+
+        let annots = doc.extractAnnotations()
+
+        expect(annots.length).toBe(2)
+
+        doc = new PDFDocumentParser(new Int8Array(testDocument2))
+
+        annots = doc.extractAnnotations()
+
+        expect(annots.length).toBe(0)
+})

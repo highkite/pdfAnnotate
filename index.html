@@ -1,12 +1,13 @@
 <!-- index.htm -->
 <html>
   <head>
-    <script src="./_bundles/main.js" async></script>
+    <script src="./_bundles/pdfAnnotate.js" async></script>
   </head>
   <body>
     <div id="app"></div>
      <button id="addTextAnnotation" type="button">Add Text Annotation</button>
      <button id="download" type="button">Download</button>
+     <button id="showAnnotations" type="button">Show Annotations</button>
     <script>
 
             let once = false
@@ -30,11 +31,17 @@
             })
 
             document.querySelector('#addTextAnnotation').addEventListener('click', (evt) => {
-                    pdfFactory.createTextAnnotation(0, [50, 50], "Test123", "John")
+                    pdfFactory.createTextAnnotation(0, [50, 50, 80, 80], "Test123", "John")
+            })
+
+            document.querySelector('#showAnnotations').addEventListener('click', (evt) => {
+                    pdfFactory.getAnnotations().then( (data) => {
+                            document.querySelector('#app').innerHTML = data.map(d => d.type)
+                    })
             })
 
             window.onload =  function(){
-                    fileLoad("./test.pdf")
+                    fileLoad("./test3.pdf")
             }
     </script>
   </body>
