@@ -1,107 +1,6 @@
-import { ReferencePointer, PDFDocumentParser, Page } from './parser'
+import { ReferencePointer, PDFDocumentParser, Page, Annotation, Border, Color } from './parser'
 import { Util } from './util'
 import { Writer } from './writer'
-
-export interface Color {
-        r : number
-        g : number
-        b : number
-}
-
-export interface Border {
-        horizontal_corner_radius : number
-        vertical_corner_radius : number
-        border_width : number
-        dash_patter? : number[]
-}
-
-export interface Annotation {
-        page : number // the target page of the annotation
-        type : string // the sub type of the array (Text, Highlight, ...)
-        object_id : ReferencePointer // an unused object id
-        id : string // unique annation identifier
-        rect : number[] // the location of the annotation
-        author : string // the author of the annotation
-        pageReference : Page // The reference to the page object to which the annotation is added
-        updateDate : string // The date when the annotation was created or updated
-        contents? : string // Text that shall be displayed for the annotation
-        annotation_flag? : number // See PDF spcecification 'Annotation Flag'
-        appearance_dictionary? : any // control the appearance of the annotation
-        appearance_state? : any // change the appearance according to states
-        border? : Border // define the border
-        color? : Color // the color set
-
-}
-
-export interface MarkupAnnotation extends Annotation {
-        opacity? : number // the opacity value (CA called in the PDF spec)
-        richtext? : string // rich text string displayed in the popup window when the annotation is opened
-}
-
-export interface TextAnnotation extends MarkupAnnotation {
-        initiallyOpen? : boolean // flag to describe whether the annotation shall initially be open
-        iconName? : string // name of the used icon
-        annotationState? : string // the state of the annotation
-        stateModel? : string
-}
-
-export interface FreeTextAnnotation extends MarkupAnnotation {
-        defaultAppearance? : string // default appearance string
-        textAlignment? : string // left-justified, centered, right-justified
-        richTextString? : string // generates the appearance of the annotation
-        calloutLine? : number[] // call out line
-        intent? : string // a string describing the intent: FreeText, FreeTextCallout, FreeTextTypeWriter
-        borderEffect? : any
-        rd? : any // ?
-        borderStyle? : any // border style
-        lineEnding? : string // the line ending type of the callout line
-}
-
-export interface PopupAnnotation extends Annotation {
-}
-
-export interface LineAnnotation extends MarkupAnnotation {
-}
-
-export interface StampAnnotation extends MarkupAnnotation {
-        stampType : string // the name of the used stamp type. Can be: [Approved, Experimental, NotApproved, AsIs, Expired, NotForPublicRelease, Confidential, Final, Sold, Departmental, ForComment, TopSecret, Draft, ForPublicRelease]
-}
-
-export interface CaretAnnotation extends MarkupAnnotation {
-        caretSymbol : string // Can be P to use a paragraph symbol for the caret or None
-}
-
-export interface InkAnnotation extends MarkupAnnotation {
-}
-
-export interface TextMarkupAnnotation extends MarkupAnnotation {
-        QuadPoints : number[] // specifies how the annotation goes arround the text
-}
-
-export interface HighlightAnnotation extends TextMarkupAnnotation { }
-export interface UnderlineAnnotation extends TextMarkupAnnotation { }
-export interface SquigglyAnnotation extends TextMarkupAnnotation { }
-export interface StrikeOutAnnotation extends TextMarkupAnnotation { }
-
-export interface SquareCircleAnnotation extends MarkupAnnotation { // subtype square or circle
-        border_style? : any
-        color_space? : number[]
-        border_effect? : any
-        rd? : number[]
-}
-
-export interface SquareAnnotation extends SquareCircleAnnotation { }
-export interface CircleAnnotation extends SquareCircleAnnotation { }
-
-export interface PolygonPolyLineAnnotation extends MarkupAnnotation { // subtype polygon or polyline
-        vertices : number[]
-        line_ending? : string[]
-        border_style? : any
-        interior_color? : number[]
-        border_effect? : any
-        intent? : string
-        measure? : any
-}
 
 /**
  * The annotation factory provides methods to create annotations. Those are stored temporary
@@ -229,7 +128,7 @@ export class AnnotationFactory {
 
                 this.checkRect(4, rect)
 
-                let annot : TextAnnotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author),{
+                let annot : Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author),{
                                 opacity : 1,
                                 initiallyOpen : false,
                                 annotation_flag : 4,
@@ -251,11 +150,11 @@ export class AnnotationFactory {
          * subtype : the subtype of the Textmarkup annotation
          * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
          * */
-        createTextMarkupAnnotation (page : number, rect : number[], contents : string, author : string, subtype : string, color : Color = { r : 1, g : 1, b : 0}) : TextMarkupAnnotation {
+        createTextMarkupAnnotation (page : number, rect : number[], contents : string, author : string, subtype : string, color : Color = { r : 1, g : 1, b : 0}) : Annotation {
 
                 let quadPoints : number[] = [rect[0], rect[3], rect[2], rect[3], rect[0], rect[1], rect[2], rect[1]]
 
-                let annot : TextMarkupAnnotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author),{
+                let annot : Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author),{
                         opacity : 1,
                         initiallyOpen : false,
                         annotation_flag : 4,
@@ -338,7 +237,7 @@ export class AnnotationFactory {
          * */
         createFreeTextAnnotation (page : number, rect : number[], contents : string, author : string, color : Color = { r : 1, g : 1, b : 0}) {
                 this.checkRect(4, rect)
-                let annot : FreeTextAnnotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author),{
+                let annot : Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author),{
                         textAlignment : "right-justified"
 
                 })
@@ -360,9 +259,9 @@ export class AnnotationFactory {
          * author : the author of the annotation
          * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
          * */
-        createSquareCircleAnnotation (page : number, rect : number[], contents : string, author : string, subtype : string, color : Color = { r : 1, g : 1, b : 0}) : SquareCircleAnnotation {
+        createSquareCircleAnnotation (page : number, rect : number[], contents : string, author : string, subtype : string, color : Color = { r : 1, g : 1, b : 0}) : Annotation {
 
-                let annot : SquareCircleAnnotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author),{
+                let annot : Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author),{
                         opacity : 1,
                         initiallyOpen : false,
                         annotation_flag : 4,
@@ -385,7 +284,7 @@ export class AnnotationFactory {
          * */
         createSquareAnnotation (page : number, rect : number[], contents : string, author : string, subtype : string, color : Color = { r : 1, g : 1, b : 0}) {
                 this.checkRect(4, rect)
-                let annot : SquareAnnotation = this.createSquareCircleAnnotation(page, rect, contents, author, "/Square", color)
+                let annot : Annotation = this.createSquareCircleAnnotation(page, rect, contents, author, "/Square", color)
 
                 this.annotations.push(annot)
         }
@@ -400,7 +299,7 @@ export class AnnotationFactory {
          * */
         createCircleAnnotation (page : number, rect : number[], contents : string, author : string, subtype : string, color : Color = { r : 1, g : 1, b : 0}) {
                 this.checkRect(4, rect)
-                let annot : SquareAnnotation = this.createSquareCircleAnnotation(page, rect, contents, author, "/Circle", color)
+                let annot : Annotation = this.createSquareCircleAnnotation(page, rect, contents, author, "/Circle", color)
 
                 this.annotations.push(annot)
         }
@@ -415,9 +314,9 @@ export class AnnotationFactory {
          * subtyp: Polygon or PolyLine
          * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
          * */
-        createPolygonPolyLineAnnotation (page : number, rect : number[], contents : string, author : string, vertices : number[], subtype : string, color : Color = { r : 1, g : 1, b : 0}) : PolygonPolyLineAnnotation {
+        createPolygonPolyLineAnnotation (page : number, rect : number[], contents : string, author : string, vertices : number[], subtype : string, color : Color = { r : 1, g : 1, b : 0}) : Annotation {
 
-                let annot : PolygonPolyLineAnnotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author),{
+                let annot : Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author),{
                         opacity : 1,
                         initiallyOpen : false,
                         annotation_flag : 4,
@@ -441,7 +340,7 @@ export class AnnotationFactory {
          * */
         createPolygonAnnotation (page : number, rect : number[], contents : string, author : string, vertices : number[], color : Color = { r : 1, g : 1, b : 0}) {
                 this.checkRect(4, rect)
-                let annot : PolygonPolyLineAnnotation = this.createPolygonPolyLineAnnotation(page, rect, contents, author, vertices, "/Polygon", color)
+                let annot : Annotation = this.createPolygonPolyLineAnnotation(page, rect, contents, author, vertices, "/Polygon", color)
 
                 this.annotations.push(annot)
         }
@@ -458,7 +357,7 @@ export class AnnotationFactory {
          * */
         createPolyLineAnnotation (page : number, rect : number[], contents : string, author : string, vertices : number[], color : Color = { r : 1, g : 1, b : 0}) {
                 this.checkRect(4, rect)
-                let annot : PolygonPolyLineAnnotation = this.createPolygonPolyLineAnnotation(page, rect, contents, author, vertices, "/PolyLine", color)
+                let annot : Annotation = this.createPolygonPolyLineAnnotation(page, rect, contents, author, vertices, "/PolyLine", color)
 
                 this.annotations.push(annot)
         }
@@ -472,7 +371,7 @@ export class AnnotationFactory {
          * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
          * */
         createStampAnnotation (page : number, contents : string, author : string, stampType : string = "Draft", color : Color = { r : 1, g : 1, b : 0}) {
-                let annot : StampAnnotation = (<any>Object).assign(this.createBaseAnnotation(page, [50, 50, 80, 80], contents, author),{
+                let annot : Annotation = (<any>Object).assign(this.createBaseAnnotation(page, [50, 50, 80, 80], contents, author),{
                         opacity : 1,
                         initiallyOpen : false,
                         annotation_flag : 4,
@@ -494,7 +393,7 @@ export class AnnotationFactory {
          * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
          * */
         createCaretAnnotation (page : number, contents : string, author : string, caretSymbol : string = "P", color : Color = { r : 1, g : 1, b : 0}) {
-                let annot : CaretAnnotation = (<any>Object).assign(this.createBaseAnnotation(page, [], contents, author),{
+                let annot : Annotation = (<any>Object).assign(this.createBaseAnnotation(page, [], contents, author),{
                         opacity : 1,
                         initiallyOpen : false,
                         annotation_flag : 4,
@@ -505,6 +404,16 @@ export class AnnotationFactory {
                 annot.type = "/Caret"
 
                 this.annotations.push(annot)
+        }
+
+        /**
+         * Returns a promise with the resul of all annotations that are part of the document. This will
+         * comprise those that are already exists and those that were created using this library
+         * */
+        getAnnotations () : Promise<Annotation[]> {
+                return new Promise((resolve) => {
+                        resolve([])
+                })
         }
 
         createInkAnnotation () {

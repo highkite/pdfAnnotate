@@ -7,6 +7,19 @@ import { DocumentHistory, ObjectLookupTable } from './document-history';
  * please read the README.
  * */
 
+export interface Color {
+        r : number
+        g : number
+        b : number
+}
+
+export interface Border {
+        horizontal_corner_radius : number
+        vertical_corner_radius : number
+        border_width : number
+        dash_patter? : number[]
+}
+
 /**
  * References in PDF documens are  of the form
  * <obj_id> <generation> R
@@ -17,6 +30,48 @@ export interface ReferencePointer {
         obj : number
         generation : number
         reused? : boolean | undefined
+}
+
+export class Annotation {
+        page : number = -1// the target page of the annotation
+        type : string = ""// the sub type of the array (Text, Highlight, ...)
+        object_id : ReferencePointer | null = null// an unused object id
+        id : string = ""// unique annation identifier
+        rect : number[] = []// the location of the annotation
+        author : string = ""// the author of the annotation
+        pageReference : Page | null = null// The reference to the page object to which the annotation is added
+        updateDate : string = ""// The date when the annotation was created or updated
+        contents? : string // Text that shall be displayed for the annotation
+        annotation_flag? : number // See PDF spcecification 'Annotation Flag'
+        appearance_dictionary? : any // control the appearance of the annotation
+        appearance_state? : any // change the appearance according to states
+        border? : Border | null = null// define the border
+        color? : Color | null = null// the color set
+        opacity? : number // the opacity value (CA called in the PDF spec)
+        richtext? : string // rich text string displayed in the popup window when the annotation is opened
+        initiallyOpen? : boolean // flag to describe whether the annotation shall initially be open
+        iconName? : string // name of the used icon
+        annotationState? : string // the state of the annotation
+        stateModel? : string
+        defaultAppearance? : string // default appearance string
+        textAlignment? : string // left-justified, centered, right-justified
+        richTextString? : string // generates the appearance of the annotation
+        calloutLine? : number[] // call out line
+        intent? : string // a string describing the intent: FreeText, FreeTextCallout, FreeTextTypeWriter
+        borderEffect? : any
+        rd? : any // ?
+        borderStyle? : any // border style
+        lineEnding? : string // the line ending type of the callout line
+        stampType? : string // the name of the used stamp type. Can be: [Approved, Experimental, NotApproved, AsIs, Expired, NotForPublicRelease, Confidential, Final, Sold, Departmental, ForComment, TopSecret, Draft, ForPublicRelease]
+        caretSymbol? : string // Can be P to use a paragraph symbol for the caret or None
+        quadPoints? : number[] // specifies how the annotation goes arround the text
+        border_style? : any
+        color_space? : number[]
+        border_effect? : any
+        vertices? : number[]
+        line_ending? : string[]
+        interior_color? : number[]
+        measure? : any
 }
 
 /**
@@ -301,6 +356,21 @@ export class PDFDocumentParser {
                 page.extract(obj_ptr)
 
                 return page
+        }
+
+        /**
+         * Returns the annotations that exist in the document
+         * */
+        extractAnnotations () {
+                let pt : PageTree = this.getPageTree()
+
+                let pageCount : number = pt.getPageCount()
+
+                for (let i = 0; i < pageCount; ++i) {
+                        let page : Page = this.getPage(i)
+
+                        let annotationReferences : ReferencePointer[] = page.annots
+                }
         }
 
 }

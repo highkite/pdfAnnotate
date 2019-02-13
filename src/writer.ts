@@ -1,6 +1,5 @@
 import { Util } from './util'
-import { CaretAnnotation, Annotation, MarkupAnnotation, TextMarkupAnnotation, PolygonPolyLineAnnotation, StampAnnotation } from './annotation'
-import { ReferencePointer, PDFDocumentParser, Page } from './parser'
+import { Annotation, ReferencePointer, PDFDocumentParser, Page } from './parser'
 import { XRef } from './document-history'
 
 /**
@@ -149,12 +148,20 @@ export class Writer {
         writeAnnotArray (annots : Annotation[]) : { ptr : ReferencePointer, data : number[], pageReference : ReferencePointer, pageData : number[] } {
                 let page = annots[0].pageReference
 
+                if (!page)
+                        throw Error("Missing page reference")
+
                 if (!page.object_id)
                         throw Error("Page without object id")
 
                 let references : ReferencePointer[] = page.annots
 
-                references = references.concat(annots.map((x) => { return x.object_id } ))
+                references = references.concat(annots.map((x) => {
+                        if (!x.object_id)
+                                throw Error("Annotation with object_id null")
+
+                        return x.object_id
+                }))
 
                 let refArray_id = page.annotsPointer
 
@@ -258,6 +265,9 @@ export class Writer {
                 if (!annot.contents || "" === annot.contents)
                         throw Error("No content provided")
 
+                if (!annot.object_id)
+                        throw Error("No object_id")
+
                 let ret : number[] = this.writeReferencePointer(annot.object_id)
                 ret.push(Writer.SPACE)
                 ret = ret.concat(Writer.OBJ)
@@ -324,7 +334,7 @@ export class Writer {
                 }
 
 
-                let opacity = (<MarkupAnnotation>annot).opacity
+                let opacity = annot.opacity
                 if (opacity) {
                         ret = ret.concat(Writer.OPACITY)
                         ret.push(Writer.SPACE)
@@ -340,6 +350,9 @@ export class Writer {
                         ret.push(Writer.SPACE)
                 }
 
+                if (!annot.pageReference)
+                        throw Error("No page reference")
+
                 if (annot.pageReference.object_id) {
                         ret.push(Writer.SPACE)
                         ret = ret.concat(Writer.PAGE_REFERENCE)
@@ -348,28 +361,28 @@ export class Writer {
                         ret.push(Writer.SPACE)
                 }
 
-                if ((<TextMarkupAnnotation>annot).QuadPoints) {
+                if (annot.quadPoints) {
                         ret = ret.concat(Writer.QUADPOINTS)
                         ret.push(Writer.SPACE)
-                        ret = ret.concat(this.writeNumberArray((<TextMarkupAnnotation>annot).QuadPoints))
+                        ret = ret.concat(this.writeNumberArray(annot.quadPoints))
                         ret.push(Writer.SPACE)
                 }
 
-                if ((<PolygonPolyLineAnnotation>annot).vertices) {
+                if (annot.vertices) {
                         ret = ret.concat(Writer.VERTICES)
                         ret.push(Writer.SPACE)
-                        ret = ret.concat(this.writeNumberArray((<PolygonPolyLineAnnotation>annot).vertices))
+                        ret = ret.concat(this.writeNumberArray(annot.vertices))
                         ret.push(Writer.SPACE)
                 }
 
-                if ((<StampAnnotation>annot).stampType) {
+                if (annot.stampType) {
                         ret = ret.concat(Writer.NAME)
                         ret.push(Writer.SPACE)
                         ret = ret.concat(Writer.DRAFT)
                         ret.push(Writer.SPACE)
                 }
 
-                if ((<CaretAnnotation>annot).caretSymbol) {
+                if (annot.caretSymbol) {
                         ret = ret.concat(Writer.SY)
                         ret.push(Writer.SPACE)
                         ret.push(Writer.P)
