@@ -34,6 +34,7 @@ export class Util {
         public static CONTENTS : number[] = [47, 67, 111, 110, 116, 101, 110, 116, 115] // '/Contents'
         public static BORDER : number[] = [47, 66, 111, 114, 100, 101, 114] // '/Border'
         public static QUADPOINTS : number[] = [47, 81, 117, 97, 100, 80, 111, 105, 110, 116, 115] // '/QuadPoints'
+        public static INKLIST : number[] = [47, 73, 110, 107, 76, 105, 115, 116] // '/InkList'
 
         /**
          * Assumes that at position index is a delimiter and than runs as long forward until it finds

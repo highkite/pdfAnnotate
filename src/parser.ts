@@ -65,6 +65,7 @@ export class Annotation {
         stampType? : string // the name of the used stamp type. Can be: [Approved, Experimental, NotApproved, AsIs, Expired, NotForPublicRelease, Confidential, Final, Sold, Departmental, ForComment, TopSecret, Draft, ForPublicRelease]
         caretSymbol? : string // Can be P to use a paragraph symbol for the caret or None
         quadPoints? : number[] // specifies how the annotation goes arround the text
+        inkList? : number[]
         border_style? : any
         color_space? : number[]
         border_effect? : any
@@ -97,6 +98,7 @@ export class Annotation {
                 this.id = Util.extractField(this.data, Util.NM)
                 this.contents = Util.extractField(this.data, Util.CONTENTS)
                 this.quadPoints = Util.extractField(this.data, Util.QUADPOINTS)
+                this.inkList = Util.extractField(this.data, Util.INKLIST)
         }
 }
 
