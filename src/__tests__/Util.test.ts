@@ -138,8 +138,29 @@ test('extractNumber', () => {
         data = new Int8Array([32, 13, 10, 49, 32])
         expect(Util.extractNumber(data, 0)).toBe(1)
 
+        // test float values
+        data = new Int8Array([50, 46, 53])
+        expect(Util.extractNumber(data, 0)).toBe(2.5)
+
+        data = new Int8Array([50, 48, 46, 53, 56, 54, 54])
+        expect(Util.extractNumber(data, 0)).toBe(20.5866)
+
         data = new Int8Array([32, 13, 10])
         expect(() => Util.extractNumber(data, 0)).toThrow(Error)
+})
+
+test('extractNumbersArray', () => {
+        let data = new Int8Array([91, 49, 32, 50, 32, 51, 32, 93])
+        expect(Util.extractNumbersArray(data, 0)).toEqual([1, 2, 3])
+
+        data = new Int8Array([91, 55, 55, 46, 55, 55, 55, 55, 55, 55, 55, 55, 55, 56, 32, 56, 51, 46, 55, 57, 51, 49, 57, 48, 52, 49, 54, 49, 32, 56, 51, 46, 55, 55, 55, 55, 55, 55, 55, 55, 55, 56, 32, 56, 57, 46, 55, 56, 53, 54, 50, 52, 50, 49, 49, 57, 32, 93])
+        expect(Util.extractNumbersArray(data, 0)).toEqual([77.7777777778, 83.7931904161, 83.7777777778, 89.7856242119])
+})
+
+test('extractObjectId', () => {
+        let data = new Int8Array([55, 32, 48, 32, 111, 98, 106])
+        expect(Util.extractObjectId(data, 0).obj).toEqual(7)
+        expect(Util.extractObjectId(data, 0).generation).toEqual(0)
 })
 
 test('extractReference', () => {

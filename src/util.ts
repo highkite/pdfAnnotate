@@ -15,6 +15,12 @@ export class Util {
         public static ANNOTS : number[] = [47, 65, 110, 110, 111, 116, 115] // '/Annot'
         public static DICT_START : number[] = [60, 60] // '['
         public static DICT_END : number[] = [62, 62] // ']'
+        public static SUBTYPE : number[] = [47, 83, 117, 98, 116, 121, 112, 101] // '/Subtype'
+        public static PAGES : number[] = [47, 80, 97, 103, 101, 115] // /Pages
+        public static PAGE : number[] = [47, 80, 97, 103, 101]
+        public static KIDS : number[] = [47, 75, 105, 100, 115]
+        public static COUNT : number[] = [47, 67, 111, 117, 110, 116]
+        public static RECT : number[] = [47, 82, 101, 99, 116]
 
         /**
          * Assumes that at position index is a delimiter and than runs as long forward until it finds
@@ -44,7 +50,7 @@ export class Util {
         }
 
         /**
-         * Search the seuqence in data starting at the offset
+         * Search the sequence in data starting at the offset
          *
          * Set the 'closed' flag to check if the suceeding char after the sequence is a line feed (10), a carriage return (13), the end
          * of the whole sequence or a space (32)
@@ -70,7 +76,7 @@ export class Util {
         }
 
         /**
-         * Search the seuqence in data starting at the offset in reverse direction
+         * Search the sequence in data starting at the offset in reverse direction
          *
          * Set the 'closed' flag to check if the preceding char before the sequence is a line feed (10), a carriage return (13), the start
          * of the whole data sequence or a space (32)
@@ -135,6 +141,45 @@ export class Util {
                 }
 
                 return data.slice(array_start + 1, end_array)
+        }
+
+        /**
+         * Extracts the numbers in an array
+         * e.g.  [69.697 47.4148 96.4646 58.2598 ]
+         * */
+        public static extractNumbersArray(data : Int8Array, index : number) : number[] {
+                let array_sequence = Util.extractArraySequence(data, index + 1)
+
+                let nbrs : number[] = []
+
+                let i = 0
+                while (i < array_sequence.length) {
+                        nbrs.push(Util.extractNumber(array_sequence, i))
+
+                        i = Util.locateDelimiter(array_sequence, i + 1) + 1
+                        i = Util.skipDelimiter(array_sequence, i + 1)
+                }
+
+                return nbrs
+        }
+
+        /**
+         * Extract an object identifier
+         * <ID> <GEN> obj
+         * */
+        public static extractObjectId(data : Int8Array, index : number) : ReferencePointer {
+                index = Util.skipDelimiter(data, index)
+
+                let end_obj_ptr = Util.locateDelimiter(data, index + 1)
+
+                let obj = Util.extractNumber(data, index, end_obj_ptr)
+
+                let start_gen_ptr = Util.skipDelimiter(data, end_obj_ptr + 1)
+                let end_gen_ptr = Util.locateDelimiter(data, start_gen_ptr + 1)
+
+                let gen = Util.extractNumber(data, start_gen_ptr, end_gen_ptr)
+
+                return { obj : obj, generation: gen}
         }
 
         /**
@@ -207,7 +252,7 @@ export class Util {
                 }
 
                 if ("" === str_id) {
-                        throw Error("Could not parse number at position " + start)
+                        throw Error(`Could not parse number at position ${start}`)
                 }
 
                 return +str_id
