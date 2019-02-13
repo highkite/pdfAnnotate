@@ -6,10 +6,13 @@ export class Util {
 
         public static TYPE : string = "/Type "
         public static SPACE : number= 32
+        public static _TYPE : number[] = [47, 84, 121, 112, 101] // '/Type'
         public static OBJ : number[] = [111, 98, 106] // 'obj'
         public static ENDOBJ : number[] = [101, 110, 100, 111, 98, 106] // 'endobj'
         public static ARRAY_START : number[] = [91] // '['
         public static ARRAY_END : number[] = [93] // ']'
+        public static STRING_START : number[] = [40] // '('
+        public static STRING_END : number[] = [41] // ')'
         public static R : number[] = [82] // 'R'
         public static ANNOT : number[] = [47, 65, 110, 110, 111, 116] // '/Annot'
         public static ANNOTS : number[] = [47, 65, 110, 110, 111, 116, 115] // '/Annot'
@@ -21,6 +24,16 @@ export class Util {
         public static KIDS : number[] = [47, 75, 105, 100, 115]
         public static COUNT : number[] = [47, 67, 111, 117, 110, 116]
         public static RECT : number[] = [47, 82, 101, 99, 116]
+        public static M : number[] = [47, 77] // '/M'
+        public static T : number[] = [47, 84] // '/T'
+        public static F : number[] = [47, 70] // '/F'
+        public static C : number[] = [47, 67] // '/C'
+        public static CA : number[] = [47, 67, 65] // '/CA'
+        public static NM : number[] = [47, 78, 77] // '/NM'
+        public static P : number[] = [47, 80] // '/P'
+        public static CONTENTS : number[] = [47, 67, 111, 110, 116, 101, 110, 116, 115] // '/Contents'
+        public static BORDER : number[] = [47, 66, 111, 114, 100, 101, 114] // '/Border'
+        public static QUADPOINTS : number[] = [47, 81, 117, 97, 100, 80, 111, 105, 110, 116, 115] // '/QuadPoints'
 
         /**
          * Assumes that at position index is a delimiter and than runs as long forward until it finds
@@ -233,6 +246,85 @@ export class Util {
                 let obj_id = this.locateDelimiterReversed(data, generation - 1)
 
                 return data.slice(obj_id, obj_end)
+        }
+
+        /**
+         * Extracts array of numbers and arrays of references
+         * */
+        public static extractArray(data : Int8Array, index : number) : any {
+                let array_sequence = Util.extractArraySequence(data, 1)
+                for (let i = 0; i < data.length; ++i) {
+                        if (data[i] === Util.R[0]) { // 'R' -- we know it is an array of references
+                                return Util.extractReferencesFromArraySequence(array_sequence)
+                        }
+                }
+
+                return Util.extractNumbersArray(array_sequence, 0)
+        }
+
+        /**
+         * Extratcs the string
+         * */
+        public static extractString(data : Int8Array, index : number) : string {
+                let string_start = Util.locateSequence(Util.STRING_START, data, 0)
+                let string_end = Util.locateSequence(Util.STRING_END, data, 0)
+
+                data = data.slice(string_start + 1, string_end)
+
+                return Util.convertAsciiToString(Array.from(data))
+        }
+
+        /**
+         * Returns the value of an option
+         * /<option>
+         *
+         * so for instance for /Highlight it would return 'Highlight'
+         *
+         * The index must point to the "/"
+         * */
+        public static extractOptionValue(data : Int8Array, index : number = 0) : string {
+
+                if(data[index] !== 47)
+                        throw Error("misplaced option value pointer")
+
+                let end = Util.locateDelimiter(data, index)
+
+                return Util.convertAsciiToString(Array.from(data.slice(index + 1, end + 1)))
+        }
+
+        /**
+         * Extracts the value of the given field.
+         * */
+        public static extractField(data : Int8Array, field : number[], ptr : number = 0) : any {
+                // only check the fields of one object
+                let start_obj_ptr = Util.locateSequence(Util.OBJ, data, ptr, true)
+                let end_obj_ptr = Util.locateSequence(Util.ENDOBJ, data, start_obj_ptr, true)
+
+                data = data.slice(start_obj_ptr, end_obj_ptr)
+
+                let field_ptr = Util.locateSequence(field, data, 0, true) + field.length
+                let field_value_end_ptr = Util.locateSequence([47], data, field_ptr)
+
+                if (field_value_end_ptr === field_ptr + 1) {
+                        return Util.extractOptionValue(data, field_value_end_ptr)
+                }
+
+                let value_data = data.slice(field_ptr, field_value_end_ptr)
+
+                for (let i = 0; i < value_data.length; ++i) {
+                        if (value_data[i] === Util.ARRAY_START[0] || value_data[i] === Util.ARRAY_END[0]) {
+                                // handle array
+                                return Util.extractArray(value_data, 0)
+                        } else if (value_data[i] === Util.STRING_START[0] || value_data[i] === Util.STRING_END[0]) {
+                                // handle string
+                                return Util.extractString(value_data, 0)
+                        } else if (value_data[i] === Util.R[0]) { // R
+                                // handle Reference
+                                return Util.extractReferenceTyped(value_data, 0)
+                        }
+                }
+
+                return Util.extractNumber(value_data, 0)
         }
 
         /**
