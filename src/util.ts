@@ -144,59 +144,102 @@ export class Util {
          * array or a pointer within the array. If it is a nested array the pointer must mark the beginning
          * of the suberarray. Otherwise only the subarray is extracted
          * */
-        public static extractArraySequence(data : Int8Array, index : number) : Int8Array[] {
+        public static extractArraySequence(data : Int8Array, index : number) : any {
                 let array_start = this.locateSequenceReversed(Util.ARRAY_START, data, index)
 
                 if (-1 === array_start)
                         array_start = index
 
-                let start_pointer : number[] = [array_start]
+                let root_list = {ptr : array_start, lst : []}
+                let start_pointer : any[] = [root_list]
 
-                let array_sequence : Int8Array[] = []
-
-                for (let i = array_start + 1; i < data.length && start_pointer.length > 0; ++i) {
+                for (let i = array_start + 1; i < data.length && start_pointer.length > 0;) {
                         if (data[i] === Util.ARRAY_START[0]) {
-                                start_pointer.push(i)
+                                let _n = {ptr : i, lst : []}
+                                start_pointer[start_pointer.length - 1].ptr = -1 // mark list as collection of other lists
+                                start_pointer.push(_n)
                         }
 
                         if (data[i] === Util.ARRAY_END[0]) {
                                 let sp = start_pointer.pop()
 
                                 if (undefined === sp) {
-                                        throw Error(`Missing start pointer ${sp}`)
+                                        throw Error(`Missing start pointer ${JSON.stringify(sp)}`)
                                 }
 
-                                array_sequence.push(data.slice(sp + 1, i))
+                                if (sp.ptr !== -1) {
+                                        let as_toAdd = data.slice(sp.ptr + 1, i)
+                                        if (start_pointer.length > 0) {
+                                                start_pointer[start_pointer.length - 1].lst.push(as_toAdd)
+                                        } else {
+                                                return as_toAdd
+                                        }
+                                } else if (sp.ptr === -1 && start_pointer.length > 0) {
+                                        start_pointer[start_pointer.length - 1].lst.push(sp.lst)
+                                }
                         }
+
+                        i = Util.skipDelimiter(data, i + 1)
                 }
 
-                return array_sequence
+                return root_list.lst
+        }
+
+        private static extractReferenceArrayRec(arraySeq : any) : any {
+                if (arraySeq instanceof Int8Array) {
+                        return Util.extractReferencesFromArraySequence(arraySeq)
+                } else {
+                        let nbr : any = []
+                        for (let array_sequence of arraySeq) {
+                                nbr.push(Util.extractReferenceArrayRec(array_sequence))
+                        }
+
+                        return nbr
+                }
+        }
+
+        /**
+         * Extracts the references in an array
+         * */
+        public static extractReferenceArray(data : Int8Array, index : number) : any {
+                let array_sequences = Util.extractArraySequence(data, index)
+
+                return this.extractReferenceArrayRec(array_sequences)
+        }
+
+
+        private static extractNumbersArrayRec(arraySeq : any) : any {
+                if (arraySeq instanceof Int8Array) {
+                        let nbrs : any = []
+
+                        let i = 0
+                        while (i < arraySeq.length) {
+                                nbrs.push(Util.extractNumber(arraySeq, i))
+
+                                i = Util.locateDelimiter(arraySeq, i + 1) + 1
+                                i = Util.skipDelimiter(arraySeq, i + 1)
+                        }
+
+                        return nbrs
+                } else {
+                        let nbr : any = []
+
+                        for (let array_sequence of arraySeq) {
+                                nbr.push(this.extractNumbersArrayRec(array_sequence))
+                        }
+
+                        return nbr
+                }
         }
 
         /**
          * Extracts the numbers in an array
          * e.g.  [69.697 47.4148 96.4646 58.2598 ]
          * */
-        public static extractNumbersArray(data : Int8Array, index : number) : number[][] {
-                let array_sequences = Util.extractArraySequence(data, index + 1)
+        public static extractNumbersArray(data : Int8Array, index : number) : any {
+                let array_sequences = Util.extractArraySequence(data, index)
 
-                let _nbrs : number[][] = []
-
-                for (let array_sequence of array_sequences) {
-                        let nbrs : number[] = []
-
-                        let i = 0
-                        while (i < array_sequence.length) {
-                                nbrs.push(Util.extractNumber(array_sequence, i))
-
-                                i = Util.locateDelimiter(array_sequence, i + 1) + 1
-                                i = Util.skipDelimiter(array_sequence, i + 1)
-                        }
-
-                        _nbrs.push(nbrs)
-                }
-
-                return _nbrs
+                return this.extractNumbersArrayRec(array_sequences)
         }
 
         /**
@@ -273,12 +316,15 @@ export class Util {
 
         /**
          * Extracts array of numbers and arrays of references
+         *
+         * Mark that this function does not support arrays that contain different types, so either
+         * it returns an array of references or an array of numbers. However the function supports
+         * arbitrarily nesting of arrays.
          * */
         public static extractArray(data : Int8Array, index : number) : any {
-                let array_sequence = Util.extractArraySequence(data, 1)
                 for (let i = 0; i < data.length; ++i) {
                         if (data[i] === Util.R[0]) { // 'R' -- we know it is an array of references
-                                return Util.extractReferencesFromArraySequence(array_sequence)
+                                return Util.extractReferenceArray(data, index)
                         }
                 }
 
@@ -332,11 +378,13 @@ export class Util {
 
                 field_ptr += field.length
 
-                let field_value_end_ptr = Util.locateSequence([47], data, field_ptr)
+                let field_value_end_ptr = Util.locateSequence([47], data, field_ptr) // '/' = 47
 
                 if (field_value_end_ptr === field_ptr + 1) {
                         return Util.extractOptionValue(data, field_value_end_ptr)
                 }
+
+                field_ptr = Util.skipDelimiter(data, field_ptr)
 
                 let value_data = data.slice(field_ptr, field_value_end_ptr)
 
@@ -382,23 +430,16 @@ export class Util {
         /**
          * Takes as argument an array of references and returns those typed
          * */
-        public static extractReferencesFromArraySequence (array_sequences : Int8Array[]) : ReferencePointer[][] {
+        public static extractReferencesFromArraySequence (array_sequence : Int8Array) : ReferencePointer[] {
+                let refs : ReferencePointer[] = []
 
-                let _refs : ReferencePointer[][] = []
-
-                for (let array_sequence of array_sequences) {
-                        let refs : ReferencePointer[] = []
-
-                        let i = 0
-                        while (i < array_sequence.length) {
-                                refs.push(Util.extractReferenceTyped(array_sequence, i))
-                                i = Util.locateSequence(Util.R, array_sequence, i, true) + 2
-                        }
-
-                        _refs.push(refs)
+                let i = 0
+                while (i < array_sequence.length) {
+                        refs.push(Util.extractReferenceTyped(array_sequence, i))
+                        i = Util.locateSequence(Util.R, array_sequence, i, true) + 2
                 }
 
-                return _refs
+                return refs
         }
 
         /**
