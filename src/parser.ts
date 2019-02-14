@@ -89,11 +89,11 @@ export class Annotation {
                 this.object_id = Util.extractObjectId(this.data, 0)
 
                 this.type = "/" + Util.extractField(this.data, Util.SUBTYPE)
-                this.rect = Util.extractField(this.data, Util.RECT)
+                this.rect = Util.extractField(this.data, Util.RECT)[0]
                 this.pageReference = Util.extractField(this.data, Util.P)
                 this.updateDate = Util.extractField(this.data, Util.M)
-                this.border = Util.extractField(this.data, Util.BORDER)
-                this.color = Util.extractField(this.data, Util.C)
+                this.border = Util.extractField(this.data, Util.BORDER)[0]
+                this.color = Util.extractField(this.data, Util.C)[0]
                 this.author = Util.extractField(this.data, Util.T)
                 this.id = Util.extractField(this.data, Util.NM)
                 this.contents = Util.extractField(this.data, Util.CONTENTS)
@@ -182,7 +182,12 @@ export class PageTree {
 
                                 let array_data = Util.extractArraySequence(this.data, kids_index + 1)
 
-                                this.extractPageReferences(Util.extractReferencesFromArraySequence(array_data))
+                                let refs = Util.extractReferencesFromArraySequence(array_data)
+
+                                if (refs.length > 1)
+                                        throw Error("Reference pointer array is nested")
+
+                                this.extractPageReferences(refs[0])
                         }
                 }
         }
@@ -204,7 +209,12 @@ export class PageTree {
 
                 this.pageReferences = []
 
-                this.extractPageReferences(Util.extractReferencesFromArraySequence(array_data))
+                let refs = Util.extractReferencesFromArraySequence(array_data)
+
+                if (refs.length > 1)
+                        throw Error("Reference pointer array is nested")
+
+                this.extractPageReferences(refs[0])
         }
 
         /**
@@ -258,7 +268,12 @@ export class Page {
 
                 let array_sequence = Util.extractArraySequence(this.data, ptr)
 
-                this.annots = Util.extractReferencesFromArraySequence(array_sequence)
+                let refs = Util.extractReferencesFromArraySequence(array_sequence)
+
+                if (refs.length > 1)
+                        throw Error("Annotation reference array is nested")
+
+                this.annots = refs[0]
         }
 
         /**
@@ -288,7 +303,12 @@ export class Page {
                         if (_data[annots_ptr] === Util.ARRAY_START[0]) {
                                 let array_sequence = Util.extractArraySequence(_data, annots_ptr)
 
-                                this.annots = Util.extractReferencesFromArraySequence(array_sequence)
+                                let refs = Util.extractReferencesFromArraySequence(array_sequence)
+
+                                if (refs.length > 1)
+                                        throw Error("Annotation reference array is nested")
+
+                                this.annots = refs[0]
                         } else {
                                 this.annotsPointer = Util.extractReferenceTyped(_data, annots_ptr)
 

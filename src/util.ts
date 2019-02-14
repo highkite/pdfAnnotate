@@ -141,40 +141,62 @@ export class Util {
 
         /**
          * Extracts the array data at the position of the index. The index can mark the start of the
-         * array or a pointer within the array
+         * array or a pointer within the array. If it is a nested array the pointer must mark the beginning
+         * of the suberarray. Otherwise only the subarray is extracted
          * */
-        public static extractArraySequence(data : Int8Array, index : number) : Int8Array {
+        public static extractArraySequence(data : Int8Array, index : number) : Int8Array[] {
                 let array_start = this.locateSequenceReversed(Util.ARRAY_START, data, index)
 
-                let end_array = this.locateSequence(Util.ARRAY_END, data, index)
+                if (-1 === array_start)
+                        array_start = index
 
-                let nested_array_start = this.locateSequence(Util.ARRAY_START, data, array_start + 1)
+                let start_pointer : number[] = [array_start]
 
-                if (nested_array_start != -1 && nested_array_start < end_array) {
-                        throw new Error("Nested arrays")
+                let array_sequence : Int8Array[] = []
+
+                for (let i = array_start + 1; i < data.length && start_pointer.length > 0; ++i) {
+                        if (data[i] === Util.ARRAY_START[0]) {
+                                start_pointer.push(i)
+                        }
+
+                        if (data[i] === Util.ARRAY_END[0]) {
+                                let sp = start_pointer.pop()
+
+                                if (undefined === sp) {
+                                        throw Error(`Missing start pointer ${sp}`)
+                                }
+
+                                array_sequence.push(data.slice(sp + 1, i))
+                        }
                 }
 
-                return data.slice(array_start + 1, end_array)
+                return array_sequence
         }
 
         /**
          * Extracts the numbers in an array
          * e.g.  [69.697 47.4148 96.4646 58.2598 ]
          * */
-        public static extractNumbersArray(data : Int8Array, index : number) : number[] {
-                let array_sequence = Util.extractArraySequence(data, index + 1)
+        public static extractNumbersArray(data : Int8Array, index : number) : number[][] {
+                let array_sequences = Util.extractArraySequence(data, index + 1)
 
-                let nbrs : number[] = []
+                let _nbrs : number[][] = []
 
-                let i = 0
-                while (i < array_sequence.length) {
-                        nbrs.push(Util.extractNumber(array_sequence, i))
+                for (let array_sequence of array_sequences) {
+                        let nbrs : number[] = []
 
-                        i = Util.locateDelimiter(array_sequence, i + 1) + 1
-                        i = Util.skipDelimiter(array_sequence, i + 1)
+                        let i = 0
+                        while (i < array_sequence.length) {
+                                nbrs.push(Util.extractNumber(array_sequence, i))
+
+                                i = Util.locateDelimiter(array_sequence, i + 1) + 1
+                                i = Util.skipDelimiter(array_sequence, i + 1)
+                        }
+
+                        _nbrs.push(nbrs)
                 }
 
-                return nbrs
+                return _nbrs
         }
 
         /**
@@ -260,7 +282,7 @@ export class Util {
                         }
                 }
 
-                return Util.extractNumbersArray(array_sequence, 0)
+                return Util.extractNumbersArray(data, index)
         }
 
         /**
@@ -360,16 +382,23 @@ export class Util {
         /**
          * Takes as argument an array of references and returns those typed
          * */
-        public static extractReferencesFromArraySequence (array_sequence : Int8Array) : ReferencePointer[] {
-                let refs : ReferencePointer[] = []
+        public static extractReferencesFromArraySequence (array_sequences : Int8Array[]) : ReferencePointer[][] {
 
-                let i = 0
-                while (i < array_sequence.length) {
-                        refs.push(Util.extractReferenceTyped(array_sequence, i))
-                        i = Util.locateSequence(Util.R, array_sequence, i, true) + 2
+                let _refs : ReferencePointer[][] = []
+
+                for (let array_sequence of array_sequences) {
+                        let refs : ReferencePointer[] = []
+
+                        let i = 0
+                        while (i < array_sequence.length) {
+                                refs.push(Util.extractReferenceTyped(array_sequence, i))
+                                i = Util.locateSequence(Util.R, array_sequence, i, true) + 2
+                        }
+
+                        _refs.push(refs)
                 }
 
-                return refs
+                return _refs
         }
 
         /**
