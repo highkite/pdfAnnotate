@@ -409,9 +409,13 @@ export class AnnotationFactory {
          * Returns a promise with the resul of all annotations that are part of the document. This will
          * comprise those that are already exists and those that were created using this library
          * */
-        getAnnotations () : Promise<Annotation[]> {
+        getAnnotations () : Promise<Annotation[][]> {
                 return new Promise((resolve) => {
-                        resolve(this.parser.extractAnnotations().concat(this.annotations))
+                        let existingAnnots = this.parser.extractAnnotations()
+                        for (let newAnnot of this.annotations) {
+                                existingAnnots[newAnnot.page].push(newAnnot)
+                        }
+                        resolve(existingAnnots)
                 })
         }
 

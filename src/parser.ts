@@ -89,11 +89,11 @@ export class Annotation {
                 this.object_id = Util.extractObjectId(this.data, 0)
 
                 this.type = "/" + Util.extractField(this.data, Util.SUBTYPE)
-                this.rect = Util.extractField(this.data, Util.RECT)[0]
+                this.rect = Util.extractField(this.data, Util.RECT)
                 this.pageReference = Util.extractField(this.data, Util.P)
                 this.updateDate = Util.extractField(this.data, Util.M)
-                this.border = Util.extractField(this.data, Util.BORDER)[0]
-                this.color = Util.extractField(this.data, Util.C)[0]
+                this.border = Util.extractField(this.data, Util.BORDER)
+                this.color = Util.extractField(this.data, Util.C)
                 this.author = Util.extractField(this.data, Util.T)
                 this.id = Util.extractField(this.data, Util.NM)
                 this.contents = Util.extractField(this.data, Util.CONTENTS)
@@ -387,8 +387,8 @@ export class PDFDocumentParser {
         /**
          * Returns the annotations that exist in the document
          * */
-        extractAnnotations () : Annotation[] {
-                let annots : Annotation[] = []
+        extractAnnotations () : Annotation[][] {
+                let annots : Annotation[][] = []
                 let pt : PageTree = this.getPageTree()
                 let obj_table = this.documentHistory.createObjectLookupTable()
 
@@ -399,12 +399,15 @@ export class PDFDocumentParser {
 
                         let annotationReferences : ReferencePointer[] = page.annots
 
+                        let pageAnnots : Annotation[] = []
+
                         for (let refPtr of annotationReferences) {
                                 let a = new Annotation(this.data)
                                 a.extract(obj_table[refPtr.obj].pointer)
                                 a.page = i
-                                annots.push(a)
+                                pageAnnots.push(a)
                         }
+                        annots.push(pageAnnots)
                 }
 
                 return annots
