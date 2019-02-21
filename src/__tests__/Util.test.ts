@@ -340,5 +340,5 @@ test('skipDelimiter', () => {
 
 test('convertUnicode', () => {
     let data = new Int8Array([254, 255, 0, 80, 0, 111, 0, 112, 0, 32, 0, 117, 0, 112, 0, 32, 0, 110, 0, 111, 0, 116, 0, 101])
-    expect(Util.convertUnicodeToString(data)).toEqual('abc')
+    expect(Util.convertUnicodeToString(data)).toEqual('Pop up note')
 })
