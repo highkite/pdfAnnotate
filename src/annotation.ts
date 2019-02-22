@@ -10,6 +10,8 @@ import { Writer } from './writer'
 export class AnnotationFactory {
     private annotations: Annotation[] = []
 
+    private toDelete: Annotation[] = []
+
     private parser: PDFDocumentParser
 
     constructor(private data: Int8Array) {
@@ -69,10 +71,10 @@ export class AnnotationFactory {
      * Writes the made annotations into a bytestream
      * */
     write(): Int8Array {
-        if (this.annotations.length === 0)
+        if (this.annotations.length === 0 && this.toDelete.length === 0)
             return this.data
 
-        let writer: Writer = new Writer(this.data, this.annotations, this.parser)
+        let writer: Writer = new Writer(this.data, this.annotations, this.toDelete, this.parser)
 
         return writer.write()
     }
@@ -488,6 +490,44 @@ export class AnnotationFactory {
     }
 
     /**
+     * Deletes the annotation with the given id or the given reference object
+     * */
+    deleteAnnotation(id: any): Promise<any> {
+        return new Promise((resolve) => {
+
+            // delete if it was just created but is not in the pdf document
+            for (let i = 0; i < this.annotations.length; ++i) {
+                if ('string' === typeof id && this.annotations[i].id === id) {
+                    this.annotations = this.annotations.slice(i, 1)
+                    resolve(this.toDelete)
+                    return
+                } else if (id.obj && this.annotations[i].object_id && id.obj === (<any>this.annotations[i].object_id).obj && id.generation && id.generation === (<any>this.annotations[i].object_id).generation) {
+                    this.annotations = this.annotations.slice(i, 1)
+                    resolve(this.toDelete)
+                    return
+                }
+            }
+
+            this.getAnnotations().then((annots) => {
+                for (let _annots of annots) {
+                    for (let annot of _annots) {
+                        if ('string' === typeof id && annot.id === id) {
+                            this.toDelete.push(annot)
+                            resolve(this.toDelete)
+                            return
+                        } else if (id.obj && annot.object_id && id.obj === annot.object_id.obj && id.generation && id.generation === annot.object_id.generation) {
+                            this.toDelete.push(annot)
+                            resolve(this.toDelete)
+                            return
+                        }
+                    }
+                }
+            })
+
+        })
+    }
+
+    /**
      * Returns a promise with the resul of all annotations that are part of the document. This will
      * comprise those that are already exists and those that were created using this library
      * */
@@ -506,7 +546,7 @@ export class AnnotationFactory {
     }
 
     /**
-     * Downloads the extended PDF document
+     * Downloads the adapted PDF document
      * */
     download(fileName: string = "output.pdf") {
         let a: any = document.createElement("a");
@@ -521,5 +561,25 @@ export class AnnotationFactory {
         a.click()
         a.remove()
         window.URL.revokeObjectURL(url);
+    }
+
+    /**
+     * Saves the adapted PDF document in a nodejs environment
+     * */
+    save(fileName: string = "output.pdf") {
+        if (typeof process === 'undefined' && (<any>process).release.name !== 'node') {
+            console.error('Use download() in a browser environment')
+            return
+        }
+
+        const fs = require('fs');
+        let data = this.write()
+        fs.writeFile(fileName, Buffer.from(new Uint8Array(data)), (err: any) => {
+            if (err) {
+                return console.log(err);
+            }
+
+            console.log(`The file was written to: ${fileName}`);
+        })
     }
 }

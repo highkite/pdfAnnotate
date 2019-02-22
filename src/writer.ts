@@ -63,7 +63,7 @@ export class Writer {
      * data : The data representing the original PDF document
      * aannotations : The annotations to add to the document
      * */
-    constructor(private data: Int8Array, private annotations: Annotation[], private parser: PDFDocumentParser) {
+    constructor(private data: Int8Array, private annotations: Annotation[], private toDelete: Annotation[], private parser: PDFDocumentParser) {
         this.data = new Int8Array(data)
     }
 
@@ -146,8 +146,11 @@ export class Writer {
     /**
      * Takes the annotations of >>one<< page and derives the annotations array from it.
      * Thereby it also considers the potentially existing annotation array.
+     *
+     * toDelete := contains those annotations that must be deleted. It removes them from the reference array
+     * and marks them as removed
      * */
-    writeAnnotArray(annots: Annotation[]): { ptr: ReferencePointer, data: number[], pageReference: ReferencePointer, pageData: number[] } {
+    writeAnnotArray(annots: Annotation[], toDelete: Annotation[]): { ptr: ReferencePointer, data: number[], pageReference: ReferencePointer, pageData: number[] } {
         let page = annots[0].pageReference
 
         if (!page)
@@ -165,7 +168,19 @@ export class Writer {
             return x.object_id
         }))
 
-        let refArray_id = page.annotsPointer
+        // remove annotation references from the array that must be deleted and mark them as deleted
+        references = references.filter((a: any) => {
+            let toDel = toDelete.find((t) => (<any>t.object_id).obj === a.obj && (<any>t.object_id).generation === a.generation)
+
+            if (toDel) {
+                toDel.is_deleted = true
+                return false
+            }
+
+            return true
+        })
+
+        let refArray_id: any = page.annotsPointer
 
         let page_data: number[] = []
         if (!refArray_id) {
@@ -483,6 +498,45 @@ export class Writer {
     }
 
     /**
+     * Constructs the pointers of the linked list that contains the ids of freed objects
+     * */
+    applyObjectFreeing(refs: XRef[]): XRef[] {
+        // write free object head
+        let head = this.parser.documentHistory.getRecentUpdate().refs[0]
+        let last_freed_object_id = head.id
+
+        let freed_objs: XRef[] = refs.filter(r => r.free)
+        freed_objs = freed_objs.sort((a, b) => {
+            if (a.id < b.id)
+                return -1
+            if (a.id > b.id)
+                return 1
+            return 0
+        })
+
+        let lastobj: XRef | undefined = undefined
+        for (let obj of freed_objs) {
+            if (!lastobj) {
+                // set first object as list header
+                head.pointer = obj.id
+            }
+
+            if (lastobj) {
+                lastobj.pointer = obj.id
+            }
+
+            lastobj = obj
+        }
+
+        if (freed_objs.length > 0)
+            freed_objs[freed_objs.length - 1].pointer = last_freed_object_id
+
+        refs.push(head)
+
+        return refs
+    }
+
+    /**
      * Writes the crossite reference table
      * */
     writeCrossSiteReferenceTable(): number[] {
@@ -490,14 +544,12 @@ export class Writer {
         ret.push(Writer.CR)
         ret.push(Writer.LF)
 
-        // write free object head
-        let head = this.parser.documentHistory.getRecentUpdate().refs[0]
-        this.xrefs.push(head)
+        this.xrefs = this.applyObjectFreeing(this.xrefs)
 
         let ordered_sequences = this.computeXrefSequences()
 
         for (let sequence of ordered_sequences) {
-            head = sequence[0]
+            let head = sequence[0]
             ret = ret.concat(Util.convertNumberToCharArray(head.id))
             ret.push(Writer.SPACE)
             ret = ret.concat(Util.convertNumberToCharArray(sequence.length))
@@ -583,7 +635,9 @@ export class Writer {
         for (let key in pageWiseSorted) {
             let pageAnnots = pageWiseSorted[key]
 
-            let annot_array = this.writeAnnotArray(pageAnnots)
+            // write the array referencing to annotations of a certain page
+            // it also removes references of annotations that must be deleted
+            let annot_array = this.writeAnnotArray(pageAnnots, this.toDelete)
             this.xrefs.push({
                 id: annot_array.ptr.obj,
                 pointer: ptr,
@@ -595,7 +649,9 @@ export class Writer {
             new_data = new_data.concat(annot_array.data)
             ptr += annot_array.data.length
 
-            // add adapted page object if it exists
+            // add adapted page object if it exists -- In the case the page had no annotation yet there exists
+            // no such array referring to its annotations. A pointer to such an array array must be added to the
+            // page object. If this was done the `pageData` paramater is set and contains the adapted page object
             if (annot_array.pageData.length > 0) {
                 this.xrefs.push({
                     id: annot_array.pageReference.obj,
@@ -608,6 +664,7 @@ export class Writer {
                 ptr += annot_array.pageData.length
             }
 
+            // writes the actual annotation object
             for (let annot of pageAnnots) {
                 let annot_obj = this.writeAnnotationObject(annot)
                 this.xrefs.push({
@@ -623,6 +680,40 @@ export class Writer {
             }
         }
 
+        // take all annotations that are not deleted yet
+        let _toDelete: Annotation[] = this.toDelete.filter((t) => !t.is_deleted)
+        let pageWiseSortedToDelete = this.sortPageWise(_toDelete)
+
+        // adapt the remaining annotation reference tables
+        for (let key in pageWiseSortedToDelete) {
+            let del_data = this.updatePageAnnotationReferenceArray(pageWiseSortedToDelete[key])
+            this.xrefs.push({
+                id: del_data.ptr.obj,
+                pointer: ptr,
+                generation: del_data.ptr.generation,
+                free: false,
+                update: true
+            })
+
+            new_data = new_data.concat(del_data.data)
+            ptr += del_data.data.length
+        }
+
+        // at this point all references to annotation objects in pages should be removed and we can free
+        // the annotation object ids
+        for (let toDel of this.toDelete) {
+            if (!toDel.object_id)
+                continue
+
+            this.xrefs.push({
+                id: toDel.object_id.obj,
+                pointer: -1,
+                generation: toDel.object_id.generation + 1, // increase generation
+                free: true,
+                update: false
+            })
+        }
+
         let crtable = this.writeCrossSiteReferenceTable()
         new_data = new_data.concat(crtable)
 
@@ -636,5 +727,56 @@ export class Writer {
         ret_array.set(new_data, this.data.length)
 
         return ret_array
+    }
+
+    /**
+     * Removes the given annotation
+     * */
+    updatePageAnnotationReferenceArray(toDelete: Annotation[]): { ptr: ReferencePointer, data: number[] } {
+        let page = toDelete[0].pageReference
+
+        if (!page)
+            throw Error("Missing page reference")
+
+        if (!page.object_id) {
+            throw Error("Page without object id")
+        }
+
+        let references: ReferencePointer[] = page.annots
+
+        // remove annotation references from the array that must be deleted and mark them as deleted
+        references = references.filter((a: any) => {
+            let toDel = toDelete.find((t) => (<any>t.object_id).obj === a.obj && (<any>t.object_id).generation === a.generation)
+
+            if (toDel) {
+                toDel.is_deleted = true
+                return false
+            }
+
+            return true
+        })
+
+        let refArray_id: any = page.annotsPointer
+
+        let ret: number[] = this.writeReferencePointer(refArray_id)
+        ret.push(Writer.SPACE)
+        ret = ret.concat(Writer.OBJ)
+        ret.push(Writer.SPACE)
+        ret.push(Writer.ARRAY_START)
+
+
+        for (let an of references) {
+            ret = ret.concat(this.writeReferencePointer(an, true))
+            ret.push(Writer.SPACE)
+        }
+
+        ret.push(Writer.ARRAY_END)
+        ret.push(Writer.SPACE)
+
+        ret = ret.concat(Writer.ENDOBJ)
+        ret.push(Writer.CR)
+        ret.push(Writer.LF)
+
+        return { ptr: refArray_id, data: ret }
     }
 }

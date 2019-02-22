@@ -73,6 +73,7 @@ export class Annotation {
     line_ending?: string[]
     interior_color?: number[]
     measure?: any
+    is_deleted?: boolean
 
 
     constructor(private data: Int8Array = new Int8Array([])) { }
@@ -80,7 +81,7 @@ export class Annotation {
     /**
      * Extract the annotation object (partially)
      * */
-    extract(ptr: number) {
+    extract(ptr: number, page: Page) {
         // restrict the data array to the partition that actually contains the annotation data
         let obj_end_ptr: number = Util.locateSequence(Util.ENDOBJ, this.data, ptr, true)
 
@@ -90,7 +91,7 @@ export class Annotation {
 
         this.type = "/" + Util.extractField(this.data, Util.SUBTYPE)
         this.rect = Util.extractField(this.data, Util.RECT)
-        this.pageReference = Util.extractField(this.data, Util.P)
+        this.pageReference = page
         this.updateDate = Util.extractField(this.data, Util.M)
         this.border = Util.extractField(this.data, Util.BORDER)
         this.color = Util.extractField(this.data, Util.C)
@@ -403,7 +404,7 @@ export class PDFDocumentParser {
 
             for (let refPtr of annotationReferences) {
                 let a = new Annotation(this.data)
-                a.extract(obj_table[refPtr.obj].pointer)
+                a.extract(obj_table[refPtr.obj].pointer, page)
                 a.page = i
                 pageAnnots.push(a)
             }

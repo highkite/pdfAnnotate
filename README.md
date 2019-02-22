@@ -30,9 +30,11 @@
         15. [createCaretAnnotation(...)](#createcaret)
         16. [createInkAnnotation(...)](#createink)
         17. [createPopupAnnotation(...)](#createpopup)
-        18. [getAnnotations()](#getAnnotations)
-        19. [write(...)](#write)
-        20. [download(...)](#download)
+        18. [deleteAnnotation(...)](#deleteAnnotation)
+        19. [getAnnotations()](#getAnnotations)
+        20. [write(...)](#write)
+        21. [download(...)](#download)
+        22. [save(...)](#save)
     5. [How does the Library Works?](#HowWorks)
         1. [Trivia](#Trivia)
         2. [Adding an Annotation](#AddingAnnotation)
@@ -314,6 +316,14 @@ Adds an ink annotation
 ### <a name="createpopup"></a>createPopupAnnotation(...)
 Not yet implemented.
 
+### <a name="deleteAnnotation"></a>deleteAnnotation(...)
+Deletes an existing annotation. Either from the set of newly created annotations or from the actual PDF document.
+
+#### Parameters:
+| Paramater   |     Type      |  Description |
+|----------|-------------|------|
+| id |  string or object | Either the unique ID string or *object_id* object.|
+
 ### <a name="getAnnotations"></a>getAnnotations()
 
 Returns the annotations that originally exist in the PDF document and those that were created by the library in the mean time. The return values is a list of lists, where every list represents one page in the pdf document.
@@ -330,6 +340,15 @@ The download method allows the download of the adapted PDF document in the brows
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
 | fileName | string |  Specify a file name of the download file. By default it is called 'output.pdf'. |
+
+### <a name="save"></a>save(...)
+
+The save method allows to store the adapted PDF document in a **nodejs** environment.
+
+#### Parameters:
+| Paramater   |     Type      |  Description |
+|----------|-------------|------|
+| fileName | string |  Specify a file name of the file. By default it is called 'output.pdf'. |
 
 # <a name="HowWorks"></a>How does the Library Works?
 
