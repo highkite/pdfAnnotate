@@ -152,7 +152,7 @@ The highlight annotation emphasizes a selected text, with a semitransparent colo
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
 | page |  number | The page number where the annotation must be added (starting with 0)|
-| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the rectangle. |
+| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the rectangle.  If you specify the quadPoints array you can also hand over an empty list. The library takes the convex hull of your quadpoint definitions. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
@@ -167,7 +167,7 @@ The underline annotation underlines a selected text. However, see the remark: Th
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
 | page |  number | The page number where the annotation must be added  (starting with 0)|
-| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the rectangle. |
+| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the rectangle.  If you specify the quadPoints array you can also hand over an empty list. The library takes the convex hull of your quadpoint definitions. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
@@ -185,7 +185,7 @@ Uses a curly line for underlining a selected text.
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
 | page |  number | The page number where the annotation must be added (starting with 0)|
-| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the rectangle. |
+| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the rectangle.  If you specify the quadPoints array you can also hand over an empty list. The library takes the convex hull of your quadpoint definitions. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
@@ -201,7 +201,7 @@ Can be used to cross out the selected text.
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
 | page |  number | The page number where the annotation must be added (starting with 0)|
-| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the rectangle. |
+| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the rectangle. If you specify the quadPoints array you can also hand over an empty list. The library takes the convex hull of your quadpoint definitions. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|

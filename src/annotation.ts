@@ -91,6 +91,29 @@ export class AnnotationFactory {
     }
 
     /**
+     * Extracts the rectangular hull from a quadPoint definition
+     * */
+    private extractRectFromQuadPoints(quadPoints: number[]): number[] {
+        let x_values = quadPoints.filter((element, index) => index % 2 === 0)
+        let y_values = quadPoints.filter((element, index) => index % 2 !== 0)
+
+        return [Math.min(...x_values), Math.min(...y_values), Math.max(...x_values), Math.max(...y_values)]
+    }
+
+    /**
+     * Checks the 'quadPoints' parameter
+     * */
+    private checkQuadPoints(quadPoints: number[]) {
+        if (quadPoints.length % 8 !== 0)
+            throw Error(`Quadpoints array has length ${quadPoints.length} but must be a multiple of 8`)
+
+        quadPoints.forEach((a) => {
+            if ('number' !== typeof a)
+                throw Error("Quadpoint " + quadPoints + " has invalid entry: " + a)
+        })
+    }
+
+    /**
      * Creates a base annotation that mean the raw object of annotation or those parts that are all existing
      * and equally set in all types of annotations
      * */
@@ -180,6 +203,12 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
     createHighlightAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []) {
+        this.checkQuadPoints(quadPoints)
+
+        if (rect.length === 0 && quadPoints.length > 0) {
+            rect = this.extractRectFromQuadPoints(quadPoints)
+        }
+
         this.checkRect(4, rect)
         let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/Highlight", color, quadPoints)
 
@@ -195,6 +224,11 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
     createUnderlineAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []) {
+        this.checkQuadPoints(quadPoints)
+
+        if (rect.length === 0 && quadPoints.length > 0) {
+            rect = this.extractRectFromQuadPoints(quadPoints)
+        }
         this.checkRect(4, rect)
         let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/Underline", color, quadPoints)
 
@@ -210,6 +244,11 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
     createSquigglyAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []) {
+        this.checkQuadPoints(quadPoints)
+
+        if (rect.length === 0 && quadPoints.length > 0) {
+            rect = this.extractRectFromQuadPoints(quadPoints)
+        }
         this.checkRect(4, rect)
         let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/Squiggly", color, quadPoints)
 
@@ -225,6 +264,11 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
     createStrikeOutAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []) {
+        this.checkQuadPoints(quadPoints)
+
+        if (rect.length === 0 && quadPoints.length > 0) {
+            rect = this.extractRectFromQuadPoints(quadPoints)
+        }
         this.checkRect(4, rect)
         let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/StrikeOut", color, quadPoints)
 
