@@ -6,12 +6,13 @@
 
 # Table of Contents
 
-        1. [Documentation](#Documentation)
-        1. [Installation](#Installation)
-        2. [Getting Started](#GettingStarted)
-        3. [Demo / Examples](#Examples)
+1. [Documentation](#Documentation)
+    1. [Installation](#Installation)
+    2. [Getting Started](#GettingStarted)
+    3. [Demo / Examples](#Examples)
         1. [The Translation of Coordinates](#TranslationCoordinates)
-        4. [API Documentation](#API)
+        2. [Quadpoints](#QuadPoints)
+    4. [API Documentation](#API)
         1. [constructor(...)](#constructor)
         2. [loadFile(...)](#loadfile)
         3. [createTextAnnotation(...)](#createtext)
@@ -31,28 +32,28 @@
         17. [createPopupAnnotation(...)](#createpopup)
         18. [write(...)](#write)
         19. [download(...)](#download)
-        2. [How does the Library Works?](#HowWorks)
+    5. [How does the Library Works?](#HowWorks)
         1. [Trivia](#Trivia)
         2. [Adding an Annotation](#AddingAnnotation)
         3. [Document Updates](#DocumentUpdates)
-4. [PDF Objects](#PDFObjects)
+        4. [PDF Objects](#PDFObjects)
 
 # <a name="Documentation"></a>Documentation
 
 ## <a name="Installation"></a>Installation
 
-        Either use npm for the installation or reference the bundled file from the *_bundles* directory.
+Either use npm for the installation or reference the bundled file from the *_bundles* directory.
 
         `npm install annotpdf`
 
 ## <a name="GettingStarted"></a>Getting Started
 
-        To add annotations the *AnnotationFactory* needs to be initialized. One approach is to use the static *loadFile* method that takes as argument a filepath and than initializes the factory with the corresponding PDF document data.
+To add annotations the *AnnotationFactory* needs to be initialized. One approach is to use the static *loadFile* method that takes as argument a filepath and than initializes the factory with the corresponding PDF document data.
 
-        Annotations can easily be created by calling `creator` methods (see [API Documentation](#API)). Finally the extended document can be downloaded by calling the *download* method.
+Annotations can easily be created by calling `creator` methods (see [API Documentation](#API)). Finally the extended document can be downloaded by calling the *download* method.
 
-        ```
-        pdfAnnotate.AnnotationFactory.loadFile(path).then((factory) => {
+```
+pdfAnnotate.AnnotationFactory.loadFile(path).then((factory) => {
                         pdfFactory.createTextAnnotation(0, [50, 50], "Pop up note", "Max")
                         pdfFactory.download()
                         })
@@ -91,6 +92,18 @@ pdfContainer.addEventListener('click', (evt) => {
                 })
 ```
 **Note** that we assumed that you used the PDFjs *PDFViewer* for displaying the PDF and we utilized *JQuery* for the offset computation.
+
+### <a name="QuadPoints"></a>Quadpoints
+
+Quadpoints are a feature of PDF annotations to describe mulitple rectangles, where every rectangle is defined by four points given in *x* any *y* coordinates. The order of the points can be observed in the following depiction:
+
+![Quadpoints](./documentation/quadpoints.png  "Quadpoints")
+
+Please note the order. The PDF specification defines another order, but it seems to be an error (cfg. [Stackoverflow discussion](https://stackoverflow.com/questions/9855814/pdf-spec-vs-acrobat-creation-quadpoints) ) in the document.
+
+It is possible to define multiple rectangles in a quadpoint array. The length of the quadpoints array must be a multiple of *8*. In some cases the API does not require the definition of quadpoints, although the definiton is actually required by the PDF specification. In these cases we derive the quadpoints directly from the provided rect array. However, it is always possible to overwrite this behaviour by providing the quadpoint array.
+
+Please note that the coordinate system origin in PDF canvas is the **left bottom** corner.
 
 ## <a name="API"></a>API Documentation
 
@@ -143,6 +156,7 @@ The highlight annotation emphasizes a selected text, with a semitransparent colo
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
+| quadPoints | number array | Optional argument for specifying the quadpoints of the annotation (cfg. [Quadpoints](#QuadPoints) ). |
 
 ### <a name="createunderline"></a>createUnderlineAnnotation(...)
 The underline annotation underlines a selected text. However, see the remark: This annotation is not always correctly rendered.
@@ -157,6 +171,7 @@ The underline annotation underlines a selected text. However, see the remark: Th
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
+| quadPoints | number array | Optional argument for specifying the quadpoints of the annotation (cfg. [Quadpoints](#QuadPoints) ). |
 
 **Note** The underline annotation is not displayed by the PDFjs renderer. However, it is displayed in the chrome PDF viewer. Sometimes it is wrongly rendered. In the Ubuntu Gnome PDF viewer *Evince* it is displayed as *overline*.
 
@@ -174,6 +189,7 @@ Uses a curly line for underlining a selected text.
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
+| quadPoints | number array | Optional argument for specifying the quadpoints of the annotation (cfg. [Quadpoints](#QuadPoints) ). |
 
 ### <a name="createstrikeout"></a>createStrikeOutAnnotation(...)
 
@@ -189,6 +205,7 @@ Can be used to cross out the selected text.
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
+| quadPoints | number array | Optional argument for specifying the quadpoints of the annotation (cfg. [Quadpoints](#QuadPoints) ). |
 
 ### <a name="createfreetext"></a>createFreeTextAnnotation(...)
 

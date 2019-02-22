@@ -149,9 +149,14 @@ export class AnnotationFactory {
      * subtype : the subtype of the Textmarkup annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createTextMarkupAnnotation(page: number, rect: number[], contents: string, author: string, subtype: string, color: Color = { r: 1, g: 1, b: 0 }): Annotation {
+    createTextMarkupAnnotation(page: number, rect: number[], contents: string, author: string, subtype: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []): Annotation {
 
-        let quadPoints: number[] = [rect[0], rect[3], rect[2], rect[3], rect[0], rect[1], rect[2], rect[1]]
+        if (0 === quadPoints.length)
+            quadPoints = [rect[0], rect[3], rect[2], rect[3], rect[0], rect[1], rect[2], rect[1]]
+        else {
+            if (quadPoints.length % 8 !== 0)
+                throw Error(`Quadpoints array has length ${quadPoints.length} but must be a multiple of 8`)
+        }
 
         let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
             opacity: 1,
@@ -174,9 +179,9 @@ export class AnnotationFactory {
      * author : the author of the annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createHighlightAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }) {
+    createHighlightAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []) {
         this.checkRect(4, rect)
-        let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/Highlight", color)
+        let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/Highlight", color, quadPoints)
 
         this.annotations.push(annot)
     }
@@ -189,9 +194,9 @@ export class AnnotationFactory {
      * author : the author of the annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createUnderlineAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }) {
+    createUnderlineAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []) {
         this.checkRect(4, rect)
-        let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/Underline", color)
+        let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/Underline", color, quadPoints)
 
         this.annotations.push(annot)
     }
@@ -204,9 +209,9 @@ export class AnnotationFactory {
      * author : the author of the annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createSquigglyAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }) {
+    createSquigglyAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []) {
         this.checkRect(4, rect)
-        let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/Squiggly", color)
+        let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/Squiggly", color, quadPoints)
 
         this.annotations.push(annot)
     }
@@ -219,9 +224,9 @@ export class AnnotationFactory {
      * author : the author of the annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createStrikeOutAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }) {
+    createStrikeOutAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []) {
         this.checkRect(4, rect)
-        let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/StrikeOut", color)
+        let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/StrikeOut", color, quadPoints)
 
         this.annotations.push(annot)
     }

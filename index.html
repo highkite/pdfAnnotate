@@ -13,6 +13,7 @@
                 <div id="app"></div>
                 <div class="buttonClass"><button id="addTextAnnotation" type="button">Create Text Annotation</button></div>
                 <div class="buttonClass"><button id="addHighlightAnnotation" type="button">Create Highlight Annotation</button></div>
+                <div class="buttonClass"><button id="addHighlightAnnotationQuadPoint" type="button">Create Highlight Annotation QuadPoint</button></div>
                 <div class="buttonClass"><button id="addUnderlineAnnotation" type="button">Create Underline Annotation</button></div>
                 <div class="buttonClass"><button id="addSquigglyAnnotation" type="button">Create Squiggly Annotation</button></div>
                 <div class="buttonClass"><button id="addStrikeOutAnnotation" type="button">Create StrikeOut Annotation</button></div>
@@ -45,6 +46,10 @@
 
                         document.querySelector('#addHighlightAnnotation').addEventListener('click', (evt) => {
                                 pdfFactory.createHighlightAnnotation(0, [100, 100, 120, 120], "Test123", "John")
+                        })
+
+                        document.querySelector('#addHighlightAnnotationQuadPoint').addEventListener('click', (evt) => {
+                                pdfFactory.createHighlightAnnotation(0, [100, 100, 200, 200], "Test123", "John", {r: 1, g: 1, b: 0}, [100, 130, 150, 130, 100, 100, 150, 100 /*rectangle one*/, 150, 180, 200, 180, 150, 150, 200, 150 /*rectangle two*/])
                         })
 
                         document.querySelector('#addUnderlineAnnotation').addEventListener('click', (evt) => {
