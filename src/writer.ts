@@ -294,11 +294,11 @@ export class Writer {
      * Writes an annotation object
      * */
     writeAnnotationObject(annot: Annotation): { ptr: ReferencePointer, data: number[] } {
-        if (!annot.author || "" === annot.author)
-            throw Error("No author provided")
+        if (!annot.author)
+            annot.author = ""
 
-        if (!annot.contents || "" === annot.contents)
-            throw Error("No content provided")
+        if (!annot.contents)
+            annot.contents = ""
 
         if (!annot.object_id)
             throw Error("No object_id")
