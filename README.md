@@ -30,8 +30,9 @@
         15. [createCaretAnnotation(...)](#createcaret)
         16. [createInkAnnotation(...)](#createink)
         17. [createPopupAnnotation(...)](#createpopup)
-        18. [write(...)](#write)
-        19. [download(...)](#download)
+        18. [getAnnotations()](#getAnnotations)
+        19. [write(...)](#write)
+        20. [download(...)](#download)
     5. [How does the Library Works?](#HowWorks)
         1. [Trivia](#Trivia)
         2. [Adding an Annotation](#AddingAnnotation)
@@ -44,7 +45,9 @@
 
 Either use npm for the installation or reference the bundled file from the *_bundles* directory.
 
-        `npm install annotpdf`
+```
+npm install annotpdf
+```
 
 ## <a name="GettingStarted"></a>Getting Started
 
@@ -298,6 +301,10 @@ Not yet implemented.
 
 ### <a name="createpopup"></a>createPopupAnnotation(...)
 Not yet implemented.
+
+### <a name="getAnnotations"></a>getAnnotations()
+
+Returns the annotations that originally exist in the PDF document and those that were created by the library in the mean time. The return values is a list of lists, where every list represents one page in the pdf document.
 
 ### <a name="write"></a>write(...)
 
