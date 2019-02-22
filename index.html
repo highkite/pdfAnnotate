@@ -94,7 +94,7 @@
                         })
 
                         document.querySelector('#addInkAnnotation').addEventListener('click', (evt) => {
-                                pdfFactory.createInkAnnotation(0, [200, 240, 250, 280], "Test123", "John")
+                                pdfFactory.createInkAnnotation(0, [0, 0, 200, 200], "Test123", "John", [[0, 0, 10, 10, 20, 0, 30, 10]])
                         })
 
                         document.querySelector('#download').addEventListener('click', (evt) => {

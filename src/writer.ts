@@ -35,6 +35,7 @@ export class Writer {
     public static BORDER: number[] = [47, 66, 111, 114, 100, 101, 114] // = '/Border'
     public static PAGE_REFERENCE: number[] = [47, 80] // = '/P'
     public static DEFAULT_APPEARANCE: number[] = [47, 68, 65] // = '/DA'
+    public static INKLIST: number[] = [47, 73, 110, 107, 76, 105, 115, 116] // = '/InkList'
 
     public static TRAILER: number[] = [116, 114, 97, 105, 108, 101, 114] // = 'trailer'
     public static SIZE: number[] = [47, 83, 105, 122, 101] // = '/Size'
@@ -235,9 +236,27 @@ export class Writer {
             case 'Caret':
             case '/Caret':
                 return [47, 67, 97, 114, 101, 116] // = '/Caret'
+            case 'Ink':
+            case '/Ink':
+                return [47, 73, 110, 107] // = '/Ink'
         }
 
         return []
+    }
+
+    /**
+     * Writes a nested number array
+     * */
+    writeNestedNumberArray(array: number[][]): number[] {
+        let ret: number[] = [Writer.ARRAY_START]
+
+        for (let subArray of array) {
+            ret = ret.concat(this.writeNumberArray(subArray))
+            ret.push(Writer.SPACE)
+        }
+
+        ret.push(Writer.ARRAY_END)
+        return ret
     }
 
     /**
@@ -397,6 +416,13 @@ export class Writer {
             ret = ret.concat(Writer.SY)
             ret.push(Writer.SPACE)
             ret.push(Writer.P)
+            ret.push(Writer.SPACE)
+        }
+
+        if (annot.inkList) {
+            ret = ret.concat(Writer.INKLIST)
+            ret.push(Writer.SPACE)
+            ret = ret.concat(this.writeNestedNumberArray(annot.inkList))
             ret.push(Writer.SPACE)
         }
 

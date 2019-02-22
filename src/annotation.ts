@@ -410,6 +410,40 @@ export class AnnotationFactory {
     }
 
     /**
+     * Creates an ink annotation
+     * page : the number of the PDF document page, where the annotation must be attached
+     * rect : the position of the annotation on the page
+     * contents : the content of the annotation
+     * author : the author of the annotation
+     * inkList : a list of list containing the points for drawing the lines
+     * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * */
+    createInkAnnotation(page: number, rect: number[], contents: string, author: string, inkList: number[][] | number[], color: Color = { r: 0, g: 1, b: 0 }) {
+
+        if (inkList.length === 0)
+            throw Error("InkList is empty")
+
+        let _inkList: any = []
+        if ('number' === typeof inkList[0]) {
+            _inkList = [inkList]
+        } else {
+            _inkList = inkList
+        }
+
+        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
+            opacity: 1,
+            initiallyOpen: false,
+            annotation_flag: 4,
+            color: color,
+            inkList: _inkList
+        })
+
+        annot.type = "/Ink"
+
+        this.annotations.push(annot)
+    }
+
+    /**
      * Creates a stamp annotation. There exists a number of predifined stamps that can be attached to PDF documents.
      * page : the number of the PDF document page, where the annotation must be attached
      * contents : the content of the annotation
@@ -465,10 +499,6 @@ export class AnnotationFactory {
             }
             resolve(existingAnnots)
         })
-    }
-
-    createInkAnnotation() {
-        throw Error("No yet implemented")
     }
 
     createPopupAnnotation() {
