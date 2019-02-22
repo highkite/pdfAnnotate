@@ -6,62 +6,62 @@
 
 # Table of Contents
 
-1. [Documentation](#Documentation)
-	1. [Installation](#Installation)
-	2. [Getting Started](#GettingStarted)
-	3. [Demo / Examples](#Examples)
-		1. [The Translation of Coordinates](#TranslationCoordinates)
-	4. [API Documentation](#API)
-		1. [constructor(...)](#constructor)
-		2. [loadFile(...)](#loadfile)
-		3. [createTextAnnotation(...)](#createtext)
-		4. [createHighlightAnnotation(...)](#createhighlight)
-		5. [createUnderlineAnnotation(...)](#createunderline)
-		6. [createSquigglyAnnotation(...)](#createsquiggly)
-		7. [createStrikeOutAnnotation(...)](#createstrikeout)
-		8. [createFreeTextAnnotation(...)](#createfreetext)
-		9. [createLineAnnotation(...)](#createline)
-		10. [createCircleAnnotation(...)](#createcircle)
-		11. [createSquareAnnotation(...)](#createsquare)
-		12. [createPolygonAnnotation(...)](#createpolygon)
-		13. [createPolyLineAnnotation(...)](#createpolyline)
-		14. [createStampAnnotation(...)](#createstamp)
-		15. [createCaretAnnotation(...)](#createcaret)
-		16. [createInkAnnotation(...)](#createink)
-		17. [createPopupAnnotation(...)](#createpopup)
-		18. [write(...)](#write)
-		19. [download(...)](#download)
-2. [How does the Library Works?](#HowWorks)
-	1. [Trivia](#Trivia)
-	2. [Adding an Annotation](#AddingAnnotation)
-	3. [Document Updates](#DocumentUpdates)
-	4. [PDF Objects](#PDFObjects)
+        1. [Documentation](#Documentation)
+        1. [Installation](#Installation)
+        2. [Getting Started](#GettingStarted)
+        3. [Demo / Examples](#Examples)
+        1. [The Translation of Coordinates](#TranslationCoordinates)
+        4. [API Documentation](#API)
+        1. [constructor(...)](#constructor)
+        2. [loadFile(...)](#loadfile)
+        3. [createTextAnnotation(...)](#createtext)
+        4. [createHighlightAnnotation(...)](#createhighlight)
+        5. [createUnderlineAnnotation(...)](#createunderline)
+        6. [createSquigglyAnnotation(...)](#createsquiggly)
+        7. [createStrikeOutAnnotation(...)](#createstrikeout)
+        8. [createFreeTextAnnotation(...)](#createfreetext)
+        9. [createLineAnnotation(...)](#createline)
+        10. [createCircleAnnotation(...)](#createcircle)
+        11. [createSquareAnnotation(...)](#createsquare)
+        12. [createPolygonAnnotation(...)](#createpolygon)
+        13. [createPolyLineAnnotation(...)](#createpolyline)
+        14. [createStampAnnotation(...)](#createstamp)
+        15. [createCaretAnnotation(...)](#createcaret)
+        16. [createInkAnnotation(...)](#createink)
+        17. [createPopupAnnotation(...)](#createpopup)
+        18. [write(...)](#write)
+        19. [download(...)](#download)
+        2. [How does the Library Works?](#HowWorks)
+        1. [Trivia](#Trivia)
+        2. [Adding an Annotation](#AddingAnnotation)
+        3. [Document Updates](#DocumentUpdates)
+4. [PDF Objects](#PDFObjects)
 
 # <a name="Documentation"></a>Documentation
 
 ## <a name="Installation"></a>Installation
 
-Either use npm for the installation or reference the bundled file from the *_bundles* directory.
+        Either use npm for the installation or reference the bundled file from the *_bundles* directory.
 
-`npm install annotpdf`
+        `npm install annotpdf`
 
 ## <a name="GettingStarted"></a>Getting Started
 
-To add annotations the *AnnotationFactory* needs to be initialized. One approach is to use the static *loadFile* method that takes as argument a filepath and than initializes the factory with the corresponding PDF document data.
+        To add annotations the *AnnotationFactory* needs to be initialized. One approach is to use the static *loadFile* method that takes as argument a filepath and than initializes the factory with the corresponding PDF document data.
 
-Annotations can easily be created by calling `creator` methods (see [API Documentation](#API)). Finally the extended document can be downloaded by calling the *download* method.
+        Annotations can easily be created by calling `creator` methods (see [API Documentation](#API)). Finally the extended document can be downloaded by calling the *download* method.
 
-```
-pdfAnnotate.AnnotationFactory.loadFile(path).then((factory) => {
-	pdfFactory.createTextAnnotation(0, [50, 50], "Pop up note", "Max")
-	pdfFactory.download()
-})
+        ```
+        pdfAnnotate.AnnotationFactory.loadFile(path).then((factory) => {
+                        pdfFactory.createTextAnnotation(0, [50, 50], "Pop up note", "Max")
+                        pdfFactory.download()
+                        })
 ```
 When using a PDF viewer, as for instance *PDF.js* the factory can be initialized as follows:
 ```
 pdfDocument.getData().then( (data) => {
-	let pdfFactory = new pdfAnnotate.AnnotationFactory(data)
-})
+                let pdfFactory = new pdfAnnotate.AnnotationFactory(data)
+                })
 ```
 
 Thereby *pdfDocument* is the PDF document representation of the PDFjs library as provided by `pdfjsLib.getDocument(...)`. See the [examples](#Examples) for more information.
@@ -70,7 +70,7 @@ Thereby *pdfDocument* is the PDF document representation of the PDFjs library as
 
 An example application that uses the *pdfAnnotate* library together with *PDFjs* is given in the examples directory: **pdfjsExample.html**. By reading the code you might understand how to utilize the library and get some ideas how to combine it with the *PDFViewer*.
 
-Although it is part of the code, we want to discuss the solution of a common problem when using PDFjs together with annotation libraries: 
+Although it is part of the code, we want to discuss the solution of a common problem when using PDFjs together with annotation libraries:
 
 ### <a name="TranslationCoordinates"></a>The Translation of Coordinates
 
@@ -84,11 +84,11 @@ The following code shows an examplary code snippet to translate the coordinates:
 
 ```
 pdfContainer.addEventListener('click', (evt) => {
-	let x = evt.pageX - $('#page' + pdfViewer.currentPageNumber).offset().left
-	let y = evt.pageY - $('#page' + pdfViewer.currentPageNumber).offset().top
-	
-	x, y = pdfViewer._pages[pdfViewer.currentPageNumber - 1].viewport.convertToPdfPoint(x, y)
-})
+                let x = evt.pageX - $('#page' + pdfViewer.currentPageNumber).offset().left
+                let y = evt.pageY - $('#page' + pdfViewer.currentPageNumber).offset().top
+
+                x, y = pdfViewer._pages[pdfViewer.currentPageNumber - 1].viewport.convertToPdfPoint(x, y)
+                })
 ```
 **Note** that we assumed that you used the PDFjs *PDFViewer* for displaying the PDF and we utilized *JQuery* for the offset computation.
 
@@ -139,7 +139,7 @@ The highlight annotation emphasizes a selected text, with a semitransparent colo
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
 | page |  number | The page number where the annotation must be added (starting with 0)|
-| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the highlighting rectangle. |
+| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the rectangle. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
@@ -153,7 +153,7 @@ The underline annotation underlines a selected text. However, see the remark: Th
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
 | page |  number | The page number where the annotation must be added  (starting with 0)|
-| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the highlighting rectangle. |
+| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the rectangle. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
@@ -170,7 +170,7 @@ Uses a curly line for underlining a selected text.
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
 | page |  number | The page number where the annotation must be added (starting with 0)|
-| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the highlighting rectangle. |
+| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the rectangle. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
@@ -185,13 +185,25 @@ Can be used to cross out the selected text.
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
 | page |  number | The page number where the annotation must be added (starting with 0)|
-| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the highlighting rectangle. |
+| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the rectangle. |
 | contents | string |  The annotation text  |
 | author | string |    The author name.  |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
 
 ### <a name="createfreetext"></a>createFreeTextAnnotation(...)
-Not yet implemented.
+
+Creates a free text annotations. It puts a label at an arbitrary position. Notice that in particular the chrome PDF viewer and the Firefox PDF viewer are not able to render these annotations.
+
+![ Example of a free text annotation](./documentation/FreeTextAnnotation.png  "Example of a free text annotation")
+
+#### Parameters:
+| Paramater   |     Type      |  Description |
+|----------|-------------|------|
+| page |  number | The page number where the annotation must be added (starting with 0)|
+| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the text annotation. |
+| contents | string |  The annotation text  |
+| author | string |    The author name.  |
+| color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
 
 ### <a name="createline"></a>createLineAnnotation(...)
 Not yet implemented.
