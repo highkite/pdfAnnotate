@@ -237,8 +237,8 @@ export class AnnotationFactory {
     createFreeTextAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }) {
         this.checkRect(4, rect)
         let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
-            textAlignment: "right-justified"
-
+            textAlignment: "right-justified",
+            defaultAppearance: "/Invalid_font 9 Tf"
         })
 
         annot.type = "/FreeText"
