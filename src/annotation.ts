@@ -142,11 +142,11 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
     createTextAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }) {
-        if (!contents || "" === contents)
-            throw Error("No content provided")
+        if (!contents)
+            contents = ""
 
-        if (!author || "" === author)
-            throw Error("No author provided")
+        if (!author)
+            author = ""
 
         this.checkRect(4, rect)
 
@@ -177,8 +177,7 @@ export class AnnotationFactory {
         if (0 === quadPoints.length)
             quadPoints = [rect[0], rect[3], rect[2], rect[3], rect[0], rect[1], rect[2], rect[1]]
         else {
-            if (quadPoints.length % 8 !== 0)
-                throw Error(`Quadpoints array has length ${quadPoints.length} but must be a multiple of 8`)
+            this.checkQuadPoints(quadPoints)
         }
 
         let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
