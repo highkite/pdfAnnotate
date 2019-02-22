@@ -27,6 +27,8 @@
                 <div class="buttonClass"><button id="addInkAnnotation" type="button">Create Ink Annotation</button></div>
                 <div class="buttonClass"><button id="download" type="button">Download</button></div>
                 <div class="buttonClass"><button id="showAnnotations" type="button">Show Annotations</button></div>
+                <div id="toDelete"></div>
+                <div class="buttonClass"><button id="deleteAnnotation" type="button">Delete Annotation</button></div>
                 <script>
 
                         let once = false
@@ -44,6 +46,22 @@
                                         console.log(factory)
                                 })
                         }
+
+                        document.querySelector('#deleteAnnotation').addEventListener('click', (evt) => {
+                                pdfFactory.getAnnotations().then( (data) => {
+                                        for (let annot of data[0]) {
+                                                var btn = document.createElement("BUTTON")
+                                                btn.addEventListener('click', (evt) => {
+                                                        let id = annot.id
+                                                        pdfFactory.deleteAnnotation(id)
+                                                })
+                                                var t = document.createTextNode(annot.id)
+                                                btn.appendChild(t);
+                                                document.querySelector('#toDelete').appendChild(btn)
+                                        }
+                                        console.log(data)
+                                })
+                        })
 
                         document.querySelector('#addHighlightAnnotation').addEventListener('click', (evt) => {
                                 pdfFactory.createHighlightAnnotation(0, [100, 100, 120, 120], "Test123", "John")
