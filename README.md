@@ -297,7 +297,19 @@ Not yet implemented.
 Not yet implemented.
 
 ### <a name="createink"></a>createInkAnnotation(...)
-Not yet implemented.
+Adds an ink annotation
+
+![ Example of an ink annotation](./documentation/InkAnnotation.png  "Example of an ink annotation")
+
+#### Parameters:
+| Paramater   |     Type      |  Description |
+|----------|-------------|------|
+| page |  number | The page number where the annotation must be added (starting with 0)|
+| rect  |   number array   |   The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the square. |
+| contents | string |  The annotation text  |
+| author | string |    The author name.  |
+| inkList | array of number arrays |    \[x_1, y_1, ... , x_n, y_n\] the points specifying the line to draw. When providing multiple lists multiple lines will be drawn. It is also possible to porvide only a single list of numbers. The API will translate this into a list of a list of numbers.  |
+| color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
 
 ### <a name="createpopup"></a>createPopupAnnotation(...)
 Not yet implemented.
