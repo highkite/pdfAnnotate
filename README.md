@@ -53,12 +53,20 @@ npm install annotpdf
 
 ## <a name="GettingStarted"></a>Getting Started
 
+If you use *Typescript* you can import the factory with:
+
+```
+import {AnnotationFactory} from 'annotpdf';
+```
+
+You can also load the bundled files from the *_bundles* directory.
+
 To add annotations the *AnnotationFactory* needs to be initialized. One approach is to use the static *loadFile* method that takes as argument a filepath and than initializes the factory with the corresponding PDF document data.
 
 Annotations can easily be created by calling `creator` methods (see [API Documentation](#API)). Finally the extended document can be downloaded by calling the *download* method.
 
 ```
-pdfAnnotate.AnnotationFactory.loadFile(path).then((factory) => {
+AnnotationFactory.loadFile(path).then((factory) => {
                         pdfFactory.createTextAnnotation(0, [50, 50], "Pop up note", "Max")
                         pdfFactory.download()
                         })
@@ -66,7 +74,7 @@ pdfAnnotate.AnnotationFactory.loadFile(path).then((factory) => {
 When using a PDF viewer, as for instance *PDF.js* the factory can be initialized as follows:
 ```
 pdfDocument.getData().then( (data) => {
-                let pdfFactory = new pdfAnnotate.AnnotationFactory(data)
+                let pdfFactory = new AnnotationFactory(data)
                 })
 ```
 
@@ -344,6 +352,10 @@ The download method allows the download of the adapted PDF document in the brows
 ### <a name="save"></a>save(...)
 
 The save method allows to store the adapted PDF document in a **nodejs** environment.
+
+**Please notice**: It seems to be unusal to create a library targeting the node environment and the browser equally. When using the library in *Angular 6+* it complains that the module **fs** can not be loaded. For more information see discussion on [Github](https://github.com/angular/angular-cli/issues/10681). I did not find a way to compile this library or change the code of the library sothat it is possible to run it in angular and nodejs. If you know please contact me.
+
+If you want to use this method you need to uncomment it in the code. Sorry for the inconvenience. I know this is a really, really poor design;).
 
 #### Parameters:
 | Paramater   |     Type      |  Description |
