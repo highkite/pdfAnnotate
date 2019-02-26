@@ -101,7 +101,7 @@ export class WriterUtil {
             ret = ret.concat(Array.from(complete_page_object_data.slice(ptr_annots_array_end, complete_page_object_data.length)))
 
         } else {
-            let ptr_dict_end = Util.locateSequence(Util.DICT_END, complete_page_object_data, 0, true)
+            let ptr_dict_end = Util.locateSequenceReversed(Util.DICT_END, complete_page_object_data, complete_page_object_data.length - 1, true)
 
             ret = Array.from(complete_page_object_data.slice(0, ptr_dict_end))
             ret = ret.concat(Util.ANNOTS)

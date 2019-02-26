@@ -12,7 +12,6 @@ export var pageObject_string = new te.TextEncoder().encode(`
 >> endobj
 `)
 
-
 export var pageObject_string_2 = new te.TextEncoder().encode(`
 2 0 obj <<
 /Type /Page
@@ -20,6 +19,22 @@ export var pageObject_string_2 = new te.TextEncoder().encode(`
 /Resources 9 0 R
 /MediaBox [0 0 612 792]
 /Parent 23 0 R >> endobj
+`)
+
+export var pageObject_string_3 = new te.TextEncoder().encode(`
+18 0 obj
+<< /Type /Page
+   /Parent 1 0 R
+   /MediaBox [ 0 0 612 792 ]
+   /Contents 3 0 R
+   /Group <<
+      /Type /Group
+      /S /Transparency
+      /CS /DeviceRGB
+   >>
+   /Resources 2 0 R
+>>
+endobj
 `)
 
 export var decode = (data: any) => {

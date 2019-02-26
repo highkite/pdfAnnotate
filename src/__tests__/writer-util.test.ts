@@ -1,6 +1,6 @@
 import { WriterUtil } from '../writer-util'
 import { Page, ReferencePointer } from '../parser'
-import { pageObject_string, pageObject_string_2, decode } from './Data2'
+import { pageObject_string, pageObject_string_2, pageObject_string_3, decode } from './Data2'
 
 test('writeReferencePointer', () => {
     let refPtr: ReferencePointer = { obj: 1, generation: 2 }
@@ -37,4 +37,23 @@ test('replaceAnnotsFieldInPageObject_2', () => {
 /Resources 9 0 R
 /MediaBox [0 0 612 792]
 /Parent 23 0 R /Annots 44 20 R >> endobj`)
+})
+
+test('replaceAnnotsFieldInPageObject_3', () => {
+    let data = pageObject_string_3
+    let page = new Page(data, undefined!)
+    page.extract(0)
+    expect(decode(WriterUtil.replaceAnnotsFieldInPageObject(data, page, 0, { obj: 44, generation: 20 })).trim()).toEqual(`18 0 obj
+<< /Type /Page
+   /Parent 1 0 R
+   /MediaBox [ 0 0 612 792 ]
+   /Contents 3 0 R
+   /Group <<
+      /Type /Group
+      /S /Transparency
+      /CS /DeviceRGB
+   >>
+   /Resources 2 0 R
+/Annots 44 20 R >>
+endobj`)
 })
