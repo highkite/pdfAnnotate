@@ -38,5 +38,13 @@ test('MISC', () => {
     let data = loadFromFile('./test4.pdf')
     let fac: AnnotationFactory = new AnnotationFactory(data)
     fac.createTextAnnotation(0, [50, 50, 80, 80], "Test123", "Max")
-    save('output.pdf', fac.write())
+    let data2 = fac.write()
+    save('output.pdf', data2)
+
+    //let fac2: AnnotationFactory = new AnnotationFactory(data2)
+    //console.log("here")
+    //fac2.getAnnotations().then((annots) => {
+    //    console.log("######################################################")
+    //    expect(annots).toEqual("abc")
+    //})
 })

@@ -519,6 +519,7 @@ export class Writer {
         ret = ret.concat(Writer.PREV)
         ret.push(Writer.SPACE)
         ret = ret.concat(Util.convertNumberToCharArray(this.parser.documentHistory.getRecentUpdate().start_pointer))
+        ret.push(Writer.SPACE)
         ret = ret.concat(Writer.DICT_END)
         ret.push(Writer.CR)
         ret.push(Writer.LF)
@@ -531,6 +532,8 @@ export class Writer {
         ret.push(Writer.CR)
         ret.push(Writer.LF)
         ret = ret.concat(Writer.EOF)
+        ret.push(Writer.CR)
+        ret.push(Writer.LF)
 
         return ret
     }
@@ -545,6 +548,13 @@ export class Writer {
         let ptr: number = this.data.length
 
         let new_data: number[] = []
+
+        // Fix case that there is no linebreak after the end of the file
+        if (this.data[ptr - 1] === 70) {
+            new_data.push(Writer.CR)
+            new_data.push(Writer.LF)
+            ptr += 2
+        }
 
         for (let key in pageWiseSorted) {
             let pageAnnots = pageWiseSorted[key]
