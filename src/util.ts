@@ -4,6 +4,8 @@ import { ReferencePointer } from './parser';
  * */
 export class Util {
 
+    public static CR: number = 13
+    public static LF: number = 10
     public static TYPE: string = "/Type "
     public static SPACE: number = 32
     public static _TYPE: number[] = [47, 84, 121, 112, 101] // '/Type'
@@ -16,8 +18,8 @@ export class Util {
     public static R: number[] = [82] // 'R'
     public static ANNOT: number[] = [47, 65, 110, 110, 111, 116] // '/Annot'
     public static ANNOTS: number[] = [47, 65, 110, 110, 111, 116, 115] // '/Annot'
-    public static DICT_START: number[] = [60, 60] // '['
-    public static DICT_END: number[] = [62, 62] // ']'
+    public static DICT_START: number[] = [60, 60] // '<<'
+    public static DICT_END: number[] = [62, 62] // '>>'
     public static SUBTYPE: number[] = [47, 83, 117, 98, 116, 121, 112, 101] // '/Subtype'
     public static PAGES: number[] = [47, 80, 97, 103, 101, 115] // /Pages
     public static PAGE: number[] = [47, 80, 97, 103, 101]

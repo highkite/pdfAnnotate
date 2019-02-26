@@ -1,5 +1,20 @@
-import { PDFDocumentParser, Annotation } from '../parser';
+import { PDFDocumentParser, Page, Annotation } from '../parser';
 import { testDocument, testDocument2 } from './Data';
+import { pageObject_string } from './Data2';
+
+test('pageExtraction', () => {
+    let data = new Int8Array(pageObject_string)
+
+    let page = new Page(data, (<any>undefined))
+    page.extract(0)
+
+    expect(page.object_id).toBeDefined()
+    expect(page.object_id!.obj).toBe(2)
+    expect(page.object_id!.generation).toBe(0)
+
+    expect(page.hasAnnotsField).toBeTruthy()
+    expect(page.annots.length).toBe(6)
+})
 
 test('getFreeObjectId', () => {
     let doc = new PDFDocumentParser(new Int8Array(testDocument))

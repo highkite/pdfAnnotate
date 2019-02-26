@@ -63,7 +63,7 @@ You can also load the bundled files from the *_bundles* directory.
 
 To add annotations the *AnnotationFactory* needs to be initialized. One approach is to use the static *loadFile* method that takes as argument a filepath and than initializes the factory with the corresponding PDF document data.
 
-Annotations can easily be created by calling `creator` methods (see [API Documentation](#API)). Finally the extended document can be downloaded by calling the *download* method.
+Annotations can be easily created by calling `creator` methods (see [API Documentation](#API)). Finally the extended document can be downloaded by calling the *download* method.
 
 ```
 AnnotationFactory.loadFile(path).then((factory) => {

@@ -1,6 +1,7 @@
 import { Util } from './util'
 import { Annotation, ReferencePointer, PDFDocumentParser, Page } from './parser'
 import { XRef } from './document-history'
+import { WriterUtil } from './writer-util'
 
 /**
  * Creats the byte array that must be attached to the end of the document
@@ -13,7 +14,6 @@ export class Writer {
     public static SPACE: number = 32
     public static CR: number = 13
     public static LF: number = 10
-    public static R: number = 82
     public static OBJ: number[] = [111, 98, 106]
     public static ENDOBJ: number[] = [101, 110, 100, 111, 98, 106]
     public static ARRAY_START: number = 91
@@ -87,30 +87,8 @@ export class Writer {
     }
 
     /**
-     * Writes a reference pointer
-     *
-     * <obj_id> <generation> R
-     *
-     * The 'R' and the preceding space is only written in case 'referenced' is true
-     * */
-    writeReferencePointer(ref: ReferencePointer, referenced: boolean = false): number[] {
-        let ret: number[] = Util.convertNumberToCharArray(ref.obj)
-
-        ret.push(Writer.SPACE)
-
-        ret = ret.concat(Util.convertNumberToCharArray(ref.generation))
-
-        if (referenced) {
-            ret.push(Writer.SPACE)
-
-            ret.push(Writer.R)
-        }
-
-        return ret
-    }
-
-    /**
-     * It returns the object extended with the /Annot entry.
+     * It returns the page object either extended by a /Annots field, if this did not exist yet or with the annots field replaced by a rerference pointer
+     * to an array if the page object contains the list of annotations directly
      *
      * ptr : Pointer to the page object
      * annot_array_reference : The reference to the annotation array
@@ -124,23 +102,7 @@ export class Writer {
 
         let page_ptr: XRef = lookupTable[page.object_id.obj]
 
-        let ptr_objend = Util.locateSequence(Util.ENDOBJ, this.data, page_ptr.pointer, true)
-
-        let object_data = this.data.slice(page_ptr.pointer, ptr_objend + Util.ENDOBJ.length)
-
-        let ptr_dict_end = Util.locateSequence(Util.DICT_END, object_data, 0, true)
-
-        ret = Array.from(object_data.slice(0, ptr_dict_end))
-
-        ret = ret.concat(Util.ANNOTS)
-        ret.push(Util.SPACE)
-        ret = ret.concat(this.writeReferencePointer(annot_array_reference, true))
-        ret.push(Util.SPACE)
-        ret = ret.concat(Array.from(object_data.slice(ptr_dict_end, object_data.length)))
-        ret.push(Writer.CR)
-        ret.push(Writer.LF)
-
-        return ret
+        return WriterUtil.replaceAnnotsFieldInPageObject(this.data, page, page_ptr.pointer, annot_array_reference)
     }
 
     /**
@@ -183,12 +145,12 @@ export class Writer {
         let refArray_id: any = page.annotsPointer
 
         let page_data: number[] = []
-        if (!refArray_id) {
+        if (!refArray_id && !page.hasAnnotsField) {
             refArray_id = this.parser.getFreeObjectId()
             page_data = this.adaptPageObject(page, refArray_id)
         }
 
-        let ret: number[] = this.writeReferencePointer(refArray_id)
+        let ret: number[] = WriterUtil.writeReferencePointer(refArray_id)
         ret.push(Writer.SPACE)
         ret = ret.concat(Writer.OBJ)
         ret.push(Writer.SPACE)
@@ -196,7 +158,7 @@ export class Writer {
 
 
         for (let an of references) {
-            ret = ret.concat(this.writeReferencePointer(an, true))
+            ret = ret.concat(WriterUtil.writeReferencePointer(an, true))
             ret.push(Writer.SPACE)
         }
 
@@ -260,37 +222,6 @@ export class Writer {
     }
 
     /**
-     * Writes a nested number array
-     * */
-    writeNestedNumberArray(array: number[][]): number[] {
-        let ret: number[] = [Writer.ARRAY_START]
-
-        for (let subArray of array) {
-            ret = ret.concat(this.writeNumberArray(subArray))
-            ret.push(Writer.SPACE)
-        }
-
-        ret.push(Writer.ARRAY_END)
-        return ret
-    }
-
-    /**
-     * Writes a javascript number array to a PDF number array
-     * */
-    writeNumberArray(array: number[]): number[] {
-        let ret: number[] = [Writer.ARRAY_START]
-
-        for (let i of array) {
-            ret = ret.concat(Util.convertNumberToCharArray(i))
-            ret.push(Writer.SPACE)
-        }
-
-        ret.push(Writer.ARRAY_END)
-
-        return ret
-    }
-
-    /**
      * Writes an annotation object
      * */
     writeAnnotationObject(annot: Annotation): { ptr: ReferencePointer, data: number[] } {
@@ -303,7 +234,7 @@ export class Writer {
         if (!annot.object_id)
             throw Error("No object_id")
 
-        let ret: number[] = this.writeReferencePointer(annot.object_id)
+        let ret: number[] = WriterUtil.writeReferencePointer(annot.object_id)
         ret.push(Writer.SPACE)
         ret = ret.concat(Writer.OBJ)
         ret.push(Writer.SPACE)
@@ -314,7 +245,7 @@ export class Writer {
         if (annot.rect && annot.rect.length > 0) {
             ret = ret.concat(Writer.RECT)
             ret.push(Writer.SPACE)
-            ret = ret.concat(this.writeNumberArray(annot.rect))
+            ret = ret.concat(WriterUtil.writeNumberArray(annot.rect))
             ret.push(Writer.SPACE)
         }
 
@@ -364,7 +295,7 @@ export class Writer {
             ret.push(Writer.SPACE)
             ret = ret.concat(Writer.COLOR)
             ret.push(Writer.SPACE)
-            ret = ret.concat(this.writeNumberArray([annot.color.r, annot.color.g, annot.color.b]))
+            ret = ret.concat(WriterUtil.writeNumberArray([annot.color.r, annot.color.g, annot.color.b]))
             ret.push(Writer.SPACE)
         }
 
@@ -381,7 +312,7 @@ export class Writer {
             ret.push(Writer.SPACE)
             ret = ret.concat(Writer.BORDER)
             ret.push(Writer.SPACE)
-            ret = ret.concat(this.writeNumberArray([annot.border.horizontal_corner_radius, annot.border.vertical_corner_radius, annot.border.border_width]))
+            ret = ret.concat(WriterUtil.writeNumberArray([annot.border.horizontal_corner_radius, annot.border.vertical_corner_radius, annot.border.border_width]))
             ret.push(Writer.SPACE)
         }
 
@@ -402,21 +333,21 @@ export class Writer {
             ret.push(Writer.SPACE)
             ret = ret.concat(Writer.PAGE_REFERENCE)
             ret.push(Writer.SPACE)
-            ret = ret.concat(this.writeReferencePointer(annot.pageReference.object_id, true))
+            ret = ret.concat(WriterUtil.writeReferencePointer(annot.pageReference.object_id, true))
             ret.push(Writer.SPACE)
         }
 
         if (annot.quadPoints) {
             ret = ret.concat(Writer.QUADPOINTS)
             ret.push(Writer.SPACE)
-            ret = ret.concat(this.writeNumberArray(annot.quadPoints))
+            ret = ret.concat(WriterUtil.writeNumberArray(annot.quadPoints))
             ret.push(Writer.SPACE)
         }
 
         if (annot.vertices) {
             ret = ret.concat(Writer.VERTICES)
             ret.push(Writer.SPACE)
-            ret = ret.concat(this.writeNumberArray(annot.vertices))
+            ret = ret.concat(WriterUtil.writeNumberArray(annot.vertices))
             ret.push(Writer.SPACE)
         }
 
@@ -437,7 +368,7 @@ export class Writer {
         if (annot.inkList) {
             ret = ret.concat(Writer.INKLIST)
             ret.push(Writer.SPACE)
-            ret = ret.concat(this.writeNestedNumberArray(annot.inkList))
+            ret = ret.concat(WriterUtil.writeNestedNumberArray(annot.inkList))
             ret.push(Writer.SPACE)
         }
 
@@ -478,23 +409,6 @@ export class Writer {
         }
 
         return seqs
-    }
-
-    /**
-     * Adds preceding zeros (0) in front of the 'value' to match the length
-     * */
-    pad(length: number, value: string | number): number[] {
-        value = String(value)
-
-        let ret: number[] = []
-
-        for (let i = 0; i < length - value.length; ++i) {
-            ret.push(48)
-        }
-
-        ret = ret.concat(Util.convertNumberToCharArray(value))
-
-        return ret
     }
 
     /**
@@ -558,9 +472,9 @@ export class Writer {
 
             for (let i = 0; i < sequence.length; ++i) {
                 let _ret: number[] = []
-                _ret = _ret.concat(this.pad(10, sequence[i].pointer))
+                _ret = _ret.concat(WriterUtil.pad(10, sequence[i].pointer))
                 _ret.push(Writer.SPACE)
-                _ret = _ret.concat(this.pad(5, sequence[i].generation))
+                _ret = _ret.concat(WriterUtil.pad(5, sequence[i].generation))
                 _ret.push(Writer.SPACE)
 
                 if (sequence[i].free)
@@ -599,7 +513,7 @@ export class Writer {
         let trailer = this.parser.documentHistory.getRecentUpdate().trailer
         ret = ret.concat(Writer.ROOT)
         ret.push(Writer.SPACE)
-        ret = ret.concat(this.writeReferencePointer(trailer.root, true))
+        ret = ret.concat(WriterUtil.writeReferencePointer(trailer.root, true))
         ret.push(Writer.SPACE)
 
         ret = ret.concat(Writer.PREV)
@@ -758,7 +672,7 @@ export class Writer {
 
         let refArray_id: any = page.annotsPointer
 
-        let ret: number[] = this.writeReferencePointer(refArray_id)
+        let ret: number[] = WriterUtil.writeReferencePointer(refArray_id)
         ret.push(Writer.SPACE)
         ret = ret.concat(Writer.OBJ)
         ret.push(Writer.SPACE)
@@ -766,7 +680,7 @@ export class Writer {
 
 
         for (let an of references) {
-            ret = ret.concat(this.writeReferencePointer(an, true))
+            ret = ret.concat(WriterUtil.writeReferencePointer(an, true))
             ret.push(Writer.SPACE)
         }
 
