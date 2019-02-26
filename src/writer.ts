@@ -145,7 +145,7 @@ export class Writer {
         let refArray_id: any = page.annotsPointer
 
         let page_data: number[] = []
-        if (!refArray_id && !page.hasAnnotsField) {
+        if (!refArray_id) {
             refArray_id = this.parser.getFreeObjectId()
             page_data = this.adaptPageObject(page, refArray_id)
         }

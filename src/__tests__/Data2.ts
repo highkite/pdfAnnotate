@@ -1,4 +1,5 @@
 var te = require('text-encoder')
+var fs = require('fs')
 
 export var pageObject_string = new te.TextEncoder().encode(`
 2 0 obj <<
@@ -25,4 +26,18 @@ export var decode = (data: any) => {
     let _data = new Uint8Array(data)
 
     return new te.TextDecoder().decode(_data)
+}
+
+export var loadFromFile = (path: string) => {
+    return new Int8Array(fs.readFileSync(path))
+}
+
+export var save = (fileName: string, data: Int8Array) => {
+    fs.writeFile(fileName, Buffer.from(new Uint8Array(data)), (err: any) => {
+        if (err) {
+            return console.log(err);
+        }
+
+        console.log(`The file was written to: ${fileName}`);
+    })
 }

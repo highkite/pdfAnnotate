@@ -1,6 +1,7 @@
 import { testDocument, testDocument2 } from './Data'
 import { AnnotationFactory } from '../annotation'
 import { Writer } from '../writer'
+import { save, decode, loadFromFile } from './Data2'
 
 test('write testDocument', () => {
     let data = new Int8Array(testDocument)
@@ -31,4 +32,11 @@ test('getAnnotations', () => {
             fac.save()
         })
     })
+})
+
+test('MISC', () => {
+    let data = loadFromFile('./test4.pdf')
+    let fac: AnnotationFactory = new AnnotationFactory(data)
+    fac.createTextAnnotation(0, [50, 50, 80, 80], "Test123", "Max")
+    save('output.pdf', fac.write())
 })
