@@ -41,7 +41,6 @@ export class UpdateSection {
     private static SIZE: number[] = [47, 83, 105, 122, 101] // /Size
     private static ROOT: number[] = [47, 82, 111, 111, 116] // /Root
     private static PREV: number[] = [47, 80, 114, 101, 118] // /Prev
-    private static STARTXREF: number[] = [115, 116, 97, 114, 116, 120, 114, 101, 102]
 
     constructor(private data: Int8Array) { }
 
@@ -125,7 +124,7 @@ export class UpdateSection {
      * in particular the trailer dictionary
      * */
     extractTrailer(index: number): Trailer {
-        let end_trailer_index: number = Util.locateSequence(UpdateSection.STARTXREF, this.data, index, true)
+        let end_trailer_index: number = Util.locateSequence(Util.STARTXREF, this.data, index, true)
         let _data = this.data.slice(index, end_trailer_index)
         index = 0
 
@@ -202,9 +201,13 @@ export class UpdateSection {
 export class DocumentHistory {
     public updates: UpdateSection[] = []
 
-    private static STARTXREF: number[] = [115, 116, 97, 114, 116, 120, 114, 101, 102] // = 'startxref'
-
     public trailerSize: number = -1
+
+    /**
+     * Holds object ids that were formerly freed and are now 'already' reused.
+     * This is used to prevent a freed object a second time
+     * */
+    private already_reused_ids: XRef[] = []
 
     constructor(private data: Int8Array) {
         this.data = new Int8Array(data)
@@ -227,7 +230,7 @@ export class DocumentHistory {
     extractDocumentEntry() {
         let ptr = this.data.length - 1
 
-        let ptr_startxref = Util.locateSequenceReversed(DocumentHistory.STARTXREF, this.data, ptr, true) + 9
+        let ptr_startxref = Util.locateSequenceReversed(Util.STARTXREF, this.data, ptr, true) + 9
 
         ptr = Util.extractNumber(this.data, ptr_startxref)
 
@@ -292,19 +295,52 @@ export class DocumentHistory {
      * new one
      * */
     getFreeObjectId(): ReferencePointer {
-        let update = this.getRecentUpdate()
-        let free_header = update.getReference(0)
+        let objectLookupTable: ObjectLookupTable = this.createObjectLookupTable()
+
+        let free_header = objectLookupTable[0]
 
         if (!free_header)
-            throw Error("Most recent crosssite reference has no header for the linked list of free objects")
+            throw Error("Crosssite reference has no header for the linked list of free objects")
 
-        if (1 === free_header.pointer || 0 === free_header.pointer) {
+        // if the pointer of object 0 points to 0 there is no freed object that can be reused
+        if (0 === free_header.pointer) {
             if (-1 === this.trailerSize)
                 throw Error("Trailer size not set")
 
             return { obj: this.trailerSize++, generation: 0, reused: false }
         }
 
-        return { obj: free_header.pointer, generation: this.createObjectLookupTable()[free_header.id].generation, reused: true }
+        // get list head
+        let ptr = free_header.pointer
+        let freedHeaderList: XRef[] = []
+        while (ptr !== 0) {
+            freedHeaderList.push(free_header)
+            free_header = objectLookupTable[ptr]
+            ptr = free_header.pointer
+        }
+
+        let getFreeHeader = (freeHeaderList: XRef[]) => {
+            for (let p of freeHeaderList.reverse()) {
+                if (p.generation < 65535 && // max generation number
+                    -1 === this.already_reused_ids.indexOf(p)) { // not already reused
+                    return p
+                }
+            }
+
+            return undefined
+        }
+        let reused_free_header = getFreeHeader(freedHeaderList)
+
+        if (reused_free_header) {
+            free_header = reused_free_header
+
+            // store used id to make sure it will not be selected again
+            this.already_reused_ids.push(free_header)
+        } else {
+            // handle the case that all freed object ids are already reused
+            return { obj: this.trailerSize++, generation: 0, reused: false }
+        }
+
+        return { obj: free_header.pointer, generation: objectLookupTable[free_header.id].generation, reused: true }
     }
 }

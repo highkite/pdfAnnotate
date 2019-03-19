@@ -37,6 +37,7 @@ export class Util {
     public static BORDER: number[] = [47, 66, 111, 114, 100, 101, 114] // '/Border'
     public static QUADPOINTS: number[] = [47, 81, 117, 97, 100, 80, 111, 105, 110, 116, 115] // '/QuadPoints'
     public static INKLIST: number[] = [47, 73, 110, 107, 76, 105, 115, 116] // '/InkList'
+    public static STARTXREF: number[] = [115, 116, 97, 114, 116, 120, 114, 101, 102] // = 'startxref'
 
     /**
      * Assumes that at position index is a delimiter and than runs as long forward until it finds
@@ -62,7 +63,10 @@ export class Util {
     }
 
     public static isDelimiter(value: number): boolean {
-        return value === 10 || value === 13 || value === 32
+        return value === 10 ||
+            value === 13 ||
+            value === 32 ||
+            value === 47 // '/'
     }
 
     /**
@@ -76,7 +80,7 @@ export class Util {
         for (let j = 0; i < data.length; ++i) {
             if (data[i] == sequence[j]) {
                 if (j == sequence.length - 1) {
-                    if (!closed || data.length == i + 1 || this.isDelimiter(data[i + 1])) {
+                    if (!closed || data.length == i + 1 || this.isDelimiter(data[i + 1]) || data[i + 1] === Util.ARRAY_START[0]) {
                         return i - (sequence.length - 1)
                     } else {
                         j = -1
@@ -358,13 +362,15 @@ export class Util {
         if (data[index] !== 47)
             throw Error("misplaced option value pointer")
 
-        let end = Util.locateDelimiter(data, index)
+        let end = Util.locateDelimiter(data, index + 1)
 
         return Util.convertAsciiToString(Array.from(data.slice(index + 1, end + 1)))
     }
 
     /**
      * Extracts the value of the given field.
+     *
+     * Returns 'undefined' if this field does not exist in the object
      * */
     public static extractField(data: Int8Array, field: number[], ptr: number = 0): any {
         // only check the fields of one object
@@ -380,11 +386,14 @@ export class Util {
 
         field_ptr += field.length
 
-        let field_value_end_ptr = Util.locateSequence([47], data, field_ptr) // '/' = 47
+        // handle case that there is an option value /<value> after the field /<field>
+        let field_value_end_ptr = Util.skipDelimiter(data, field_ptr)
 
-        if (field_value_end_ptr === field_ptr + 1) {
-            return Util.extractOptionValue(data, field_value_end_ptr)
+        if (data[field_value_end_ptr - 1] === 47) { // 47 = '/'
+            return Util.extractOptionValue(data, field_value_end_ptr - 1)
         }
+
+        field_value_end_ptr = Util.locateSequence([47], data, field_ptr)
 
         field_ptr = Util.skipDelimiter(data, field_ptr)
 
@@ -414,6 +423,10 @@ export class Util {
 
         if (-1 == end) {
             end = Util.locateDelimiter(data, start)
+        }
+
+        if (end < start) {
+            throw Error(`Could not identify number bounds: [${start},${end}]`)
         }
 
         let str_id = ""

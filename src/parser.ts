@@ -127,6 +127,7 @@ export class CatalogObject {
 
 /**
  * Represents the PageTree object of the PDF document
+ * This is the object with /Type /Pages
  * */
 export class PageTree {
 
@@ -194,14 +195,16 @@ export class PageTree {
      * Extract the object data at the given pointer
      * */
     extract(ptr: number) {
-        let key_index = Util.locateSequence(Util.COUNT, this.data, ptr, true) + Util.COUNT.length
-
-        // The complete page count is specified in the top level pagetree
-        this.pageCount = Util.extractNumber(this.data, key_index)
+        this.pageCount = Util.extractField(this.data, Util.COUNT, ptr)
 
         // it is possible that an object of type /Pages references again to objects of types /Pages so we must
         // apply a recursive evaluation
-        let kids_index = Util.locateSequence(Util.KIDS, this.data, ptr, true) + Util.KIDS.length
+        let kids_index = Util.locateSequence(Util.KIDS, this.data, ptr, true)
+
+        if (-1 === kids_index)
+            throw Error(`Could not find index of /Kids in /Pages object`)
+
+        kids_index += Util.KIDS.length
 
         let array_data = Util.extractArraySequence(this.data, kids_index + 1)
 
@@ -272,6 +275,7 @@ export class Page {
      * Extracts the page object starting at position ptr
      * */
     extract(ptr: number) {
+
         let id_ptr = Util.skipDelimiter(this.data, ptr)
         let object_id: number = Util.extractNumber(this.data, id_ptr)
 
@@ -284,22 +288,15 @@ export class Page {
 
         let _data = this.data.slice(ptr, end_ptr)
 
-        let annots_ptr = Util.locateSequence(Util.ANNOTS, _data, 0, true)
+        let annots = Util.extractField(_data, Util.ANNOTS)
 
-        if (-1 !== annots_ptr) {
+        if (annots) {
             this.hasAnnotsField = true
 
-            annots_ptr += Util.ANNOTS.length + 1
-            annots_ptr = Util.skipDelimiter(_data, annots_ptr)
-
-            if (_data[annots_ptr] === Util.ARRAY_START[0]) {
-                let array_sequence = Util.extractArraySequence(_data, annots_ptr)
-
-                let refs = Util.extractReferencesFromArraySequence(array_sequence)
-
-                this.annots = refs
+            if (Array.isArray(annots)) {
+                this.annots = annots
             } else {
-                this.annotsPointer = Util.extractReferenceTyped(_data, annots_ptr)
+                this.annotsPointer = annots
 
                 this.extractAnnotationArray()
             }

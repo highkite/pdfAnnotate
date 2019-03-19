@@ -147,6 +147,7 @@ export class Writer {
         let page_data: number[] = []
         if (!refArray_id) {
             refArray_id = this.parser.getFreeObjectId()
+            console.log(`freeObjectId: ${JSON.stringify(refArray_id)}`)
             page_data = this.adaptPageObject(page, refArray_id)
         }
 
@@ -416,7 +417,7 @@ export class Writer {
      * */
     applyObjectFreeing(refs: XRef[]): XRef[] {
         // write free object head
-        let head = this.parser.documentHistory.getRecentUpdate().refs[0]
+        let head = this.parser.documentHistory.createObjectLookupTable()[0]
         let last_freed_object_id = head.id
 
         let freed_objs: XRef[] = refs.filter(r => r.free)
