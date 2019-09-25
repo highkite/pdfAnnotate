@@ -43,7 +43,7 @@ export class Util {
      * Assumes that at position index is a delimiter and than runs as long forward until it finds
      * another delimiter or reaches the end of the document
      * */
-    public static skipDelimiter(data: Int8Array, index: number = 0): number {
+    public static skipDelimiter(data: Uint8Array, index: number = 0): number {
         while (index < data.length && this.isDelimiter(data[index]))++index
 
         return index
@@ -75,7 +75,7 @@ export class Util {
      * Set the 'closed' flag to check if the suceeding char after the sequence is a line feed (10), a carriage return (13), the end
      * of the whole sequence or a space (32)
      * */
-    public static locateSequence(sequence: number[], data: Int8Array, offset: number = 0, closed: boolean = false): number {
+    public static locateSequence(sequence: number[], data: Uint8Array, offset: number = 0, closed: boolean = false): number {
         let i = offset
         for (let j = 0; i < data.length; ++i) {
             if (data[i] == sequence[j]) {
@@ -101,7 +101,7 @@ export class Util {
      * Set the 'closed' flag to check if the preceding char before the sequence is a line feed (10), a carriage return (13), the start
      * of the whole data sequence or a space (32)
      * */
-    public static locateSequenceReversed(sequence: number[], data: Int8Array, offset: number = data.length - 1, closed: boolean = false): number {
+    public static locateSequenceReversed(sequence: number[], data: Uint8Array, offset: number = data.length - 1, closed: boolean = false): number {
         let i = offset
 
         for (let j = sequence.length - 1; i >= 0; --i) {
@@ -126,7 +126,7 @@ export class Util {
      * Locates the index before the next delimiter. Delimiters can be a line feed (10), a carriage return (13), the end of the whole sequence
      * or a space (32)
      * */
-    public static locateDelimiter(data: Int8Array, offset: number = 0): number {
+    public static locateDelimiter(data: Uint8Array, offset: number = 0): number {
         while (offset < data.length && !this.isDelimiter(data[offset]))++offset
 
         return offset - 1
@@ -136,7 +136,7 @@ export class Util {
      * Locates the index after the last delimiter. Delimiters can be a line feed (10), a carriage return (13), the end of the whole sequence
      * or a space (32)
      * */
-    public static locateDelimiterReversed(data: Int8Array, offset: number = data.length - 1): number {
+    public static locateDelimiterReversed(data: Uint8Array, offset: number = data.length - 1): number {
         while (offset > 0 && !this.isDelimiter(data[offset]))--offset
 
         if (offset <= 0)
@@ -150,7 +150,7 @@ export class Util {
      * array or a pointer within the array. If it is a nested array the pointer must mark the beginning
      * of the suberarray. Otherwise only the subarray is extracted
      * */
-    public static extractArraySequence(data: Int8Array, index: number): any {
+    public static extractArraySequence(data: Uint8Array, index: number): any {
         let array_start = this.locateSequenceReversed(Util.ARRAY_START, data, index)
 
         if (-1 === array_start)
@@ -192,7 +192,7 @@ export class Util {
     }
 
     private static extractReferenceArrayRec(arraySeq: any): any {
-        if (arraySeq instanceof Int8Array) {
+        if (arraySeq instanceof Uint8Array) {
             return Util.extractReferencesFromArraySequence(arraySeq)
         } else {
             let nbr: any = []
@@ -207,7 +207,7 @@ export class Util {
     /**
      * Extracts the references in an array
      * */
-    public static extractReferenceArray(data: Int8Array, index: number): any {
+    public static extractReferenceArray(data: Uint8Array, index: number): any {
         let array_sequences = Util.extractArraySequence(data, index)
 
         return this.extractReferenceArrayRec(array_sequences)
@@ -215,7 +215,7 @@ export class Util {
 
 
     private static extractNumbersArrayRec(arraySeq: any): any {
-        if (arraySeq instanceof Int8Array) {
+        if (arraySeq instanceof Uint8Array) {
             let nbrs: any = []
 
             let i = 0
@@ -242,7 +242,7 @@ export class Util {
      * Extracts the numbers in an array
      * e.g.  [69.697 47.4148 96.4646 58.2598 ]
      * */
-    public static extractNumbersArray(data: Int8Array, index: number): any {
+    public static extractNumbersArray(data: Uint8Array, index: number): any {
         let array_sequences = Util.extractArraySequence(data, index)
 
         return this.extractNumbersArrayRec(array_sequences)
@@ -252,7 +252,7 @@ export class Util {
      * Extract an object identifier
      * <ID> <GEN> obj
      * */
-    public static extractObjectId(data: Int8Array, index: number): ReferencePointer {
+    public static extractObjectId(data: Uint8Array, index: number): ReferencePointer {
         index = Util.skipDelimiter(data, index)
 
         let end_obj_ptr = Util.locateDelimiter(data, index + 1)
@@ -270,7 +270,7 @@ export class Util {
     /**
      * Extract the reference starting at position 'index'
      * */
-    public static extractReference(data: Int8Array, index: number): Int8Array {
+    public static extractReference(data: Uint8Array, index: number): Uint8Array {
         index = Util.skipDelimiter(data, index)
         let r_index = this.locateSequence(this.convertStringToAscii(" R"), data, index, true)
 
@@ -280,7 +280,7 @@ export class Util {
     /**
      * Returns a reference as typed object
      * */
-    public static extractReferenceTyped(data: Int8Array, index: number): ReferencePointer {
+    public static extractReferenceTyped(data: Uint8Array, index: number): ReferencePointer {
 
         let ref_data = this.extractReference(data, index)
 
@@ -304,7 +304,7 @@ export class Util {
      * Approach: We identify an index within the object definiton search the uniquely identifyable end of the object definition
      * than the uniquely identifiable start. We than extract the generation and the object id
      * */
-    public static getObjectByType(data: Int8Array, _type: string, offset: number = 0) {
+    public static getObjectByType(data: Uint8Array, _type: string, offset: number = 0) {
         let searchSequence = this.convertStringToAscii(this.TYPE + _type)
 
         let obj_index = this.locateSequence(searchSequence, data, 0, true)
@@ -327,7 +327,7 @@ export class Util {
      * it returns an array of references or an array of numbers. However the function supports
      * arbitrarily nesting of arrays.
      * */
-    public static extractArray(data: Int8Array, index: number): any {
+    public static extractArray(data: Uint8Array, index: number): any {
         for (let i = 0; i < data.length; ++i) {
             if (data[i] === Util.R[0]) { // 'R' -- we know it is an array of references
                 return Util.extractReferenceArray(data, index)
@@ -340,7 +340,7 @@ export class Util {
     /**
      * Extratcs the string
      * */
-    public static extractString(data: Int8Array, index: number): string {
+    public static extractString(data: Uint8Array, index: number): string {
         let string_start = Util.locateSequence(Util.STRING_START, data, 0)
         let string_end = Util.locateSequence(Util.STRING_END, data, 0)
 
@@ -357,7 +357,7 @@ export class Util {
      *
      * The index must point to the "/"
      * */
-    public static extractOptionValue(data: Int8Array, index: number = 0): string {
+    public static extractOptionValue(data: Uint8Array, index: number = 0): string {
 
         if (data[index] !== 47)
             throw Error("misplaced option value pointer")
@@ -372,7 +372,7 @@ export class Util {
      *
      * Returns 'undefined' if this field does not exist in the object
      * */
-    public static extractField(data: Int8Array, field: number[], ptr: number = 0): any {
+    public static extractField(data: Uint8Array, field: number[], ptr: number = 0): any {
         // only check the fields of one object
         let start_obj_ptr = Util.locateSequence(Util.OBJ, data, ptr, true)
         let end_obj_ptr = Util.locateSequence(Util.ENDOBJ, data, start_obj_ptr, true)
@@ -418,7 +418,7 @@ export class Util {
     /**
      * Parses the ascii encoded number of the PDF file
      * */
-    public static extractNumber(data: Int8Array, start: number, end: number = -1) {
+    public static extractNumber(data: Uint8Array, start: number, end: number = -1) {
         start = Util.skipDelimiter(data, start)
 
         if (-1 == end) {
@@ -445,7 +445,7 @@ export class Util {
     /**
      * Takes as argument an array of references and returns those typed
      * */
-    public static extractReferencesFromArraySequence(array_sequence: Int8Array): ReferencePointer[] {
+    public static extractReferencesFromArraySequence(array_sequence: Uint8Array): ReferencePointer[] {
         let refs: ReferencePointer[] = []
 
         let i = 0
@@ -479,8 +479,8 @@ export class Util {
     /**
      * Converts a unicode sequence into a string
      * */
-    public static convertUnicodeToString(val: Int8Array | Uint8Array): string {
-        if (val instanceof Int8Array)
+    public static convertUnicodeToString(val: Uint8Array): string {
+        if (val instanceof Uint8Array)
             val = new Uint8Array(val)
 
         if (val[0] === 254 && val[1] === 255) {

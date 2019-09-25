@@ -78,7 +78,7 @@ export class WriterUtil {
      * ptr : Pointer to the page object
      * annot_array_reference : The reference to the annotation array
      * */
-    public static replaceAnnotsFieldInPageObject(data: Int8Array, page: Page, page_ptr: number, annot_array_reference: ReferencePointer): number[] {
+    public static replaceAnnotsFieldInPageObject(data: Uint8Array, page: Page, page_ptr: number, annot_array_reference: ReferencePointer): number[] {
         let ptr_objend = Util.locateSequence(Util.ENDOBJ, data, page_ptr, true)
 
         let complete_page_object_data = data.slice(page_ptr, ptr_objend + Util.ENDOBJ.length)

@@ -63,8 +63,8 @@ export class Writer {
      * data : The data representing the original PDF document
      * aannotations : The annotations to add to the document
      * */
-    constructor(private data: Int8Array, private annotations: Annotation[], private toDelete: Annotation[], private parser: PDFDocumentParser) {
-        this.data = new Int8Array(data)
+    constructor(private data: Uint8Array, private annotations: Annotation[], private toDelete: Annotation[], private parser: PDFDocumentParser) {
+        this.data = new Uint8Array(data)
     }
 
     /**
@@ -543,7 +543,7 @@ export class Writer {
      * Writes the annations at the end of the PDF byte representation and returns
      * the byte array
      * */
-    write(): Int8Array {
+    write(): Uint8Array {
         let pageWiseSorted = this.sortPageWise(this.annotations)
 
         let ptr: number = this.data.length
@@ -645,9 +645,9 @@ export class Writer {
         let trailer = this.writeTrailer(ptr)
         new_data = new_data.concat(trailer)
 
-        let new_data_array = new Int8Array(new_data)
+        let new_data_array = new Uint8Array(new_data)
 
-        let ret_array = new Int8Array(this.data.length + new_data_array.length)
+        let ret_array = new Uint8Array(this.data.length + new_data_array.length)
         ret_array.set(this.data)
         ret_array.set(new_data, this.data.length)
 

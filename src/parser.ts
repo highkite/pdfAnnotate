@@ -76,7 +76,7 @@ export class Annotation {
     is_deleted?: boolean
 
 
-    constructor(private data: Int8Array = new Int8Array([])) { }
+    constructor(private data: Uint8Array = new Uint8Array([])) { }
 
     /**
      * Extract the annotation object (partially)
@@ -107,7 +107,7 @@ export class Annotation {
  * Represents the Catalog object of the PDF document
  * */
 export class CatalogObject {
-    constructor(private data: Int8Array) { }
+    constructor(private data: Uint8Array) { }
 
     private pagesObjectId: ReferencePointer = { obj: -1, generation: -1 }
 
@@ -139,8 +139,8 @@ export class PageTree {
 
     private pageReferences: ReferencePointer[] = []
 
-    constructor(private data: Int8Array, private objectLookupTable: ObjectLookupTable) {
-        this.data = new Int8Array(data)
+    constructor(private data: Uint8Array, private objectLookupTable: ObjectLookupTable) {
+        this.data = new Uint8Array(data)
     }
 
     /**
@@ -242,7 +242,7 @@ export class Page {
 
     public annotsPointer: ReferencePointer | undefined
 
-    constructor(private data: Int8Array, private documentHistory: DocumentHistory) { }
+    constructor(private data: Uint8Array, private documentHistory: DocumentHistory) { }
 
     /**
      * Extracts the references in the linked annotations array
@@ -310,10 +310,10 @@ export class Page {
  * */
 export class PDFDocumentParser {
 
-    public documentHistory: DocumentHistory = new DocumentHistory(new Int8Array([]))
+    public documentHistory: DocumentHistory = new DocumentHistory(new Uint8Array([]))
 
-    constructor(private data: Int8Array) {
-        this.data = new Int8Array(data)
+    constructor(private data: Uint8Array) {
+        this.data = new Uint8Array(data)
 
         this.documentHistory = new DocumentHistory(this.data)
         this.documentHistory.extractDocumentHistory()

@@ -42,7 +42,7 @@ export class UpdateSection {
     private static ROOT: number[] = [47, 82, 111, 111, 116] // /Root
     private static PREV: number[] = [47, 80, 114, 101, 118] // /Prev
 
-    constructor(private data: Int8Array) { }
+    constructor(private data: Uint8Array) { }
 
     /**
      * Returns the reference with the given id
@@ -209,8 +209,8 @@ export class DocumentHistory {
      * */
     private already_reused_ids: XRef[] = []
 
-    constructor(private data: Int8Array) {
-        this.data = new Int8Array(data)
+    constructor(private data: Uint8Array) {
+        this.data = new Uint8Array(data)
     }
 
     /**

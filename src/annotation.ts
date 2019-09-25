@@ -14,7 +14,7 @@ export class AnnotationFactory {
 
     private parser: PDFDocumentParser
 
-    constructor(private data: Int8Array) {
+    constructor(private data: Uint8Array) {
         this.data = data
         this.parser = new PDFDocumentParser(this.data)
     }
@@ -70,7 +70,7 @@ export class AnnotationFactory {
     /**
      * Writes the made annotations into a bytestream
      * */
-    write(): Int8Array {
+    write(): Uint8Array {
         if (this.annotations.length === 0 && this.toDelete.length === 0)
             return this.data
 
