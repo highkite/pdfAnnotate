@@ -1,12 +1,13 @@
 {
         "name": "annotpdf",
-        "version": "1.0.8",
+        "version": "1.0.9",
         "description": "Javascript library for creating annotations in PDF documents",
         "main": "lib/index.js",
         "types": "lib/index.d.ts",
         "scripts": {
                 "build": "tsc && webpack",
-                "test": "jest --config jestconfig.json"
+                "test": "jest --config jestconfig.json",
+                "example": "http-server -p 8080"
         },
         "files": [
                 "lib/**/*",
