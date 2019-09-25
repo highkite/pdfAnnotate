@@ -1,6 +1,7 @@
 import { PDFDocumentParser, Page, Annotation } from '../parser';
 import { testDocument, testDocument2 } from './Data';
 import { pageObject_string } from './Data2';
+import { Util } from '../util';
 
 test('pageExtraction', () => {
     let data = new Uint8Array(pageObject_string)

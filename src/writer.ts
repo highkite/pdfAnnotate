@@ -147,7 +147,6 @@ export class Writer {
         let page_data: number[] = []
         if (!refArray_id) {
             refArray_id = this.parser.getFreeObjectId()
-            console.log(`freeObjectId: ${JSON.stringify(refArray_id)}`)
             page_data = this.adaptPageObject(page, refArray_id)
         }
 

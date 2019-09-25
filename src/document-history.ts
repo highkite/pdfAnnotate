@@ -316,6 +316,12 @@ export class DocumentHistory {
         while (ptr !== 0) {
             freedHeaderList.push(free_header)
             free_header = objectLookupTable[ptr]
+
+            if (!free_header.free) {
+                // handle the case of an incosistent xref
+                return { obj: this.trailerSize++, generation: 0, reused: false }
+            }
+
             ptr = free_header.pointer
         }
 
