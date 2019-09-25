@@ -4,7 +4,7 @@ import { Writer } from '../writer'
 import { save, decode, loadFromFile } from './Data2'
 
 test('write testDocument', () => {
-    let data = new Int8Array(testDocument)
+    let data = new Uint8Array(testDocument)
     let fac: AnnotationFactory = new AnnotationFactory(data)
 
     //fac.createTextAnnotation(0, [50, 50], "Test123", "Max")
@@ -14,7 +14,7 @@ test('write testDocument', () => {
 })
 
 test('write testDocument2', () => {
-    let data = new Int8Array(testDocument2)
+    let data = new Uint8Array(testDocument2)
     let fac: AnnotationFactory = new AnnotationFactory(data)
 
     fac.createTextAnnotation(0, [50, 50, 80, 80], "Test123", "Max")
@@ -24,7 +24,7 @@ test('write testDocument2', () => {
 })
 
 test('getAnnotations', () => {
-    let data = new Int8Array(testDocument)
+    let data = new Uint8Array(testDocument)
     let fac: AnnotationFactory = new AnnotationFactory(data)
 
     fac.deleteAnnotation('okular-{4e2e238d-7f4f-4b99-ac92-6def305d4796}').then((toDelete) => {
@@ -35,7 +35,7 @@ test('getAnnotations', () => {
 })
 
 test('MISC', () => {
-    let data = loadFromFile('./test7.pdf')
+    let data = loadFromFile('./test.pdf')
     let fac: AnnotationFactory = new AnnotationFactory(data)
     fac.createHighlightAnnotation(0, [50, 50, 80, 80], "Test123", "Max")
     fac.getAnnotations().then((annots) => {

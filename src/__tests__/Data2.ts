@@ -44,10 +44,10 @@ export var decode = (data: any) => {
 }
 
 export var loadFromFile = (path: string) => {
-    return new Int8Array(fs.readFileSync(path))
+    return new Uint8Array(fs.readFileSync(path))
 }
 
-export var save = (fileName: string, data: Int8Array) => {
+export var save = (fileName: string, data: Uint8Array) => {
     fs.writeFile(fileName, Buffer.from(new Uint8Array(data)), (err: any) => {
         if (err) {
             return console.log(err);
