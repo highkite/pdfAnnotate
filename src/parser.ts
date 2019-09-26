@@ -13,6 +13,11 @@ export interface Color {
     b: number
 }
 
+export interface PDFVersion {
+    major: number
+    minor: number
+}
+
 export interface Border {
     horizontal_corner_radius: number
     vertical_corner_radius: number
@@ -312,11 +317,32 @@ export class PDFDocumentParser {
 
     public documentHistory: DocumentHistory = new DocumentHistory(new Uint8Array([]))
 
+    private version: PDFVersion
+
     constructor(private data: Uint8Array) {
         this.data = new Uint8Array(data)
+        this.version = this.getPDFVersion()
 
         this.documentHistory = new DocumentHistory(this.data)
         this.documentHistory.extractDocumentHistory()
+    }
+
+    /**
+     * Returns the major and minor version of the pdf document
+     * */
+    getPDFVersion(): PDFVersion {
+        if (this.version)
+            return this.version
+
+        let ptr_version_start = Util.locateSequence(Util.VERSION, this.data) + Util.VERSION.length
+        let ptr_delimiter = Util.locateSequence([Util.DOT], this.data, ptr_version_start)
+        let major_version = Util.extractNumber(this.data, ptr_version_start, ptr_delimiter)
+        let ptr_end = Util.locateDelimiter(this.data, ptr_delimiter)
+        let minor_version = Util.extractNumber(this.data, ptr_delimiter + 1, ptr_end)
+
+        this.version = { major: major_version, minor: minor_version }
+
+        return this.version
     }
 
     /**

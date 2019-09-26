@@ -4,6 +4,8 @@ import { ReferencePointer } from './parser';
  * */
 export class Util {
 
+    public static VERSION: number[] = [37, 80, 68, 70, 45] // %PDF-
+    public static DOT: number = 46
     public static CR: number = 13
     public static LF: number = 10
     public static TYPE: string = "/Type "
