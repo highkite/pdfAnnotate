@@ -1,5 +1,17 @@
-import { DocumentHistory } from '../document-history';
+import { DocumentHistory, CrossReferenceStreamObject } from '../document-history';
+import { crossReferenceStreamObject_string } from './Data2'
 import { testDocument } from './Data';
+
+test('extractCrossReferenceStreamObject', () => {
+    let crs = new CrossReferenceStreamObject(crossReferenceStreamObject_string)
+    crs.extract(0)
+
+    expect(crs.trailer.size).toBe(626)
+    expect(crs.trailer.prev!).toBeUndefined()
+    expect(crs.trailer.root!.generation).toBe(0)
+    expect(crs.trailer.root!.obj).toBe(1)
+
+})
 
 test('extractDocumentEntry', () => {
     let hist = new DocumentHistory(new Uint8Array(testDocument))
@@ -32,7 +44,7 @@ test('extractDocumentEntry', () => {
     expect(us.refs[2].update).toBeTruthy()
 })
 
-test('extractDocumentHistory', () => {
+test('extractCrossReferenceTable', () => {
     let hist = new DocumentHistory(new Uint8Array(testDocument))
 
     hist.extractDocumentHistory()

@@ -37,6 +37,24 @@ export var pageObject_string_3 = new te.TextEncoder().encode(`
 endobj
 `)
 
+export var crossReferenceStreamObject_string = new te.TextEncoder().encode(`
+625 0 obj
+<<
+/Length 1644
+/ID [<9BFD8283F629F168063225BF31A92429> <6A28637CD303B944B7A012622D2884DD>]
+/Info 7 0 R
+/Root 1 0 R
+/Type /XRef
+/Size 626
+/Index [0 625]
+/W [1 3 0]
+/Filter /FlateDecode
+>>
+stream
+endstream
+endobj
+`)
+
 export var decode = (data: any) => {
     let _data = new Uint8Array(data)
 
@@ -53,6 +71,6 @@ export var save = (fileName: string, data: Uint8Array) => {
             return console.log(err);
         }
 
-        console.log(`The file was written to: ${fileName}`);
+        console.log(`The file was written to: ${fileName} `);
     })
 }

@@ -35,7 +35,60 @@ export interface UpdateSection {
 }
 
 /**
- * Holds the complete information of one update section. That comprises:
+ * Holds the complete information of one update section in the Cross-Reference-Stream Object format.
+ *
+ * */
+export class CrossReferenceStreamObject {
+    constructor(private data: Uint8Array) { }
+
+    public trailer: Trailer = { size: -1, root: { obj: -1, generation: -1 } }
+
+    /**
+     * Parses the Cross-Reference-Stream-Object at the given index
+     * */
+    extract(index: number) {
+        let ptr_object_end = Util.locateSequence(Util.ENDOBJ, this.data, index)
+
+        this.data = this.data.slice(index, ptr_object_end)
+
+        // check type
+        let _type = Util.extractField(this.data, Util._TYPE)
+        if (_type !== "XRef")
+            throw Error(`Invalid Cross-Reference-Stream-object type: ${_type}`)
+
+        // extract size
+        let size = Util.extractField(this.data, Util.SIZE)
+        if (!size)
+            throw Error(`Invalid size value ${size}`)
+        this.trailer.size = size
+
+        // extract ROOT if it exists
+        let root = Util.extractField(this.data, Util.ROOT)
+        if (root)
+            this.trailer.root = root
+
+        // extract PREV if it exists
+        let prev = Util.extractField(this.data, Util.PREV)
+        if (prev)
+            this.trailer.prev = prev
+    }
+
+    /**
+     * Returs the update section representing this CrossReferenceStreamObject
+     * */
+    getUpdateSection(): UpdateSection {
+        return {
+            start_pointer: -1,
+            size: this.trailer.size,
+            prev: this.trailer.prev,
+            root: this.trailer.root,
+            refs: []
+        }
+    }
+}
+
+/**
+ * Holds the complete information of one update section in the Cross-Reference-Table format. That comprises:
  * - the body update
  * - the crossiste reference table
  * - the trailer
@@ -46,10 +99,6 @@ export class CrossReferenceTable {
     public start_pointer: number = -1
 
     public trailer: Trailer = { size: -1, root: { obj: -1, generation: -1 } }
-
-    private static SIZE: number[] = [47, 83, 105, 122, 101] // /Size
-    private static ROOT: number[] = [47, 82, 111, 111, 116] // /Root
-    private static PREV: number[] = [47, 80, 114, 101, 118] // /Prev
 
     constructor(private data: Uint8Array) { }
 
@@ -150,21 +199,21 @@ export class CrossReferenceTable {
         let _data = this.data.slice(index, end_trailer_index)
         index = 0
 
-        let ptr_start_size = Util.locateSequence(CrossReferenceTable.SIZE, _data, index, true) + CrossReferenceTable.SIZE.length
+        let ptr_start_size = Util.locateSequence(Util.SIZE, _data, index, true) + Util.SIZE.length
         ptr_start_size = Util.skipDelimiter(_data, ptr_start_size)
 
         let size = Util.extractNumber(_data, ptr_start_size)
 
 
-        let ptr_start_root = Util.locateSequence(CrossReferenceTable.ROOT, _data, index, true) + CrossReferenceTable.ROOT.length
+        let ptr_start_root = Util.locateSequence(Util.ROOT, _data, index, true) + Util.ROOT.length
         ptr_start_root = Util.skipDelimiter(_data, ptr_start_root)
         let root_reference = Util.extractReferenceTyped(_data, ptr_start_root)
 
 
-        let ptr_start_prev = Util.locateSequence(CrossReferenceTable.PREV, _data, index, true)
+        let ptr_start_prev = Util.locateSequence(Util.PREV, _data, index, true)
         let prev = undefined
         if (-1 != ptr_start_prev) {
-            ptr_start_prev = Util.skipDelimiter(_data, ptr_start_prev + CrossReferenceTable.PREV.length)
+            ptr_start_prev = Util.skipDelimiter(_data, ptr_start_prev + Util.PREV.length)
 
             prev = Util.extractNumber(_data, ptr_start_prev)
         }
@@ -177,7 +226,7 @@ export class CrossReferenceTable {
     }
 
     /**
-     * Parses the Update section at the given index
+     * Parses the Cross Reference Table at the given index
      * */
     extract(index: number) {
         this.start_pointer = index
@@ -227,8 +276,7 @@ export class DocumentHistory {
 
     /**
      * Holds object ids that were formerly freed and are now 'already' reused.
-     * This is used to prevent a freed object a second time
-     * */
+     * This is used to prevent a freed object a second time */
     private already_reused_ids: XRef[] = []
 
     constructor(private data: Uint8Array) {
@@ -236,13 +284,23 @@ export class DocumentHistory {
     }
 
     /**
-     * Extracts the update section starting at the given index
+     * Extracts the cross reference table starting at the given index
      * */
     extractCrossReferenceTable(index: number): CrossReferenceTable {
         let crt = new CrossReferenceTable(this.data)
         crt.extract(index)
 
         return crt
+    }
+
+    /**
+     * Extracts the cross reference stream object starting at the given index
+     * */
+    extractCrossReferenceStreamObject(index: number): CrossReferenceStreamObject {
+        let crs = new CrossReferenceStreamObject(this.data)
+        crs.extract(index)
+
+        return crs
     }
 
     /**
@@ -283,10 +341,21 @@ export class DocumentHistory {
                 us = this.updates[this.updates.length - 1]
             }
 
-            this.trailerSize = this.getRecentUpdate().size
         } else { // handle cross reference stream object
-            console.log("Cross reference stream object")
+            let crs = this.extractCrossReferenceStreamObject(ptr)
+
+            this.updates.push(crs.getUpdateSection())
+
+            let us = this.updates[0]
+
+            while (us.prev) {
+                crs = this.extractCrossReferenceStreamObject(us.prev)
+                this.updates.push(crs.getUpdateSection())
+                us = this.updates[this.updates.length - 1]
+            }
         }
+
+        this.trailerSize = this.getRecentUpdate().size
     }
 
     /**

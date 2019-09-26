@@ -29,6 +29,9 @@ export class Util {
     public static KIDS: number[] = [47, 75, 105, 100, 115]
     public static COUNT: number[] = [47, 67, 111, 117, 110, 116]
     public static RECT: number[] = [47, 82, 101, 99, 116]
+    public static SIZE: number[] = [47, 83, 105, 122, 101] // /Size
+    public static ROOT: number[] = [47, 82, 111, 111, 116] // /Root
+    public static PREV: number[] = [47, 80, 114, 101, 118] // /Prev
     public static M: number[] = [47, 77] // '/M'
     public static T: number[] = [47, 84] // '/T'
     public static F: number[] = [47, 70] // '/F'
