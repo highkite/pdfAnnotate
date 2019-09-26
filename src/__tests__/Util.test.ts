@@ -362,3 +362,12 @@ test('convertUnicode', () => {
     let data = new Uint8Array([254, 255, 0, 80, 0, 111, 0, 112, 0, 32, 0, 117, 0, 112, 0, 32, 0, 110, 0, 111, 0, 116, 0, 101])
     expect(Util.convertUnicodeToString(data)).toEqual('Pop up note')
 })
+
+test('areArraysEqual', () => {
+    let data = new Uint8Array([91, 50, 32, 51, 32, 82, 32, 52, 48, 32, 53, 32, 82, 93])
+    expect(Util.areArraysEqual(data, data)).toBeTruthy()
+    let data2 = new Uint8Array([91, 50, 32, 51, 32, 82, 32, 52, 48, 32, 53, 32, 82, 40])
+    expect(Util.areArraysEqual(data, data2)).toBeFalsy()
+    data2 = new Uint8Array([91, 50, 32])
+    expect(Util.areArraysEqual(data, data2)).toBeFalsy()
+})

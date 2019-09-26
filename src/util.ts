@@ -40,6 +40,7 @@ export class Util {
     public static QUADPOINTS: number[] = [47, 81, 117, 97, 100, 80, 111, 105, 110, 116, 115] // '/QuadPoints'
     public static INKLIST: number[] = [47, 73, 110, 107, 76, 105, 115, 116] // '/InkList'
     public static STARTXREF: number[] = [115, 116, 97, 114, 116, 120, 114, 101, 102] // = 'startxref'
+    public static XREF: number[] = [120, 114, 101, 102] // = 'xref'
 
     /**
      * Assumes that at position index is a delimiter and than runs as long forward until it finds
@@ -551,5 +552,19 @@ export class Util {
      * */
     public static convertNumberToCharArray(nbr: number | string): number[] {
         return Util.convertStringToAscii(String(nbr))
+    }
+
+    /**
+     * takes two arrays and checks their equality
+     * */
+    public static areArraysEqual(array_one: Uint8Array | number[], array_two: Uint8Array | number[]): boolean {
+        if (array_one.length !== array_two.length) return false
+
+        for (let i = 0; i < array_one.length; ++i) {
+            if (array_one[i] !== array_two[i])
+                return false
+        }
+
+        return true
     }
 }
