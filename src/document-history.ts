@@ -1,6 +1,7 @@
 import { ReferencePointer } from './parser';
 import { Util } from './util';
 import { PDFVersion } from './parser';
+import * as Pako from 'pako'
 
 export interface XRef {
     id: number
@@ -44,6 +45,7 @@ export class CrossReferenceStreamObject {
     public trailer: Trailer = { size: -1, root: { obj: -1, generation: -1 } }
 
     extractStreamData(streamData: Uint8Array, compression: string) {
+        let decompressed = Pako.inflate(streamData)
     }
 
     /**
@@ -83,6 +85,9 @@ export class CrossReferenceStreamObject {
         let ptr_stream_data_start = Util.locateSequence(Util.STREAM, this.data) + Util.STREAM.length
         ptr_stream_data_start = Util.skipDelimiter(this.data, ptr_stream_data_start)
         let ptr_stream_data_end = Util.locateSequence(Util.ENDSTREAM, this.data)
+        ptr_stream_data_end = Util.skipDelimiterReverse(this.data, ptr_stream_data_end - 1) + 1
+
+        ptr_stream_data_end = ptr_stream_data_start + 1644
 
         this.extractStreamData(this.data.slice(ptr_stream_data_start, ptr_stream_data_end), filter)
     }

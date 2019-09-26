@@ -40,5 +40,8 @@
                 "url": "https://github.com/highkite/pdfAnnotate.git/issues"
         },
         "homepage": "https://github.com/highkite/pdfAnnotate.git",
-        "dependencies": {}
+        "dependencies": {
+                "@types/pako": "^1.0.1",
+                "pako": "^1.0.10"
+        }
 }

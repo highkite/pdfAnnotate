@@ -47,7 +47,7 @@ export class Util {
     public static STARTXREF: number[] = [115, 116, 97, 114, 116, 120, 114, 101, 102] // = 'startxref'
     public static XREF: number[] = [120, 114, 101, 102] // = 'xref'
     public static STREAM: number[] = [115, 116, 114, 101, 97, 109] // = 'stream'
-    public static ENDSTREAM: number[] = [101, 110, 100, 120, 114, 101, 102] // = 'endstream'
+    public static ENDSTREAM: number[] = [101, 110, 100, 115, 116, 114, 101, 97, 109] // = 'endstream'
 
     /**
      * Assumes that at position index is a delimiter and than runs as long forward until it finds
@@ -55,6 +55,16 @@ export class Util {
      * */
     public static skipDelimiter(data: Uint8Array, index: number = 0): number {
         while (index < data.length && this.isDelimiter(data[index]))++index
+
+        return index
+    }
+
+    /**
+     * Assumes that at position index is a delimiter and than runs as long backwards until it finds
+     * another delimiter or reaches the end of the document
+     * */
+    public static skipDelimiterReverse(data: Uint8Array, index: number = 0): number {
+        while (index > 0 && this.isDelimiter(data[index]))--index
 
         return index
     }
@@ -544,7 +554,7 @@ export class Util {
         return ret
     }
 
-    public static convertAsciiToString(val: number[]): string {
+    public static convertAsciiToString(val: number[] | Uint8Array): string {
         let ret: string = ""
 
         for (let i = 0; i < val.length; ++i) {
