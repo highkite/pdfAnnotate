@@ -43,6 +43,9 @@ export class CrossReferenceStreamObject {
 
     public trailer: Trailer = { size: -1, root: { obj: -1, generation: -1 } }
 
+    extractStreamData(streamData: Uint8Array, compression: string) {
+    }
+
     /**
      * Parses the Cross-Reference-Stream-Object at the given index
      * */
@@ -71,6 +74,17 @@ export class CrossReferenceStreamObject {
         let prev = Util.extractField(this.data, Util.PREV)
         if (prev)
             this.trailer.prev = prev
+
+        // check if filter is supported
+        let filter = Util.extractField(this.data, Util.FILTER)
+        if (filter !== "FlateDecode")
+            throw Error(`Unsupported stream filter: ${filter} - Only supported filter is FlateDecode`)
+
+        let ptr_stream_data_start = Util.locateSequence(Util.STREAM, this.data) + Util.STREAM.length
+        ptr_stream_data_start = Util.skipDelimiter(this.data, ptr_stream_data_start)
+        let ptr_stream_data_end = Util.locateSequence(Util.ENDSTREAM, this.data)
+
+        this.extractStreamData(this.data.slice(ptr_stream_data_start, ptr_stream_data_end), filter)
     }
 
     /**

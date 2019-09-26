@@ -1,9 +1,21 @@
 import { DocumentHistory, CrossReferenceStreamObject } from '../document-history';
 import { crossReferenceStreamObject_string } from './Data2'
+import { crossReferenceStreamObjectWithStreamSection } from './Data3';
 import { testDocument } from './Data';
 
 test('extractCrossReferenceStreamObject', () => {
     let crs = new CrossReferenceStreamObject(crossReferenceStreamObject_string)
+    crs.extract(0)
+
+    expect(crs.trailer.size).toBe(626)
+    expect(crs.trailer.prev!).toBeUndefined()
+    expect(crs.trailer.root!.generation).toBe(0)
+    expect(crs.trailer.root!.obj).toBe(1)
+
+})
+
+test('extractCrossReferenceStreamObjectWithStreamSection', () => {
+    let crs = new CrossReferenceStreamObject(new Uint8Array(crossReferenceStreamObjectWithStreamSection))
     crs.extract(0)
 
     expect(crs.trailer.size).toBe(626)

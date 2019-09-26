@@ -31,6 +31,7 @@ export class Util {
     public static RECT: number[] = [47, 82, 101, 99, 116]
     public static SIZE: number[] = [47, 83, 105, 122, 101] // /Size
     public static ROOT: number[] = [47, 82, 111, 111, 116] // /Root
+    public static FILTER: number[] = [47, 70, 105, 108, 116, 101, 114] // /Filter
     public static PREV: number[] = [47, 80, 114, 101, 118] // /Prev
     public static M: number[] = [47, 77] // '/M'
     public static T: number[] = [47, 84] // '/T'
@@ -45,6 +46,8 @@ export class Util {
     public static INKLIST: number[] = [47, 73, 110, 107, 76, 105, 115, 116] // '/InkList'
     public static STARTXREF: number[] = [115, 116, 97, 114, 116, 120, 114, 101, 102] // = 'startxref'
     public static XREF: number[] = [120, 114, 101, 102] // = 'xref'
+    public static STREAM: number[] = [115, 116, 114, 101, 97, 109] // = 'stream'
+    public static ENDSTREAM: number[] = [101, 110, 100, 120, 114, 101, 102] // = 'endstream'
 
     /**
      * Assumes that at position index is a delimiter and than runs as long forward until it finds
