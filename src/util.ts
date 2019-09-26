@@ -8,6 +8,7 @@ export class Util {
     public static DOT: number = 46
     public static CR: number = 13
     public static LF: number = 10
+    public static CATALOG: number[] = [47, 67, 97, 116, 97, 108, 111, 103] // '/Catalog'
     public static TYPE: string = "/Type "
     public static SPACE: number = 32
     public static _TYPE: number[] = [47, 84, 121, 112, 101] // '/Type'

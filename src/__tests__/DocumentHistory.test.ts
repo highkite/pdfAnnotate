@@ -4,14 +4,14 @@ import { testDocument } from './Data';
 test('extractDocumentEntry', () => {
     let hist = new DocumentHistory(new Uint8Array(testDocument))
 
-    hist.extractDocumentEntry()
+    hist.extractDocumentHistory()
 
     let us = hist.updates[0]
 
-    expect(us.trailer.prev).toBe(1150)
-    expect(us.trailer.root.generation).toBe(0)
-    expect(us.trailer.root.obj).toBe(1)
-    expect(us.trailer.size).toBe(9)
+    expect(us.prev).toBe(1150)
+    expect(us.root!.generation).toBe(0)
+    expect(us.root!.obj).toBe(1)
+    expect(us.size).toBe(9)
 
     expect(us.refs[0].id).toBe(0)
     expect(us.refs[0].pointer).toBe(1)
@@ -41,10 +41,10 @@ test('extractDocumentHistory', () => {
 
     let us = hist.updates[0]
 
-    expect(us.trailer.prev).toBe(1150)
-    expect(us.trailer.root.generation).toBe(0)
-    expect(us.trailer.root.obj).toBe(1)
-    expect(us.trailer.size).toBe(9)
+    expect(us.prev).toBe(1150)
+    expect(us.root!.generation).toBe(0)
+    expect(us.root!.obj).toBe(1)
+    expect(us.size).toBe(9)
 
     expect(us.refs[0].id).toBe(0)
     expect(us.refs[0].pointer).toBe(1)
@@ -66,10 +66,10 @@ test('extractDocumentHistory', () => {
 
     us = hist.updates[1]
 
-    expect(us.trailer.prev).toBe(492)
-    expect(us.trailer.root.generation).toBe(0)
-    expect(us.trailer.root.obj).toBe(1)
-    expect(us.trailer.size).toBe(8)
+    expect(us.prev).toBe(492)
+    expect(us.root!.generation).toBe(0)
+    expect(us.root!.obj).toBe(1)
+    expect(us.size).toBe(8)
 
     expect(us.refs[0].id).toBe(0)
     expect(us.refs[0].pointer).toBe(1)
@@ -97,10 +97,10 @@ test('extractDocumentHistory', () => {
 
     us = hist.updates[2]
 
-    expect(us.trailer.prev).toBeUndefined()
-    expect(us.trailer.root.generation).toBe(0)
-    expect(us.trailer.root.obj).toBe(1)
-    expect(us.trailer.size).toBe(6)
+    expect(us.prev).toBeUndefined()
+    expect(us.root!.generation).toBe(0)
+    expect(us.root!.obj).toBe(1)
+    expect(us.size).toBe(6)
 
     expect(us.refs[0].id).toBe(0)
     expect(us.refs[0].pointer).toBe(0)

@@ -1,5 +1,6 @@
 import { ReferencePointer } from './parser';
 import { Util } from './util';
+import { PDFVersion } from './parser';
 
 export interface XRef {
     id: number
@@ -25,13 +26,21 @@ export interface ObjectLookupTable {
     [id: number]: XRef
 }
 
+export interface UpdateSection {
+    start_pointer: number,
+    size: number
+    refs: XRef[]
+    prev?: number
+    root?: { obj: number, generation: number }
+}
+
 /**
  * Holds the complete information of one update section. That comprises:
  * - the body update
  * - the crossiste reference table
  * - the trailer
  * */
-export class UpdateSection {
+export class CrossReferenceTable {
     public refs: XRef[] = []
 
     public start_pointer: number = -1
@@ -54,6 +63,19 @@ export class UpdateSection {
         }
 
         return undefined
+    }
+
+    /**
+     * Returs the update section representing this CrossReferenceTable
+     * */
+    getUpdateSection(): UpdateSection {
+        return {
+            start_pointer: this.start_pointer,
+            size: this.trailer.size,
+            refs: this.refs,
+            prev: this.trailer.prev,
+            root: this.trailer.root
+        }
     }
 
     /**
@@ -128,21 +150,21 @@ export class UpdateSection {
         let _data = this.data.slice(index, end_trailer_index)
         index = 0
 
-        let ptr_start_size = Util.locateSequence(UpdateSection.SIZE, _data, index, true) + UpdateSection.SIZE.length
+        let ptr_start_size = Util.locateSequence(CrossReferenceTable.SIZE, _data, index, true) + CrossReferenceTable.SIZE.length
         ptr_start_size = Util.skipDelimiter(_data, ptr_start_size)
 
         let size = Util.extractNumber(_data, ptr_start_size)
 
 
-        let ptr_start_root = Util.locateSequence(UpdateSection.ROOT, _data, index, true) + UpdateSection.ROOT.length
+        let ptr_start_root = Util.locateSequence(CrossReferenceTable.ROOT, _data, index, true) + CrossReferenceTable.ROOT.length
         ptr_start_root = Util.skipDelimiter(_data, ptr_start_root)
         let root_reference = Util.extractReferenceTyped(_data, ptr_start_root)
 
 
-        let ptr_start_prev = Util.locateSequence(UpdateSection.PREV, _data, index, true)
+        let ptr_start_prev = Util.locateSequence(CrossReferenceTable.PREV, _data, index, true)
         let prev = undefined
         if (-1 != ptr_start_prev) {
-            ptr_start_prev = Util.skipDelimiter(_data, ptr_start_prev + UpdateSection.PREV.length)
+            ptr_start_prev = Util.skipDelimiter(_data, ptr_start_prev + CrossReferenceTable.PREV.length)
 
             prev = Util.extractNumber(_data, ptr_start_prev)
         }
@@ -216,41 +238,55 @@ export class DocumentHistory {
     /**
      * Extracts the update section starting at the given index
      * */
-    extractUpdateSection(index: number) {
-        let updateSection = new UpdateSection(this.data)
-        updateSection.extract(index)
+    extractCrossReferenceTable(index: number): CrossReferenceTable {
+        let crt = new CrossReferenceTable(this.data)
+        crt.extract(index)
 
-        this.updates.push(updateSection)
+        return crt
     }
 
     /**
      * Extracts the last update section of a document (that means
      * the most recent update locating at the end of the file)
      * */
-    extractDocumentEntry() {
+    extractDocumentEntry(): number {
         let ptr = this.data.length - 1
 
         let ptr_startxref = Util.locateSequenceReversed(Util.STARTXREF, this.data, ptr, true) + 9
 
         ptr = Util.extractNumber(this.data, ptr_startxref)
 
-        this.extractUpdateSection(ptr)
+        return ptr
     }
 
     /**
      * Extracts the entire update sections
+     *
+     * Needs to adapt depending whether the document uses a cross-reference table or a cross-reference stream object
      * */
     extractDocumentHistory() {
-        this.extractDocumentEntry()
 
-        let us = this.updates[0]
+        let ptr = this.extractDocumentEntry()
 
-        while (us.trailer.prev) {
-            this.extractUpdateSection(us.trailer.prev)
-            us = this.updates[this.updates.length - 1]
+        // Handle cross reference table
+        if (Util.areArraysEqual(this.data.slice(ptr, ptr + Util.XREF.length), Util.XREF)) {
+
+            let crt = this.extractCrossReferenceTable(ptr)
+
+            this.updates.push(crt.getUpdateSection())
+
+            let us = this.updates[0]
+
+            while (us.prev) {
+                crt = this.extractCrossReferenceTable(us.prev)
+                this.updates.push(crt.getUpdateSection())
+                us = this.updates[this.updates.length - 1]
+            }
+
+            this.trailerSize = this.getRecentUpdate().size
+        } else { // handle cross reference stream object
+            console.log("Cross reference stream object")
         }
-
-        this.trailerSize = this.getRecentUpdate().trailer.size
     }
 
     /**
@@ -270,8 +306,8 @@ export class DocumentHistory {
     createObjectLookupTable(): ObjectLookupTable {
         let objTable: { [id: number]: XRef } = {}
 
-        let update = this.getRecentUpdate()
-        let obj_count = update.trailer.size
+        let update: UpdateSection = this.getRecentUpdate()
+        let obj_count = update.size
 
         let i = 1
         while (Object.keys(objTable).length < obj_count) {

@@ -315,13 +315,14 @@ export class Page {
  * */
 export class PDFDocumentParser {
 
+    private version: PDFVersion | undefined = undefined
+
     public documentHistory: DocumentHistory = new DocumentHistory(new Uint8Array([]))
 
-    private version: PDFVersion
+    private catalogObject: CatalogObject | undefined = undefined
 
     constructor(private data: Uint8Array) {
         this.data = new Uint8Array(data)
-        this.version = this.getPDFVersion()
 
         this.documentHistory = new DocumentHistory(this.data)
         this.documentHistory.extractDocumentHistory()
@@ -357,15 +358,41 @@ export class PDFDocumentParser {
      * Returns the catalog object of the PDF file
      * */
     getCatalog(): CatalogObject {
-        let root_obj = this.documentHistory.getRecentUpdate().trailer.root
-        let obj_table = this.documentHistory.createObjectLookupTable()
+        let recent_update = this.documentHistory.getRecentUpdate()
+        if (recent_update.root) {
+            let root_obj = recent_update.root
 
-        let catalog_ptr = obj_table[root_obj.obj].pointer
+            let obj_table = this.documentHistory.createObjectLookupTable()
 
-        let catalog_object = new CatalogObject(this.data)
-        catalog_object.extract(catalog_ptr)
+            let catalog_ptr = obj_table[root_obj.obj].pointer
 
-        return catalog_object
+            let catalog_object = new CatalogObject(this.data)
+            catalog_object.extract(catalog_ptr)
+
+            return catalog_object
+        } else { // If we do not know the catalogue object we need to look it up
+            // In cross reference stream objects no /ROOT field is required, however often it is provided anyway
+            // otherwise run this routine, but buffer the catalog object
+            if (this.catalogObject)
+                return this.catalogObject
+
+            let obj_table = this.documentHistory.createObjectLookupTable()
+
+            for (let i = 1; i < recent_update.size; ++i) {
+                let _type = Util.extractField(this.data, Util._TYPE, obj_table[i].pointer)
+
+                if (Util.areArraysEqual(_type, Util.CATALOG)) {
+                    let catalog_object = new CatalogObject(this.data)
+                    catalog_object.extract(obj_table[i].pointer)
+
+                    this.catalogObject = catalog_object
+
+                    return catalog_object
+                }
+            }
+        }
+
+        throw Error("Could not identify catalog object")
     }
 
     /**

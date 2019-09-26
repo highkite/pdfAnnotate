@@ -510,9 +510,13 @@ export class Writer {
         ret = ret.concat(Util.convertNumberToCharArray(this.parser.documentHistory.trailerSize))
         ret.push(Writer.SPACE)
 
-        let trailer = this.parser.documentHistory.getRecentUpdate().trailer
+        let trailer = this.parser.documentHistory.getRecentUpdate()
         ret = ret.concat(Writer.ROOT)
         ret.push(Writer.SPACE)
+
+        if (!trailer.root)
+            throw Error("No root object in trailer, although this is an cross reference table document")
+
         ret = ret.concat(WriterUtil.writeReferencePointer(trailer.root, true))
         ret.push(Writer.SPACE)
 
