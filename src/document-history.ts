@@ -110,6 +110,9 @@ export class CrossReferenceStreamObject {
 
         this.data = this.data.slice(index, ptr_object_end)
 
+        // extract id and generation of the cross-reference-stream object
+        let obj_id_gen = Util.extractObjectId(this.data, 0)
+
         // check type
         let _type = Util.extractField(this.data, Util._TYPE)
         if (_type !== "XRef")
@@ -153,6 +156,9 @@ export class CrossReferenceStreamObject {
         this.streamLength = streamObj.streamLength
 
         this.extractStream(stream)
+
+        // the cross-reference-stream object is also a known reference
+        this.refs.push({ id: obj_id_gen.obj, pointer: this.start_pointer, generation: obj_id_gen.generation, free: false, update: true })
     }
 
     /**
