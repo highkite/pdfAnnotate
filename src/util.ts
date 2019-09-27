@@ -51,6 +51,26 @@ export class Util {
     public static XREF: number[] = [120, 114, 101, 102] // = 'xref'
     public static STREAM: number[] = [115, 116, 114, 101, 97, 109] // = 'stream'
     public static ENDSTREAM: number[] = [101, 110, 100, 115, 116, 114, 101, 97, 109] // = 'endstream'
+    public static DOUBLE_ANGLE_BRACKET_OPEN: number[] = [60, 60] // <<
+    public static DOUBLE_ANGLE_BRACKET_CLOSED: number[] = [62, 62]// >>
+
+    /**
+     * Returns the next word. These are bytes that are not separated by a delimiter and a ptr to the position where the word ends
+     * */
+    public static readNextWord(data: Uint8Array, index: number = 0): [Uint8Array | undefined, number] {
+        index = Util.skipDelimiter(data, index)
+        let start_index = index
+
+        if (data[index - 1] === 47) // salvage the leading /
+            start_index--
+
+        while (!Util.isDelimiter(data[index]) && index < data.length)++index
+
+        if (index < data.length)
+            return [data.slice(start_index, index), index]
+
+        return [undefined, index]
+    }
 
     /**
      * Assumes that at position index is a delimiter and than runs as long forward until it finds
@@ -88,8 +108,7 @@ export class Util {
     public static isDelimiter(value: number): boolean {
         return value === 10 ||
             value === 13 ||
-            value === 32 ||
-            value === 47 // '/'
+            value === 32
     }
 
     /**

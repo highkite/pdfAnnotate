@@ -1,4 +1,64 @@
 import { Util } from '../util';
+import { crossReferenceStreamObject_string } from './Data2'
+
+test('readNextWord', () => {
+    let res = Util.readNextWord(crossReferenceStreamObject_string, 0)
+    expect(Util.convertAsciiToString(res[0]!)).toBe("625")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("0")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("obj")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("<<")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("/Length")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("1644")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("/ID")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("[<9BFD8283F629F168063225BF31A92429>")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("<6A28637CD303B944B7A012622D2884DD>]")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("/Info")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("7")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("0")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("R")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("/Root")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("1")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("0")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("R")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("/Type")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("/XRef")
+})
 
 test('locateSequence', () => {
     let sequence = [40]
