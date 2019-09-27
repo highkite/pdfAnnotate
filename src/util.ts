@@ -29,14 +29,17 @@ export class Util {
     public static KIDS: number[] = [47, 75, 105, 100, 115]
     public static COUNT: number[] = [47, 67, 111, 117, 110, 116]
     public static RECT: number[] = [47, 82, 101, 99, 116]
+    public static INDEX: number[] = [47, 73, 110, 100, 101, 120] // /Index
     public static SIZE: number[] = [47, 83, 105, 122, 101] // /Size
     public static ROOT: number[] = [47, 82, 111, 111, 116] // /Root
     public static FILTER: number[] = [47, 70, 105, 108, 116, 101, 114] // /Filter
     public static PREV: number[] = [47, 80, 114, 101, 118] // /Prev
     public static M: number[] = [47, 77] // '/M'
+    public static W: number[] = [47, 87] // '/W'
     public static T: number[] = [47, 84] // '/T'
     public static F: number[] = [47, 70] // '/F'
     public static C: number[] = [47, 67] // '/C'
+    public static LENGTH: number[] = [47, 76, 101, 110, 103, 116, 104] // '/Length'
     public static CA: number[] = [47, 67, 65] // '/CA'
     public static NM: number[] = [47, 78, 77] // '/NM'
     public static P: number[] = [47, 80] // '/P'

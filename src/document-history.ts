@@ -1,7 +1,7 @@
 import { ReferencePointer } from './parser';
 import { Util } from './util';
 import { PDFVersion } from './parser';
-import * as Pako from 'pako'
+import { Stream, StreamObject } from './stream';
 
 export interface XRef {
     id: number
@@ -44,8 +44,17 @@ export class CrossReferenceStreamObject {
 
     public trailer: Trailer = { size: -1, root: { obj: -1, generation: -1 } }
 
-    extractStreamData(streamData: Uint8Array, compression: string) {
-        let decompressed = Pako.inflate(streamData)
+    public streamLength: number = -1
+
+    public w: number[] = []
+    public index: number[] = []
+
+    /**
+     * Extracts the cross-reference-table from the stream
+     * */
+    extractStream(stream: Stream) {
+
+        //assert sum(this.w) * this.index[1] == this.streamLength
     }
 
     /**
@@ -77,19 +86,28 @@ export class CrossReferenceStreamObject {
         if (prev)
             this.trailer.prev = prev
 
-        // check if filter is supported
-        let filter = Util.extractField(this.data, Util.FILTER)
-        if (filter !== "FlateDecode")
-            throw Error(`Unsupported stream filter: ${filter} - Only supported filter is FlateDecode`)
+        // extract W parameter
+        this.w = Util.extractField(this.data, Util.W)
 
-        let ptr_stream_data_start = Util.locateSequence(Util.STREAM, this.data) + Util.STREAM.length
-        ptr_stream_data_start = Util.skipDelimiter(this.data, ptr_stream_data_start)
-        let ptr_stream_data_end = Util.locateSequence(Util.ENDSTREAM, this.data)
-        ptr_stream_data_end = Util.skipDelimiterReverse(this.data, ptr_stream_data_end - 1) + 1
+        if (!this.w || 0 === this.w.length)
+            throw Error("Invalid /W parameter in Cross-Reference-Stream-Object")
 
-        ptr_stream_data_end = ptr_stream_data_start + 1644
+        // extract Index parameter
+        this.index = Util.extractField(this.data, Util.INDEX)
 
-        this.extractStreamData(this.data.slice(ptr_stream_data_start, ptr_stream_data_end), filter)
+        if (!this.index || 0 === this.index.length)
+            throw Error("Invalid /Index parameter in Cross-Reference-Stream-Object")
+
+        let streamObj = new StreamObject(this.data)
+
+        let stream = streamObj.extract()
+
+        if (!stream)
+            throw Error("Invalid stream object")
+
+        this.streamLength = streamObj.streamLength
+
+        this.extractStream(stream)
     }
 
     /**

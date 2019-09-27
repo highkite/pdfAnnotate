@@ -3,17 +3,6 @@ import { crossReferenceStreamObject_string } from './Data2'
 import { crossReferenceStreamObjectWithStreamSection } from './Data3';
 import { testDocument } from './Data';
 
-test('extractCrossReferenceStreamObject', () => {
-    let crs = new CrossReferenceStreamObject(crossReferenceStreamObject_string)
-    crs.extract(0)
-
-    expect(crs.trailer.size).toBe(626)
-    expect(crs.trailer.prev!).toBeUndefined()
-    expect(crs.trailer.root!.generation).toBe(0)
-    expect(crs.trailer.root!.obj).toBe(1)
-
-})
-
 test('extractCrossReferenceStreamObjectWithStreamSection', () => {
     let crs = new CrossReferenceStreamObject(new Uint8Array(crossReferenceStreamObjectWithStreamSection))
     crs.extract(0)
@@ -22,6 +11,12 @@ test('extractCrossReferenceStreamObjectWithStreamSection', () => {
     expect(crs.trailer.prev!).toBeUndefined()
     expect(crs.trailer.root!.generation).toBe(0)
     expect(crs.trailer.root!.obj).toBe(1)
+    expect(crs.streamLength).toBe(1644)
+    expect(crs.index[0]).toBe(0)
+    expect(crs.index[1]).toBe(625)
+    expect(crs.w[0]).toBe(1)
+    expect(crs.w[1]).toBe(3)
+    expect(crs.w[2]).toBe(0)
 
 })
 
