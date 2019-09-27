@@ -5,6 +5,14 @@ export class Stream {
     private _ptr: number = 0
     constructor(protected data: Uint8Array) { }
 
+    getLength(): number {
+        return this.data.length
+    }
+
+    peekNBytes(n: number = 1, ptr: number = 0): Uint8Array {
+        return this.data.slice(ptr, ptr + n)
+    }
+
     peekNBytesAsNumber(n: number = 1, ptr: number = 0): number {
         let res: number = 0
 
@@ -29,7 +37,8 @@ export class Stream {
 
 export class FlateStream extends Stream {
     constructor(protected data: Uint8Array) {
-        super(Pako.inflate(data))
+        super(data)
+        this.data = Pako.inflate(data)
     }
 }
 

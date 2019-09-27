@@ -9,6 +9,7 @@ export interface XRef {
     generation: number
     free: boolean
     update: boolean
+    compressed?: boolean
 }
 
 interface SubSectionHeader {
@@ -40,6 +41,7 @@ export interface UpdateSection {
  *
  * */
 export class CrossReferenceStreamObject {
+    public refs: XRef[] = []
     constructor(private data: Uint8Array) { }
 
     public trailer: Trailer = { size: -1, root: { obj: -1, generation: -1 } }
@@ -48,19 +50,62 @@ export class CrossReferenceStreamObject {
 
     public w: number[] = []
     public index: number[] = []
+    private start_pointer: number = 0
+
+    /**
+     * Extracts a cross reference section that is a continuous definition of cross reference entries
+     * */
+    extractCrossReferenceSection(first_object_id: number, object_count: number, stream: Stream) {
+        let current_object_id = first_object_id
+
+        for (let i = 0; i < object_count; ++i) {
+            let _type = stream.getNBytesAsNumber(this.w[0])
+
+            let xref = undefined
+
+            switch (_type) {
+                case 0:
+                    xref = { id: current_object_id++, pointer: stream.getNBytesAsNumber(this.w[1]), generation: this.w[2] === 0 ? 0 : stream.getNBytesAsNumber(this.w[2]), free: true, update: false }
+                    break
+                case 1:
+                    xref = { id: current_object_id++, pointer: stream.getNBytesAsNumber(this.w[1]), generation: this.w[2] === 0 ? 0 : stream.getNBytesAsNumber(this.w[2]), free: false, update: true }
+                    break
+                case 2:
+                    xref = { id: current_object_id++, pointer: stream.getNBytesAsNumber(this.w[1]), generation: this.w[2] === 0 ? 0 : stream.getNBytesAsNumber(this.w[2]), free: true, update: false, compressed: true }
+                    break
+            }
+
+            if (xref)
+                this.refs.push(xref)
+            else
+                throw Error(`Invalid cross-reference-stream type ${_type}`)
+        }
+    }
 
     /**
      * Extracts the cross-reference-table from the stream
      * */
     extractStream(stream: Stream) {
+        let cross_reference_length = this.w.reduce((a, b) => a + b, 0)
 
-        //assert sum(this.w) * this.index[1] == this.streamLength
+        // check if the data stream has a valid size
+        if (stream.getLength() !== cross_reference_length * this.index.filter((v, i) => i % 2 === 1).reduce((a, b) => a + b, 0))
+            throw Error(`Invalid stream length - is ${stream.getLength()} but should be ${cross_reference_length * this.index.filter((v, i) => i % 2 === 1).reduce((a, b) => a + b, 0)}`)
+
+        if (this.index.length % 2 === 1)
+            throw Error(`Invalid index flag ${this.index}`)
+
+        for (let i = 0; i < this.index.length; i += 2) {
+            this.extractCrossReferenceSection(this.index[i], this.index[i + 1], stream)
+        }
+
     }
 
     /**
      * Parses the Cross-Reference-Stream-Object at the given index
      * */
     extract(index: number) {
+        this.start_pointer = index
         let ptr_object_end = Util.locateSequence(Util.ENDOBJ, this.data, index)
 
         this.data = this.data.slice(index, ptr_object_end)
@@ -115,11 +160,11 @@ export class CrossReferenceStreamObject {
      * */
     getUpdateSection(): UpdateSection {
         return {
-            start_pointer: -1,
+            start_pointer: this.start_pointer,
             size: this.trailer.size,
             prev: this.trailer.prev,
             root: this.trailer.root,
-            refs: []
+            refs: this.refs
         }
     }
 }
@@ -213,7 +258,7 @@ export class CrossReferenceTable {
 
             let ptr_flag = Util.skipDelimiter(this.data, ptr_gen_end + 1)
 
-            let isFree = this.data[ptr_flag] === 102
+            let isFree = this.data[ptr_flag] === 102 // 102 = f
 
             _refs.push({
                 id: first_object_id + i,
