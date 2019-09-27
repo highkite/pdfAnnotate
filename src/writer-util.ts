@@ -96,7 +96,6 @@ export class WriterUtil {
             ret = ret.concat(WriterUtil.writeReferencePointer(annot_array_reference, true))
             ret.push(Util.SPACE)
             let ptr_annots_array_end = Util.locateSequence(Util.ARRAY_END, complete_page_object_data, ptr_annots, true) + Util.ARRAY_END.length
-            ptr_annots_array_end = Util.skipDelimiter(complete_page_object_data, ptr_annots_array_end)
 
             ret = ret.concat(Array.from(complete_page_object_data.slice(ptr_annots_array_end, complete_page_object_data.length)))
 

@@ -554,7 +554,7 @@ export class Writer {
         let new_data: number[] = []
 
         // Fix case that there is no linebreak after the end of the file
-        if (this.data[ptr - 1] === 70) {
+        if (this.data[ptr - 1] === 70) { // 70 = 'F' (from [%%EO]F
             new_data.push(Writer.CR)
             new_data.push(Writer.LF)
             ptr += 2
@@ -578,7 +578,7 @@ export class Writer {
             ptr += annot_array.data.length
 
             // add adapted page object if it exists -- In the case the page had no annotation yet there exists
-            // no such array referring to its annotations. A pointer to such an array array must be added to the
+            // no such array referring to its annotations. A pointer to such an array must be added to the
             // page object. If this was done the `pageData` paramater is set and contains the adapted page object
             if (annot_array.pageData.length > 0) {
                 this.xrefs.push({

@@ -37,6 +37,41 @@ export var pageObject_string_3 = new te.TextEncoder().encode(`
 endobj
 `)
 
+export var pageObject_string_4 = new te.TextEncoder().encode(`
+22 0 obj
+<<
+/Type /Page
+/Resources <<
+/ExtGState <<
+/G0 63 0 R
+/G1 64 0 R
+/G2 65 0 R
+>>
+/XObject <<
+/X0 66 0 R
+/X1 67 0 R
+/X2 68 0 R
+/X3 69 0 R
+/X4 70 0 R
+>>
+/Font <<
+/F0 71 0 R
+/F1 72 0 R
+/F2 73 0 R
+/F3 74 0 R
+>>
+>>
+/MediaBox [0 0 486 720]
+/Annots [75 0 R 76 0 R 77 0 R 78 0 R 79 0 R 80 0 R 81 0 R 82 0 R 83 0 R 84 0 R
+85 0 R 86 0 R 87 0 R 88 0 R 89 0 R 90 0 R 91 0 R 92 0 R 93 0 R 94 0 R
+95 0 R 96 0 R]
+/Contents 97 0 R
+/StructParents 0
+/Parent 11 0 R
+>>
+endobj
+`)
+
 export var crossReferenceStreamObject_string = new te.TextEncoder().encode(`
 625 0 obj
 <<

@@ -587,4 +587,24 @@ export class Util {
 
         return true
     }
+
+    /**
+     * Prints the array with leading indexes 10 bytes in a row
+     * Delimiter are substituted by '.'
+     * */
+    public static debug_printIndexed(array: Uint8Array | number[]) {
+        let outp = ""
+        for (let i = 0; i < array.length; ++i) {
+            if (i % 10 === 0) {
+                outp += "\n" + i + ":"
+            }
+
+            if (Util.isDelimiter(array[i]))
+                outp += " ."
+            else
+                outp += " " + String.fromCharCode(array[i])
+        }
+
+        console.log(outp)
+    }
 }

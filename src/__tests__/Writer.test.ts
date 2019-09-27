@@ -37,12 +37,12 @@ test('getAnnotations', () => {
 test('MISC', () => {
     let data = loadFromFile('./test8.pdf')
     let fac: AnnotationFactory = new AnnotationFactory(data)
-    //fac.createHighlightAnnotation(0, [50, 50, 80, 80], "Test123", "Max")
-    //fac.getAnnotations().then((annots) => {
-    //    console.log(annots)
-    //})
-    //let data2 = fac.write()
-    //save('output.pdf', data2)
+    fac.createHighlightAnnotation(0, [50, 50, 80, 80], "Test123", "Max")
+    fac.getAnnotations().then((annots) => {
+        console.log(annots)
+    })
+    let data2 = fac.write()
+    save('output.pdf', data2)
 
     //let data = loadFromFile('./test6.pdf')
     //let fac: AnnotationFactory = new AnnotationFactory(data)
