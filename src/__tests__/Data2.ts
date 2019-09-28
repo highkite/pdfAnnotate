@@ -1,6 +1,25 @@
 var te = require('text-encoder')
 var fs = require('fs')
 
+export var simplePageObject = new te.TextEncoder().encode(`
+2 0 obj <<
+/Type /Page
+/Contents 10 0 R
+/Resources 9 0 R
+>> endobj
+`)
+
+export var simplePageObject_2 = new te.TextEncoder().encode(`
+2 0 obj <<
+/Type /Page
+/Contents 10 0 R
+/Resources 9 0 R
+/MediaBox [0 0 612 792]
+>> endobj
+`)
+
+export var simpleListObject_1 = new te.TextEncoder().encode(`[0 0 612 792]`)
+
 export var pageObject_string = new te.TextEncoder().encode(`
 2 0 obj <<
 /Type /Page

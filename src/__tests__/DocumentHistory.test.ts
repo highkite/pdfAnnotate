@@ -1,6 +1,7 @@
 import { DocumentHistory, CrossReferenceStreamObject } from '../document-history';
 import { crossReferenceStreamObject_string } from './Data2'
 import { crossReferenceStreamObjectWithStreamSection } from './Data3';
+import { test_9_cross_reference_stream_object } from './Data4';
 import { testDocument } from './Data';
 
 test('extractCrossReferenceStreamObjectWithStreamSection', () => {
@@ -17,6 +18,23 @@ test('extractCrossReferenceStreamObjectWithStreamSection', () => {
     expect(crs.w[0]).toBe(1)
     expect(crs.w[1]).toBe(3)
     expect(crs.w[2]).toBe(0)
+
+})
+
+test('extractCrossReferenceStreamObjectWithStreamSection_2', () => {
+    let crs = new CrossReferenceStreamObject(new Uint8Array(test_9_cross_reference_stream_object))
+    crs.extract(0)
+
+    expect(crs.trailer.size).toBe(3681)
+    expect(crs.trailer.prev!).toBeUndefined()
+    expect(crs.trailer.root!.generation).toBe(0)
+    expect(crs.trailer.root!.obj).toBe(3678)
+    expect(crs.streamLength).toBe(8605)
+    expect(crs.index[0]).toBe(0)
+    expect(crs.index[1]).toBe(3681)
+    expect(crs.w[0]).toBe(1)
+    expect(crs.w[1]).toBe(3)
+    expect(crs.w[2]).toBe(1)
 
 })
 

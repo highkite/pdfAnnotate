@@ -1,4 +1,10 @@
 import { ReferencePointer } from './parser';
+
+interface ExtractionResult {
+    result: any
+    end_index: number
+}
+
 /**
  * This class provides methods to navigate through the byte array representing the PDF document
  * */
@@ -51,8 +57,6 @@ export class Util {
     public static XREF: number[] = [120, 114, 101, 102] // = 'xref'
     public static STREAM: number[] = [115, 116, 114, 101, 97, 109] // = 'stream'
     public static ENDSTREAM: number[] = [101, 110, 100, 115, 116, 114, 101, 97, 109] // = 'endstream'
-    public static DOUBLE_ANGLE_BRACKET_OPEN: number[] = [60, 60] // <<
-    public static DOUBLE_ANGLE_BRACKET_CLOSED: number[] = [62, 62]// >>
 
     /**
      * Returns the next word. These are bytes that are not separated by a delimiter and a ptr to the position where the word ends
@@ -192,7 +196,7 @@ export class Util {
      * array or a pointer within the array. If it is a nested array the pointer must mark the beginning
      * of the suberarray. Otherwise only the subarray is extracted
      * */
-    public static extractArraySequence(data: Uint8Array, index: number): any {
+    public static extractArraySequence(data: Uint8Array, index: number): ExtractionResult {
         let array_start = this.locateSequenceReversed(Util.ARRAY_START, data, index)
 
         if (-1 === array_start)
@@ -201,7 +205,8 @@ export class Util {
         let root_list = { ptr: array_start, lst: [] }
         let start_pointer: any[] = [root_list]
 
-        for (let i = array_start + 1; i < data.length && start_pointer.length > 0;) {
+        let i = array_start + 1
+        for (; i < data.length && start_pointer.length > 0;) {
             if (data[i] === Util.ARRAY_START[0]) {
                 let _n = { ptr: i, lst: [] }
                 start_pointer[start_pointer.length - 1].ptr = -1 // mark list as collection of other lists
@@ -220,7 +225,7 @@ export class Util {
                     if (start_pointer.length > 0) {
                         start_pointer[start_pointer.length - 1].lst.push(as_toAdd)
                     } else {
-                        return as_toAdd
+                        return { result: as_toAdd, end_index: i }
                     }
                 } else if (sp.ptr === -1 && start_pointer.length > 0) {
                     start_pointer[start_pointer.length - 1].lst.push(sp.lst)
@@ -230,7 +235,7 @@ export class Util {
             i = Util.skipDelimiter(data, i + 1)
         }
 
-        return root_list.lst
+        return { result: root_list.lst, end_index: i - 1 }
     }
 
     private static extractReferenceArrayRec(arraySeq: any): any {
@@ -249,10 +254,10 @@ export class Util {
     /**
      * Extracts the references in an array
      * */
-    public static extractReferenceArray(data: Uint8Array, index: number): any {
-        let array_sequences = Util.extractArraySequence(data, index)
+    public static extractReferenceArray(data: Uint8Array, index: number): ExtractionResult {
+        let array_sequence = Util.extractArraySequence(data, index)
 
-        return this.extractReferenceArrayRec(array_sequences)
+        return { result: this.extractReferenceArrayRec(array_sequence.result), end_index: array_sequence.end_index }
     }
 
 
@@ -284,10 +289,10 @@ export class Util {
      * Extracts the numbers in an array
      * e.g.  [69.697 47.4148 96.4646 58.2598 ]
      * */
-    public static extractNumbersArray(data: Uint8Array, index: number): any {
-        let array_sequences = Util.extractArraySequence(data, index)
+    public static extractNumbersArray(data: Uint8Array, index: number): ExtractionResult {
+        let array_sequence = Util.extractArraySequence(data, index)
 
-        return this.extractNumbersArrayRec(array_sequences)
+        return { result: this.extractNumbersArrayRec(array_sequence.result), end_index: array_sequence.end_index }
     }
 
     /**
@@ -322,7 +327,7 @@ export class Util {
     /**
      * Returns a reference as typed object
      * */
-    public static extractReferenceTyped(data: Uint8Array, index: number): ReferencePointer {
+    public static extractReferenceTyped(data: Uint8Array, index: number): ExtractionResult {
 
         let ref_data = this.extractReference(data, index)
 
@@ -331,7 +336,7 @@ export class Util {
         let id = this.extractNumber(ref_data, 0, del_index)
         let gen = this.extractNumber(ref_data, del_index + 2)
 
-        return { obj: id, generation: gen }
+        return { result: { obj: id, generation: gen }, end_index: index + ref_data.length + 2 } // + _R
     }
 
     /**
@@ -369,10 +374,12 @@ export class Util {
      * it returns an array of references or an array of numbers. However the function supports
      * arbitrarily nesting of arrays.
      * */
-    public static extractArray(data: Uint8Array, index: number): any {
-        for (let i = 0; i < data.length; ++i) {
+    public static extractArray(data: Uint8Array, index: number): ExtractionResult {
+        for (let i = index; i < data.length; ++i) {
             if (data[i] === Util.R[0]) { // 'R' -- we know it is an array of references
                 return Util.extractReferenceArray(data, index)
+            } else if (data[i] === Util.ARRAY_END[0]) { // stop at array end
+                break
             }
         }
 
@@ -382,13 +389,13 @@ export class Util {
     /**
      * Extratcs the string
      * */
-    public static extractString(data: Uint8Array, index: number): string {
+    public static extractString(data: Uint8Array, index: number): ExtractionResult {
         let string_start = Util.locateSequence(Util.STRING_START, data, 0)
         let string_end = Util.locateSequence(Util.STRING_END, data, 0)
 
         data = data.slice(string_start + 1, string_end)
 
-        return Util.convertUnicodeToString(data)
+        return { result: Util.convertUnicodeToString(data), end_index: string_end }
     }
 
     /**
@@ -447,10 +454,10 @@ export class Util {
                 return Util.extractArray(value_data, 0)
             } else if (value_data[i] === Util.STRING_START[0] || value_data[i] === Util.STRING_END[0]) {
                 // handle string
-                return Util.extractString(value_data, 0)
+                return Util.extractString(value_data, 0).result
             } else if (value_data[i] === Util.R[0]) { // R
                 // handle Reference
-                return Util.extractReferenceTyped(value_data, 0)
+                return Util.extractReferenceTyped(value_data, 0).result
             }
         }
 
@@ -492,7 +499,7 @@ export class Util {
 
         let i = 0
         while (i < array_sequence.length) {
-            refs.push(Util.extractReferenceTyped(array_sequence, i))
+            refs.push(Util.extractReferenceTyped(array_sequence, i).result)
             i = Util.locateSequence(Util.R, array_sequence, i, true) + 2
         }
 

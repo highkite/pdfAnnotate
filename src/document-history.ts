@@ -71,9 +71,11 @@ export class CrossReferenceStreamObject {
                     xref = { id: current_object_id++, pointer: stream.getNBytesAsNumber(this.w[1]), generation: this.w[2] === 0 ? 0 : stream.getNBytesAsNumber(this.w[2]), free: false, update: true }
                     break
                 case 2:
+                    // in this case the pointer becomes the stream object id that contains the compressed object and the generation represents the index of the object in the stream
                     xref = { id: current_object_id++, pointer: stream.getNBytesAsNumber(this.w[1]), generation: this.w[2] === 0 ? 0 : stream.getNBytesAsNumber(this.w[2]), free: true, update: false, compressed: true }
                     break
             }
+
 
             if (xref)
                 this.refs.push(xref)

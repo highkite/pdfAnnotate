@@ -1,5 +1,5 @@
 import { Util } from './util';
-import { DocumentHistory, ObjectLookupTable } from './document-history';
+import { DocumentHistory, ObjectLookupTable, XRef } from './document-history';
 
 /**
  * Note that this parser does not parses the PDF file completely. It lookups those
@@ -112,7 +112,18 @@ export class Annotation {
  * Represents the Catalog object of the PDF document
  * */
 export class CatalogObject {
-    constructor(private data: Uint8Array) { }
+    /**
+     * Extracts the data representing the object.
+     * */
+    constructor(private data: Uint8Array, private xref: XRef) {
+        if (xref.compressed) { // Object is embedded into a stream object
+            let stream_object_id = xref.pointer
+            let stream_index = xref.generation
+            console.log(stream_object_id)
+        }
+
+        this.extract(xref.pointer)
+    }
 
     private pagesObjectId: ReferencePointer = { obj: -1, generation: -1 }
 
@@ -363,11 +374,10 @@ export class PDFDocumentParser {
             let root_obj = recent_update.root
 
             let obj_table = this.documentHistory.createObjectLookupTable()
+            console.log("Identified catalog object")
+            console.log(obj_table[root_obj.obj])
 
-            let catalog_ptr = obj_table[root_obj.obj].pointer
-
-            let catalog_object = new CatalogObject(this.data)
-            catalog_object.extract(catalog_ptr)
+            let catalog_object = new CatalogObject(this.data, obj_table[root_obj.obj])
 
             return catalog_object
         } else { // If we do not know the catalogue object we need to look it up
@@ -376,18 +386,18 @@ export class PDFDocumentParser {
             if (this.catalogObject)
                 return this.catalogObject
 
+            throw Error("Does not work for compressed data")
+
             let obj_table = this.documentHistory.createObjectLookupTable()
 
             for (let i = 1; i < recent_update.size; ++i) {
                 let _type = Util.extractField(this.data, Util._TYPE, obj_table[i].pointer)
 
                 if (Util.areArraysEqual(_type, Util.CATALOG)) {
-                    let catalog_object = new CatalogObject(this.data)
-                    catalog_object.extract(obj_table[i].pointer)
+                    this.catalogObject = new CatalogObject(this.data, obj_table[i])
 
-                    this.catalogObject = catalog_object
-
-                    return catalog_object
+                    if (this.catalogObject)
+                        return this.catalogObject
                 }
             }
         }
@@ -404,6 +414,7 @@ export class PDFDocumentParser {
         let catalog_object = this.getCatalog()
 
         let pages_id = catalog_object.getPagesObjectId()
+        console.log(`pages_id: ${pages_id.obj} ${pages_id.generation}`)
         let pages_ref = obj_table[pages_id.obj]
 
         if (pages_ref.generation !== pages_id.generation)
