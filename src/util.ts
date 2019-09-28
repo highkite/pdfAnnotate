@@ -60,17 +60,22 @@ export class Util {
 
     /**
      * Returns the next word. These are bytes that are not separated by a delimiter and a ptr to the position where the word ends
+     * It ignores/skips comments.
      * */
     public static readNextWord(data: Uint8Array, index: number = 0): [Uint8Array | undefined, number] {
         index = Util.skipDelimiter(data, index)
+
+        if (data[index] === 37) {
+            // in case of a comment run to the end of the line
+            while (data[index] !== 13 && data[index] != 10 && index < data.length)++index
+            index = Util.skipDelimiter(data, index)
+        }
+
         let start_index = index
 
-        if (data[index - 1] === 47) // salvage the leading /
-            start_index--
+        while (!Util.isDelimiter(data[index]) && data[index] !== 37 && index < data.length)++index
 
-        while (!Util.isDelimiter(data[index]) && index < data.length)++index
-
-        if (index < data.length)
+        if (index <= data.length)
             return [data.slice(start_index, index), index]
 
         return [undefined, index]

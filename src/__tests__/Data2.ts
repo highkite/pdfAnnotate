@@ -18,6 +18,45 @@ export var simplePageObject_2 = new te.TextEncoder().encode(`
 >> endobj
 `)
 
+export var simplePageObject_3 = new te.TextEncoder().encode(`
+2 0 obj %some comment
+<<
+/Type /Page
+/Contents 10 0 R
+/Resources 9 0 R
+>> endobj
+`)
+
+export var simplePageObject_4 = new te.TextEncoder().encode(`
+2 0 obj %some comment
+<<
+/Type /Page% comment directly after a value
+/Contents 10 0 R
+/Resources 9 0 R
+>> endobj
+`)
+
+export var simplePageObject_5 = new te.TextEncoder().encode(`
+2 0 obj %some comment
+<<
+/Type /Page% comment directly after a value
+/Contents 10 0 R
+/Resources 9 0 R
+>>%and also a comment 
+endobj
+`)
+
+export var simplePageObject_6 = new te.TextEncoder().encode(`
+2 0 obj %some comment
+<<
+/Type%some comment
+/Page
+/Contents 10 0 R
+/Resources 9 0 R
+>>%and also a comment 
+endobj
+`)
+
 export var simpleListObject_1 = new te.TextEncoder().encode(`[0 0 612 792]`)
 
 export var pageObject_string = new te.TextEncoder().encode(`
@@ -108,6 +147,10 @@ stream
 endstream
 endobj
 `)
+
+export var encode = (str: string) => {
+    return new te.TextEncoder().encode(str)
+}
 
 export var decode = (data: any) => {
     let _data = new Uint8Array(data)

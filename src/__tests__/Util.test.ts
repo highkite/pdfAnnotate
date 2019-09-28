@@ -1,5 +1,5 @@
 import { Util } from '../util';
-import { crossReferenceStreamObject_string, simpleListObject_1 } from './Data2'
+import { crossReferenceStreamObject_string, simpleListObject_1, encode } from './Data2'
 
 test('readNextWord', () => {
     let res = Util.readNextWord(crossReferenceStreamObject_string, 0)
@@ -58,6 +58,42 @@ test('readNextWord', () => {
 
     res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
     expect(Util.convertAsciiToString(res[0]!)).toBe("/XRef")
+})
+
+test('readNextWord_2', () => {
+    let res = Util.readNextWord(encode('hello'), 0)
+    console.log(res)
+    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+
+    res = Util.readNextWord(encode(' hello'), 0)
+    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+
+    res = Util.readNextWord(encode('b hello'), 0)
+    expect(Util.convertAsciiToString(res[0]!)).toBe("b")
+})
+
+test('readNextWordWithComment', () => {
+    let res = Util.readNextWord(encode('hello%comment stuff'), 0)
+    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+
+    res = Util.readNextWord(encode(`%some comment
+hello`), 0)
+    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+
+    res = Util.readNextWord(encode(` %some comment
+hello`), 0)
+    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+
+    res = Util.readNextWord(encode(` 
+%some comment
+hello`), 0)
+    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+
+    res = Util.readNextWord(encode(`hello %other comment`), 0)
+    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+
+    res = Util.readNextWord(encode('b hello%coment'), 0)
+    expect(Util.convertAsciiToString(res[0]!)).toBe("b")
 })
 
 test('locateSequence', () => {
