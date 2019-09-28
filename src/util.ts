@@ -417,54 +417,6 @@ export class Util {
     }
 
     /**
-     * Extracts the value of the given field.
-     *
-     * Returns 'undefined' if this field does not exist in the object
-     * */
-    public static extractField(data: Uint8Array, field: number[], ptr: number = 0): any {
-        // only check the fields of one object
-        let start_obj_ptr = Util.locateSequence(Util.OBJ, data, ptr, true)
-        let end_obj_ptr = Util.locateSequence(Util.ENDOBJ, data, start_obj_ptr, true)
-
-        data = data.slice(start_obj_ptr, end_obj_ptr)
-
-        let field_ptr = Util.locateSequence(field, data, 0, true)
-
-        if (field_ptr === -1)
-            return undefined
-
-        field_ptr += field.length
-
-        // handle case that there is an option value /<value> after the field /<field>
-        let field_value_end_ptr = Util.skipDelimiter(data, field_ptr)
-
-        if (data[field_value_end_ptr - 1] === 47) { // 47 = '/'
-            return Util.extractOptionValue(data, field_value_end_ptr - 1)
-        }
-
-        field_value_end_ptr = Util.locateSequence([47], data, field_ptr)
-
-        field_ptr = Util.skipDelimiter(data, field_ptr)
-
-        let value_data = data.slice(field_ptr, field_value_end_ptr)
-
-        for (let i = 0; i < value_data.length; ++i) {
-            if (value_data[i] === Util.ARRAY_START[0] || value_data[i] === Util.ARRAY_END[0]) {
-                // handle array
-                return Util.extractArray(value_data, 0)
-            } else if (value_data[i] === Util.STRING_START[0] || value_data[i] === Util.STRING_END[0]) {
-                // handle string
-                return Util.extractString(value_data, 0).result
-            } else if (value_data[i] === Util.R[0]) { // R
-                // handle Reference
-                return Util.extractReferenceTyped(value_data, 0).result
-            }
-        }
-
-        return Util.extractNumber(value_data, 0)
-    }
-
-    /**
      * Parses the ascii encoded number of the PDF file
      * */
     public static extractNumber(data: Uint8Array, start: number, end: number = -1) {

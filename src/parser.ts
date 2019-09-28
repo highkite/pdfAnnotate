@@ -1,4 +1,5 @@
 import { Util } from './util';
+import { ObjectUtil } from './object-util'
 import { DocumentHistory, ObjectLookupTable, XRef } from './document-history';
 
 /**
@@ -92,19 +93,21 @@ export class Annotation {
 
         this.data = this.data.slice(ptr, obj_end_ptr)
 
-        this.object_id = Util.extractObjectId(this.data, 0)
+        let annot_obj = ObjectUtil.extractObject(this.data, ptr)
 
-        this.type = "/" + Util.extractField(this.data, Util.SUBTYPE)
-        this.rect = Util.extractField(this.data, Util.RECT)
+        this.object_id = annot_obj.id
+
+        this.type = annot_obj["/Type"]
+        this.rect = annot_obj["/Rect"]
         this.pageReference = page
-        this.updateDate = Util.extractField(this.data, Util.M)
-        this.border = Util.extractField(this.data, Util.BORDER)
-        this.color = Util.extractField(this.data, Util.C)
-        this.author = Util.extractField(this.data, Util.T)
-        this.id = Util.extractField(this.data, Util.NM)
-        this.contents = Util.extractField(this.data, Util.CONTENTS)
-        this.quadPoints = Util.extractField(this.data, Util.QUADPOINTS)
-        this.inkList = Util.extractField(this.data, Util.INKLIST)
+        this.updateDate = annot_obj["/M"]
+        this.border = annot_obj["/Border"]
+        this.color = annot_obj["/C"]
+        this.author = annot_obj["/T"]
+        this.author = annot_obj["/NM"]
+        this.contents = annot_obj["/Contents"]
+        this.quadPoints = annot_obj["/Quadpoints"]
+        this.inkList = annot_obj["/Inklist"]
     }
 }
 
@@ -131,9 +134,9 @@ export class CatalogObject {
      * Extract the catalog object from the data at the given ptr
      * */
     extract(ptr: number) {
-        let ptr_pages_key = Util.locateSequence(Util.PAGES, this.data, ptr, true) + Util.PAGES.length
+        let page_obj = ObjectUtil.extractObject(this.data, ptr)
 
-        this.pagesObjectId = Util.extractReferenceTyped(this.data, ptr_pages_key)
+        this.pagesObjectId = page_obj["/Pages"]
     }
 
     getPagesObjectId(): ReferencePointer {
@@ -146,10 +149,6 @@ export class CatalogObject {
  * This is the object with /Type /Pages
  * */
 export class PageTree {
-
-    private id: number = -1
-
-    private generation: number = -1
 
     private pageCount: number = -1
 
@@ -196,13 +195,9 @@ export class PageTree {
 
                 let ptr = xref.pointer
 
-                let kids_index = Util.locateSequence(Util.KIDS, this.data, ptr, true) + Util.KIDS.length
+                let kid_page_obj = ObjectUtil.extractObject(this.data, ptr)
 
-                let array_data = Util.extractArraySequence(this.data, kids_index + 1)
-
-                let refs = Util.extractReferencesFromArraySequence(array_data)
-
-                this.extractPageReferences(refs)
+                this.extractPageReferences(kid_page_obj["/Kids"])
             }
         }
     }
@@ -211,22 +206,15 @@ export class PageTree {
      * Extract the object data at the given pointer
      * */
     extract(ptr: number) {
-        this.pageCount = Util.extractField(this.data, Util.COUNT, ptr)
+        let page_tree_obj = ObjectUtil.extractObject(this.data, ptr)
+        this.pageCount = page_tree_obj["/Count"]
 
-        // it is possible that an object of type /Pages references again to objects of types /Pages so we must
-        // apply a recursive evaluation
-        let kids_index = Util.locateSequence(Util.KIDS, this.data, ptr, true)
-
-        if (-1 === kids_index)
+        if (!page_tree_obj["/Kids"])
             throw Error(`Could not find index of /Kids in /Pages object`)
 
-        kids_index += Util.KIDS.length
-
-        let array_data = Util.extractArraySequence(this.data, kids_index + 1)
+        let refs = page_tree_obj["/Kids"]
 
         this.pageReferences = []
-
-        let refs = Util.extractReferencesFromArraySequence(array_data)
 
         this.extractPageReferences(refs)
     }
@@ -276,15 +264,9 @@ export class Page {
 
         let ptr = ref_annot_table.pointer
 
-        ptr = Util.locateSequence(Util.OBJ, this.data, ptr, true) + Util.OBJ.length
+        let annotations_obj = ObjectUtil.extractObject(this.data, ptr)
 
-        ptr = Util.skipDelimiter(this.data, ptr)
-
-        let array_sequence = Util.extractArraySequence(this.data, ptr)
-
-        let refs = Util.extractReferencesFromArraySequence(array_sequence)
-
-        this.annots = refs
+        this.annots = annotations_obj.value
     }
 
     /**
@@ -292,19 +274,11 @@ export class Page {
      * */
     extract(ptr: number) {
 
-        let id_ptr = Util.skipDelimiter(this.data, ptr)
-        let object_id: number = Util.extractNumber(this.data, id_ptr)
+        let page_obj = ObjectUtil.extractObject(this.data, ptr)
 
-        let end_id_ptr = Util.locateDelimiter(this.data, id_ptr + 1) + 1
-        let object_gen: number = Util.extractNumber(this.data, end_id_ptr)
+        this.object_id = page_obj.id
 
-        this.object_id = { obj: object_id, generation: object_gen }
-
-        let end_ptr = Util.locateSequence(Util.ENDOBJ, this.data, ptr, true)
-
-        let _data = this.data.slice(ptr, end_ptr)
-
-        let annots = Util.extractField(_data, Util.ANNOTS)
+        let annots = page_obj["/Annots"]
 
         if (annots) {
             this.hasAnnotsField = true
@@ -388,18 +362,18 @@ export class PDFDocumentParser {
 
             throw Error("Does not work for compressed data")
 
-            let obj_table = this.documentHistory.createObjectLookupTable()
+            //let obj_table = this.documentHistory.createObjectLookupTable()
 
-            for (let i = 1; i < recent_update.size; ++i) {
-                let _type = Util.extractField(this.data, Util._TYPE, obj_table[i].pointer)
+            //for (let i = 1; i < recent_update.size; ++i) {
+            //    let _type = Util.extractField(this.data, Util._TYPE, obj_table[i].pointer)
 
-                if (Util.areArraysEqual(_type, Util.CATALOG)) {
-                    this.catalogObject = new CatalogObject(this.data, obj_table[i])
+            //    if (Util.areArraysEqual(_type, Util.CATALOG)) {
+            //        this.catalogObject = new CatalogObject(this.data, obj_table[i])
 
-                    if (this.catalogObject)
-                        return this.catalogObject
-                }
-            }
+            //        if (this.catalogObject)
+            //            return this.catalogObject
+            //    }
+            //}
         }
 
         throw Error("Could not identify catalog object")

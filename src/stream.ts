@@ -1,4 +1,5 @@
-import { Util } from './util';
+import { Util } from './util'
+import { ObjectUtil } from './object-util';
 import * as Pako from 'pako'
 
 export class Stream {
@@ -49,7 +50,7 @@ export class StreamObject {
     public stream: Stream | undefined = undefined
 
     extractStreamData(streamData: Uint8Array, compression: string) {
-        if (compression === 'FlateDecode') {
+        if (compression === '/FlateDecode') {
             this.stream = new FlateStream(streamData)
         } else {
             throw Error(`Unsupported stream filter: ${compression} - Only supported filter is FlateDecode (right now)`)
@@ -57,29 +58,25 @@ export class StreamObject {
     }
 
     /**
-     * Parses the Cross-Reference-Stream-Object at the given index
+     * Parses the Stream-Object at the given index
      * */
     extract(index: number = 0): Stream | undefined {
-        let ptr_object_end = Util.locateSequence(Util.ENDOBJ, this.data, index)
-
-        this.data = this.data.slice(index, ptr_object_end)
+        let sobj = ObjectUtil.extractObject(this.data, index)
 
         // check if filter is supported
-        let filter = Util.extractField(this.data, Util.FILTER)
-        if (filter !== "FlateDecode")
-            throw Error(`Unsupported stream filter: ${filter} - Only supported filter is FlateDecode`)
+        if (!sobj["/Filter"] || sobj["/Filter"] !== "/FlateDecode")
+            throw Error(`Unsupported stream filter: ${sobj["/Filter"]} - Only supported filter is FlateDecode`)
 
         // extract the stream length
-        let stream_length = Util.extractField(this.data, Util.LENGTH)
-        this.streamLength = stream_length
+        this.streamLength = sobj["/Length"]
 
         // extract the stream
         let ptr_stream_data_start = Util.locateSequence(Util.STREAM, this.data) + Util.STREAM.length
         ptr_stream_data_start = Util.skipDelimiter(this.data, ptr_stream_data_start)
 
-        let ptr_stream_data_end = ptr_stream_data_start + stream_length
+        let ptr_stream_data_end = ptr_stream_data_start + this.streamLength
 
-        this.extractStreamData(this.data.slice(ptr_stream_data_start, ptr_stream_data_end), filter)
+        this.extractStreamData(this.data.slice(ptr_stream_data_start, ptr_stream_data_end), sobj["/Filter"])
 
         return this.stream
     }

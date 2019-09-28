@@ -1,5 +1,6 @@
 import { ReferencePointer } from './parser';
 import { Util } from './util';
+import { ObjectUtil } from './object-util'
 import { PDFVersion } from './parser';
 import { Stream, StreamObject } from './stream';
 
@@ -108,42 +109,36 @@ export class CrossReferenceStreamObject {
      * */
     extract(index: number) {
         this.start_pointer = index
-        let ptr_object_end = Util.locateSequence(Util.ENDOBJ, this.data, index)
+        let crs_object = ObjectUtil.extractObject(this.data, index)
 
+        let ptr_object_end = Util.locateSequence(Util.ENDOBJ, this.data, index)
         this.data = this.data.slice(index, ptr_object_end)
 
-        // extract id and generation of the cross-reference-stream object
-        let obj_id_gen = Util.extractObjectId(this.data, 0)
-
         // check type
-        let _type = Util.extractField(this.data, Util._TYPE)
-        if (_type !== "XRef")
-            throw Error(`Invalid Cross-Reference-Stream-object type: ${_type}`)
+        if (crs_object["/Type"] !== "/XRef")
+            throw Error(`Invalid Cross-Reference-Stream-object type: ${crs_object["/Type"]}`)
 
         // extract size
-        let size = Util.extractField(this.data, Util.SIZE)
-        if (!size)
-            throw Error(`Invalid size value ${size}`)
-        this.trailer.size = size
+        if (!crs_object["/Size"])
+            throw Error(`Invalid size value ${crs_object["/Size"]}`)
+        this.trailer.size = crs_object["/Size"]
 
         // extract ROOT if it exists
-        let root = Util.extractField(this.data, Util.ROOT)
-        if (root)
-            this.trailer.root = root
+        if (crs_object["/Root"])
+            this.trailer.root = crs_object["/Root"]
 
         // extract PREV if it exists
-        let prev = Util.extractField(this.data, Util.PREV)
-        if (prev)
-            this.trailer.prev = prev
+        if (crs_object["/Prev"])
+            this.trailer.prev = crs_object["/Prev"]
 
         // extract W parameter
-        this.w = Util.extractField(this.data, Util.W)
+        this.w = crs_object["/W"]
 
         if (!this.w || 0 === this.w.length)
             throw Error("Invalid /W parameter in Cross-Reference-Stream-Object")
 
         // extract Index parameter
-        this.index = Util.extractField(this.data, Util.INDEX)
+        this.index = crs_object["/Index"]
 
         if (!this.index || 0 === this.index.length)
             throw Error("Invalid /Index parameter in Cross-Reference-Stream-Object")
@@ -160,7 +155,7 @@ export class CrossReferenceStreamObject {
         this.extractStream(stream)
 
         // the cross-reference-stream object is also a known reference
-        this.refs.push({ id: obj_id_gen.obj, pointer: this.start_pointer, generation: obj_id_gen.generation, free: false, update: true })
+        this.refs.push({ id: crs_object.id.obj, pointer: this.start_pointer, generation: crs_object.id.generation, free: false, update: true })
     }
 
     /**
@@ -310,7 +305,7 @@ export class CrossReferenceTable {
 
         return {
             size: size,
-            root: root_reference,
+            root: root_reference.result,
             prev: prev
         }
     }
