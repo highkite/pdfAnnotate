@@ -51,9 +51,12 @@ export class ObjectUtil {
         console.log(`Process key at position (${ptr}) - : ${next_string} - ${Util.convertAsciiToString(next_string)}`)
         let _ptr = Util.skipDelimiter(next_string, 0)
 
-        if (Util.locateSequence(Util.DICT_END, next_string) !== -1) {
-            console.log(`DICT END -- continue at ${next[1]}`)
-            return next[1]
+        if (Util.DICT_END[0] === next_string[0]) {
+            let wordLookup = Util.readNextWord(data, next[1])
+            if (wordLookup[0] && Util.DICT_END[0] === wordLookup[0][0]) {
+                console.log(`DICT END -- continue at ${wordLookup[1]}`)
+                return wordLookup[1]
+            }
         }
 
         return ObjectUtil.extractDictValueRec(data, next[1], dict, Util.convertAsciiToString(next_string))
@@ -83,16 +86,18 @@ export class ObjectUtil {
             dict[current_key] = extracted_string.result
             return ObjectUtil.extractDictKeyRec(data, extracted_string.end_index, dict)
         } else if (next_string[0] === Util.DICT_START[0]) { // <
-            console.log("\t -- DICT_START")
-            if (current_key) {
-                console.log("\t\t -- SUB DICT")
-                let sup_dict = {}
-                let end_sub_dict = ObjectUtil.extractDictKeyRec(data, next[1], sup_dict)
-                dict[current_key] = sup_dict
-                console.log(`-----------------------here: ${end_sub_dict}`)
-                return ObjectUtil.extractDictKeyRec(data, end_sub_dict, dict)
-            } else {
-                return ObjectUtil.extractDictKeyRec(data, next[1], dict)
+            if (data[next[1]] === Util.DICT_START[0]) {
+                console.log("\t -- DICT_START")
+                if (current_key) {
+                    console.log("\t\t -- SUB DICT")
+                    let sup_dict = {}
+                    let end_sub_dict = ObjectUtil.extractDictKeyRec(data, next[1] + 1, sup_dict)
+                    dict[current_key] = sup_dict
+                    console.log(`-----------------------here: ${end_sub_dict}`)
+                    return ObjectUtil.extractDictKeyRec(data, end_sub_dict, dict)
+                } else {
+                    return ObjectUtil.extractDictKeyRec(data, next[1] + 1, dict)
+                }
             }
         } else if (next_string[0] === 47) { // /
             console.log("\t -- PROPERTY")
@@ -133,15 +138,15 @@ export class ObjectUtil {
      * Parses a PDF object and returns a dictionary containing its fields
      * */
     public static extractObject(data: Uint8Array, ptr: number): any {
-        console.log(data)
-        Util.debug_printIndexed(data)
+        console.log(`extractObject(${ptr})`)
         let ret_obj: any = {}
 
         let object_id = Util.extractObjectId(data, ptr)
+        console.log(`extracted Object id: ${JSON.stringify(object_id)}`)
 
         ret_obj.id = object_id
 
-        ptr = Util.locateSequence(Util.OBJ, data) + Util.OBJ.length
+        ptr = Util.locateSequence(Util.OBJ, data, ptr) + Util.OBJ.length
 
         ObjectUtil.extractDictValueRec(data, ptr, ret_obj)
 

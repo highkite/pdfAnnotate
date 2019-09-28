@@ -63,12 +63,12 @@ export class Util {
      * It ignores/skips comments.
      * */
     public static readNextWord(data: Uint8Array, index: number = 0): [Uint8Array | undefined, number] {
-        while (data[index] === 10 || data[index] === 13 || data[index] === 32)++index
+        index = Util.skipSpaces(data, index)
 
         if (data[index] === 37) {
             // in case of a comment run to the end of the line
             while (data[index] !== 13 && data[index] != 10 && index < data.length)++index
-            while (data[index] === 10 || data[index] === 13 || data[index] === 32)++index
+            index = Util.skipSpaces(data, index)
         }
 
         let start_index = index
@@ -89,6 +89,15 @@ export class Util {
      * */
     public static skipDelimiter(data: Uint8Array, index: number = 0): number {
         while (index < data.length && this.isDelimiter(data[index]))++index
+
+        return index
+    }
+
+    /**
+     * Skips only spaces
+     * */
+    public static skipSpaces(data: Uint8Array | number[], index: number = 0): number {
+        while (index < data.length && (data[index] === 10 || data[index] === 13 || data[index] === 32))++index
 
         return index
     }
@@ -121,7 +130,11 @@ export class Util {
             value === 13 ||
             value === 32 ||
             value === 47 || // /
-            value === 37 // %
+            value === 37 || // %
+            value === 60 || // <
+            value === 62 || // >
+            value === 91 || // [
+            value === 93 // ]
     }
 
     /**
@@ -135,7 +148,7 @@ export class Util {
         for (let j = 0; i < data.length; ++i) {
             if (data[i] == sequence[j]) {
                 if (j == sequence.length - 1) {
-                    if (!closed || data.length == i + 1 || this.isDelimiter(data[i + 1]) || data[i + 1] === Util.ARRAY_START[0]) {
+                    if (!closed || data.length == i + 1 || this.isDelimiter(data[i + 1])) {
                         return i - (sequence.length - 1)
                     } else {
                         j = -1
@@ -241,7 +254,7 @@ export class Util {
                 }
             }
 
-            i = Util.skipDelimiter(data, i + 1)
+            i = Util.skipSpaces(data, i + 1)
         }
 
         return { result: root_list.lst, end_index: i - 1 }

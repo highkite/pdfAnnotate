@@ -1,5 +1,5 @@
 import { ObjectUtil } from '../object-util';
-import { pageObject_string, pageObject_string_3, pageObject_string_4, simplePageObject, simplePageObject_2, simplePageObject_3, simplePageObject_4, simplePageObject_5, simplePageObject_6 } from './Data2'
+import { pageObject_string, pageObject_string_3, pageObject_string_4, pageObject_string_5, simplePageObject, simplePageObject_2, simplePageObject_3, simplePageObject_4, simplePageObject_5, simplePageObject_6, simplePageObject_7 } from './Data2'
 
 test('extractObject_1', () => {
     let res = ObjectUtil.extractObject(simplePageObject, 0)
@@ -165,4 +165,36 @@ test('extractObject_5', () => {
     expect(res["/Resources"]["/Font"]["/F2"].generation).toBe(0)
     expect(res["/Resources"]["/Font"]["/F3"].generation).toBe(0)
 
+})
+
+test('extractObject_6', () => {
+    let res = ObjectUtil.extractObject(simplePageObject_7, 0)
+
+    expect(res["/Type"]).toBe("/Page")
+    expect(res.id.obj).toBe(2)
+    expect(res.id.generation).toBe(0)
+    expect(res["/Resources"].obj).toBe(9)
+    expect(res["/Resources"].generation).toBe(0)
+    expect(res["/Contents"].obj).toBe(10)
+    expect(res["/Contents"].generation).toBe(0)
+    expect(res["/MediaBox"]).toEqual([0, 0, 612, 792])
+})
+
+test('extractObject_7', () => {
+    let res = ObjectUtil.extractObject(pageObject_string_5, 0)
+
+    expect(res["/Type"]).toBe("/Page")
+    expect(res.id.obj).toBe(18)
+    expect(res.id.generation).toBe(0)
+    expect(res["/Resources"].obj).toBe(2)
+    expect(res["/Resources"].generation).toBe(0)
+    expect(res["/Contents"].obj).toBe(3)
+    expect(res["/Contents"].generation).toBe(0)
+    expect(res["/MediaBox"]).toEqual([0, 0, 612, 792])
+    expect(res["/Parent"].obj).toBe(1)
+    expect(res["/Parent"].generation).toBe(0)
+
+    expect(res["/Group"]["/Type"]).toBe("/Group")
+    expect(res["/Group"]["/S"]).toBe("/Transparency")
+    expect(res["/Group"]["/CS"]).toBe("/DeviceRGB")
 })

@@ -136,6 +136,9 @@ export class CatalogObject {
     extract(ptr: number) {
         let page_obj = ObjectUtil.extractObject(this.data, ptr)
 
+        if (page_obj["/Type"] !== "/Catalog")
+            throw Error(`Invalid catalog object at position ${ptr}`)
+
         this.pagesObjectId = page_obj["/Pages"]
     }
 
@@ -206,7 +209,9 @@ export class PageTree {
      * Extract the object data at the given pointer
      * */
     extract(ptr: number) {
+        console.log(`Parse Page Tree Object at position: ${ptr}`)
         let page_tree_obj = ObjectUtil.extractObject(this.data, ptr)
+        console.log(page_tree_obj)
         this.pageCount = page_tree_obj["/Count"]
 
         if (!page_tree_obj["/Kids"])
@@ -275,6 +280,7 @@ export class Page {
     extract(ptr: number) {
 
         let page_obj = ObjectUtil.extractObject(this.data, ptr)
+        console.log(page_obj)
 
         this.object_id = page_obj.id
 
@@ -349,9 +355,7 @@ export class PDFDocumentParser {
 
             let obj_table = this.documentHistory.createObjectLookupTable()
 
-            let catalog_object = new CatalogObject(this.data, obj_table[root_obj.obj])
-
-            return catalog_object
+            return new CatalogObject(this.data, obj_table[root_obj.obj])
         } else { // If we do not know the catalogue object we need to look it up
             // In cross reference stream objects no /ROOT field is required, however often it is provided anyway
             // otherwise run this routine, but buffer the catalog object

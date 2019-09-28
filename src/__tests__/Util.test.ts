@@ -12,7 +12,10 @@ test('readNextWord', () => {
     expect(Util.convertAsciiToString(res[0]!)).toBe("obj")
 
     res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("<<")
+    expect(Util.convertAsciiToString(res[0]!)).toBe("<")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("<")
 
     res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
     expect(Util.convertAsciiToString(res[0]!)).toBe("/Length")
@@ -24,10 +27,22 @@ test('readNextWord', () => {
     expect(Util.convertAsciiToString(res[0]!)).toBe("/ID")
 
     res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("[<9BFD8283F629F168063225BF31A92429>")
+    expect(Util.convertAsciiToString(res[0]!)).toBe("[")
 
     res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("<6A28637CD303B944B7A012622D2884DD>]")
+    expect(Util.convertAsciiToString(res[0]!)).toBe("<9BFD8283F629F168063225BF31A92429")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe(">")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("<6A28637CD303B944B7A012622D2884DD")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe(">")
+
+    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("]")
 
     res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
     expect(Util.convertAsciiToString(res[0]!)).toBe("/Info")
@@ -276,10 +291,10 @@ test('extractNumber', () => {
 
 test('extractString', () => {
     let data = new Uint8Array([40, 97, 98, 99, 41])
-    expect(Util.extractString(data, 0)).toEqual('abc')
+    expect(Util.extractString(data, 0).result).toEqual('abc')
 
     data = new Uint8Array([32, 10, 13, 40, 97, 98, 99, 41])
-    expect(Util.extractString(data, 0)).toEqual('abc')
+    expect(Util.extractString(data, 0).result).toEqual('abc')
 })
 
 test('extractArray', () => {
@@ -288,7 +303,7 @@ test('extractArray', () => {
     expect(Util.extractArray(data, 0).end_index).toEqual(7)
 
     data = new Uint8Array([91, 54, 32, 48, 32, 82, 32, 56, 32, 48, 32, 82, 32, 93]) // reference pointer array
-    expect(Util.extractArray(data, 0).end_index).toEqual(14)
+    expect(Util.extractArray(data, 0).end_index).toEqual(13)
     expect(Util.extractArray(data, 0).result[0].obj).toEqual(6)
     expect(Util.extractArray(data, 0).result[0].generation).toEqual(0)
 
@@ -298,7 +313,7 @@ test('extractArray', () => {
 
 test('extractArrayNested', () => {
     let data = new Uint8Array([91, 91, 49, 32, 50, 32, 51, 32, 93, 32, 91, 49, 32, 50, 32, 51, 32, 93, 93])
-    expect(Util.extractArray(data, 0)).toEqual([[1, 2, 3], [1, 2, 3]])
+    expect(Util.extractArray(data, 0).result).toEqual([[1, 2, 3], [1, 2, 3]])
 
     data = new Uint8Array([91, 91, 54, 32, 48, 32, 82, 32, 56, 32, 48, 32, 82, 32, 93, 32, 93]) // reference pointer array
     expect(Util.extractArray(data, 0).result[0][0].obj).toEqual(6)
@@ -436,7 +451,7 @@ test('extractArraySequenceNested', () => {
 
 test('skipDelimiter', () => {
     let data = new Uint8Array([91, 50, 32, 51, 32, 82, 32, 52, 48, 32, 53, 32, 82, 93])
-    expect(Util.skipDelimiter(data, 0)).toEqual(0)
+    expect(Util.skipDelimiter(data, 0)).toEqual(1)
 
     data = new Uint8Array([91, 50, 32, 51, 32, 82, 32, 52, 48, 32, 53, 32, 82, 93])
     expect(Util.skipDelimiter(data, 2)).toEqual(3)

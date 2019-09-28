@@ -57,6 +57,15 @@ export var simplePageObject_6 = new te.TextEncoder().encode(`
 endobj
 `)
 
+export var simplePageObject_7 = new te.TextEncoder().encode(`
+2 0 obj <<
+/Type /Page
+/Contents 10 0 R
+/Resources 9 0 R
+/MediaBox[0 0 612 792]
+>> endobj
+`)
+
 export var simpleListObject_1 = new te.TextEncoder().encode(`[0 0 612 792]`)
 
 export var pageObject_string = new te.TextEncoder().encode(`
@@ -95,6 +104,7 @@ export var pageObject_string_3 = new te.TextEncoder().encode(`
 endobj
 `)
 
+
 export var pageObject_string_4 = new te.TextEncoder().encode(`
 22 0 obj
 <<
@@ -127,6 +137,20 @@ export var pageObject_string_4 = new te.TextEncoder().encode(`
 /StructParents 0
 /Parent 11 0 R
 >>
+endobj
+`)
+
+export var pageObject_string_5 = new te.TextEncoder().encode(`
+18 0 obj
+<< /Type /Page
+   /Parent 1 0 R
+   /MediaBox [ 0 0 612 792 ]
+   /Contents 3 0 R
+   /Group <<
+      /Type /Group
+      /S /Transparency
+      /CS /DeviceRGB>>
+   /Resources 2 0 R>>
 endobj
 `)
 
