@@ -1,5 +1,5 @@
 import { ObjectUtil } from '../object-util';
-import { pageObject_string, pageObject_string_3, pageObject_string_4, simplePageObject, simplePageObject_2 } from './Data2'
+import { pageObject_string, pageObject_string_3, pageObject_string_4, simplePageObject, simplePageObject_2, simplePageObject_3, simplePageObject_4, simplePageObject_5, simplePageObject_6 } from './Data2'
 
 test('extractObject_1', () => {
     let res = ObjectUtil.extractObject(simplePageObject, 0)
@@ -24,6 +24,54 @@ test('extractObject_2', () => {
     expect(res["/Contents"].obj).toBe(10)
     expect(res["/Contents"].generation).toBe(0)
     expect(res["/MediaBox"]).toEqual([0, 0, 612, 792])
+})
+
+test('extractObject_comment_1', () => {
+    let res = ObjectUtil.extractObject(simplePageObject_3, 0)
+
+    expect(res["/Type"]).toBe("/Page")
+    expect(res.id.obj).toBe(2)
+    expect(res.id.generation).toBe(0)
+    expect(res["/Resources"].obj).toBe(9)
+    expect(res["/Resources"].generation).toBe(0)
+    expect(res["/Contents"].obj).toBe(10)
+    expect(res["/Contents"].generation).toBe(0)
+})
+
+test('extractObject_comment_2', () => {
+    let res = ObjectUtil.extractObject(simplePageObject_4, 0)
+
+    expect(res["/Type"]).toBe("/Page")
+    expect(res.id.obj).toBe(2)
+    expect(res.id.generation).toBe(0)
+    expect(res["/Resources"].obj).toBe(9)
+    expect(res["/Resources"].generation).toBe(0)
+    expect(res["/Contents"].obj).toBe(10)
+    expect(res["/Contents"].generation).toBe(0)
+})
+
+test('extractObject_comment_3', () => {
+    let res = ObjectUtil.extractObject(simplePageObject_5, 0)
+
+    expect(res["/Type"]).toBe("/Page")
+    expect(res.id.obj).toBe(2)
+    expect(res.id.generation).toBe(0)
+    expect(res["/Resources"].obj).toBe(9)
+    expect(res["/Resources"].generation).toBe(0)
+    expect(res["/Contents"].obj).toBe(10)
+    expect(res["/Contents"].generation).toBe(0)
+})
+
+test('extractObject_comment_4', () => {
+    let res = ObjectUtil.extractObject(simplePageObject_6, 0)
+
+    expect(res["/Type"]).toBe("/Page")
+    expect(res.id.obj).toBe(2)
+    expect(res.id.generation).toBe(0)
+    expect(res["/Resources"].obj).toBe(9)
+    expect(res["/Resources"].generation).toBe(0)
+    expect(res["/Contents"].obj).toBe(10)
+    expect(res["/Contents"].generation).toBe(0)
 })
 
 test('extractObject_3', () => {

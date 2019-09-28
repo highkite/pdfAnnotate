@@ -348,8 +348,6 @@ export class PDFDocumentParser {
             let root_obj = recent_update.root
 
             let obj_table = this.documentHistory.createObjectLookupTable()
-            console.log("Identified catalog object")
-            console.log(obj_table[root_obj.obj])
 
             let catalog_object = new CatalogObject(this.data, obj_table[root_obj.obj])
 

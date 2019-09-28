@@ -62,27 +62,36 @@ test('readNextWord', () => {
 
 test('readNextWord_2', () => {
     let res = Util.readNextWord(encode('hello'), 0)
-    console.log(res)
     expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+    expect(res[1]).toBe(5)
 
     res = Util.readNextWord(encode(' hello'), 0)
     expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+    expect(res[1]).toBe(6)
 
     res = Util.readNextWord(encode('b hello'), 0)
     expect(Util.convertAsciiToString(res[0]!)).toBe("b")
+    expect(res[1]).toBe(1)
 })
 
 test('readNextWordWithComment', () => {
     let res = Util.readNextWord(encode('hello%comment stuff'), 0)
     expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+    expect(res[1]).toBe(5)
+
+    res = Util.readNextWord(encode('hello% comment stuff'), 0)
+    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+    expect(res[1]).toBe(5)
 
     res = Util.readNextWord(encode(`%some comment
 hello`), 0)
     expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+    expect(res[1]).toBe(19)
 
     res = Util.readNextWord(encode(` %some comment
 hello`), 0)
     expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+    expect(res[1]).toBe(20)
 
     res = Util.readNextWord(encode(` 
 %some comment
@@ -94,6 +103,26 @@ hello`), 0)
 
     res = Util.readNextWord(encode('b hello%coment'), 0)
     expect(Util.convertAsciiToString(res[0]!)).toBe("b")
+
+    res = Util.readNextWord(encode(`/Type /Page% comment directly after a value
+/Contents`), 0)
+    expect(Util.convertAsciiToString(res[0]!)).toBe("/Type")
+    expect(res[1]).toBe(5)
+
+    res = Util.readNextWord(encode(`/Type /Page% comment directly after a value
+/Contents`), res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("/Page")
+    expect(res[1]).toBe(11)
+
+    res = Util.readNextWord(encode(`/Type /Page% comment directly after a value
+/Contents`), res[1])
+    expect(Util.convertAsciiToString(res[0]!)).toBe("/Contents")
+    expect(res[1]).toBe(53)
+
+    res = Util.readNextWord(encode(`/Type /Page% comment directly after a value
+/Contents`), res[1])
+    expect(res[0]).toBeUndefined()
+    expect(res[1]).toBe(54)
 })
 
 test('locateSequence', () => {

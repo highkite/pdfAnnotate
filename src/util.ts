@@ -63,17 +63,19 @@ export class Util {
      * It ignores/skips comments.
      * */
     public static readNextWord(data: Uint8Array, index: number = 0): [Uint8Array | undefined, number] {
-        index = Util.skipDelimiter(data, index)
+        while (data[index] === 10 || data[index] === 13 || data[index] === 32)++index
 
         if (data[index] === 37) {
             // in case of a comment run to the end of the line
             while (data[index] !== 13 && data[index] != 10 && index < data.length)++index
-            index = Util.skipDelimiter(data, index)
+            while (data[index] === 10 || data[index] === 13 || data[index] === 32)++index
         }
 
         let start_index = index
 
-        while (!Util.isDelimiter(data[index]) && data[index] !== 37 && index < data.length)++index
+        index++
+
+        while (!Util.isDelimiter(data[index]) && index < data.length)++index
 
         if (index <= data.length)
             return [data.slice(start_index, index), index]
@@ -117,7 +119,9 @@ export class Util {
     public static isDelimiter(value: number): boolean {
         return value === 10 ||
             value === 13 ||
-            value === 32
+            value === 32 ||
+            value === 47 || // /
+            value === 37 // %
     }
 
     /**

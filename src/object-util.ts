@@ -62,7 +62,7 @@ export class ObjectUtil {
     public static extractDictValueRec(data: Uint8Array, ptr: number, dict: any, current_key: string | undefined = undefined): number {
         let next = Util.readNextWord(data, ptr)
         let next_string: Uint8Array = next[0] || new Uint8Array([])
-        ptr = Util.skipDelimiter(data, ptr)
+        ptr = next[1] - next_string.length
         console.log(`Process value: ${Util.convertAsciiToString(next_string)} with end index: ${ptr}`)
 
         if (next_string[0] === Util.ARRAY_START[0]) {
@@ -125,12 +125,15 @@ export class ObjectUtil {
             console.log(dict)
             return ObjectUtil.extractDictKeyRec(data, value_end_ptr, dict)
         }
+
+        throw Error(`Could not interpret: ${next_string}`)
     }
 
     /**
      * Parses a PDF object and returns a dictionary containing its fields
      * */
     public static extractObject(data: Uint8Array, ptr: number): any {
+        console.log(data)
         Util.debug_printIndexed(data)
         let ret_obj: any = {}
 
