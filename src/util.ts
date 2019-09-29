@@ -342,34 +342,6 @@ export class Util {
     }
 
     /**
-     * Objects in PDF files are defined as
-     * <objNumber> <generation> obj
-     * <<
-     *      ...
-     *      /Type /<type>
-     *      ...
-     * >>
-     *
-     * Approach: We identify an index within the object definiton search the uniquely identifyable end of the object definition
-     * than the uniquely identifiable start. We than extract the generation and the object id
-     * */
-    public static getObjectByType(data: Uint8Array, _type: string, offset: number = 0) {
-        let searchSequence = this.convertStringToAscii(this.TYPE + _type)
-
-        let obj_index = this.locateSequence(searchSequence, data, 0, true)
-
-        let obj_end = this.locateSequence(Util.ENDOBJ, data, obj_index, true) + 6
-
-        let obj_start = this.locateSequenceReversed(Util.OBJ, data, obj_index, true)
-
-        let generation = this.locateDelimiterReversed(data, obj_start - 1)
-
-        let obj_id = this.locateDelimiterReversed(data, generation - 1)
-
-        return data.slice(obj_id, obj_end)
-    }
-
-    /**
      * Extracts array of numbers and arrays of references
      *
      * Mark that this function does not support arrays that contain different types, so either
