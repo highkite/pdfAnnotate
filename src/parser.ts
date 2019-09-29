@@ -82,20 +82,19 @@ export class Annotation {
     is_deleted?: boolean
 
 
-    constructor(private data: Uint8Array = new Uint8Array([])) { }
+    constructor(private data: Uint8Array = new Uint8Array([])) {
+        this.data = new Uint8Array(data)
+    }
 
     /**
      * Extract the annotation object (partially)
      * */
     extract(ptr: number, page: Page) {
-        // restrict the data array to the partition that actually contains the annotation data
-        let obj_end_ptr: number = Util.locateSequence(Util.ENDOBJ, this.data, ptr, true)
-
-        this.data = this.data.slice(ptr, obj_end_ptr)
-
         let annot_obj = ObjectUtil.extractObject(this.data, ptr)
 
         this.object_id = annot_obj.id
+
+        annot_obj = annot_obj.value
 
         this.type = annot_obj["/Type"]
         this.rect = annot_obj["/Rect"]
@@ -119,6 +118,7 @@ export class CatalogObject {
      * Extracts the data representing the object.
      * */
     constructor(private data: Uint8Array, private xref: XRef) {
+        this.data = new Uint8Array(data)
         if (xref.compressed) { // Object is embedded into a stream object
             let stream_object_id = xref.pointer
             let stream_index = xref.generation
@@ -134,7 +134,7 @@ export class CatalogObject {
      * Extract the catalog object from the data at the given ptr
      * */
     extract(ptr: number) {
-        let page_obj = ObjectUtil.extractObject(this.data, ptr)
+        let page_obj = ObjectUtil.extractObject(this.data, ptr).value
 
         if (page_obj["/Type"] !== "/Catalog")
             throw Error(`Invalid catalog object at position ${ptr}`)
@@ -198,7 +198,7 @@ export class PageTree {
 
                 let ptr = xref.pointer
 
-                let kid_page_obj = ObjectUtil.extractObject(this.data, ptr)
+                let kid_page_obj = ObjectUtil.extractObject(this.data, ptr).value
 
                 this.extractPageReferences(kid_page_obj["/Kids"])
             }
@@ -209,9 +209,7 @@ export class PageTree {
      * Extract the object data at the given pointer
      * */
     extract(ptr: number) {
-        console.log(`Parse Page Tree Object at position: ${ptr}`)
-        let page_tree_obj = ObjectUtil.extractObject(this.data, ptr)
-        console.log(page_tree_obj)
+        let page_tree_obj = ObjectUtil.extractObject(this.data, ptr).value
         this.pageCount = page_tree_obj["/Count"]
 
         if (!page_tree_obj["/Kids"])
@@ -251,7 +249,9 @@ export class Page {
 
     public annotsPointer: ReferencePointer | undefined
 
-    constructor(private data: Uint8Array, private documentHistory: DocumentHistory) { }
+    constructor(private data: Uint8Array, private documentHistory: DocumentHistory) {
+        this.data = new Uint8Array(data)
+    }
 
     /**
      * Extracts the references in the linked annotations array
@@ -280,11 +280,10 @@ export class Page {
     extract(ptr: number) {
 
         let page_obj = ObjectUtil.extractObject(this.data, ptr)
-        console.log(page_obj)
 
         this.object_id = page_obj.id
 
-        let annots = page_obj["/Annots"]
+        let annots = page_obj.value["/Annots"]
 
         if (annots) {
             this.hasAnnotsField = true
@@ -311,6 +310,8 @@ export class PDFDocumentParser {
     public documentHistory: DocumentHistory = new DocumentHistory(new Uint8Array([]))
 
     private catalogObject: CatalogObject | undefined = undefined
+
+    private pageTree: PageTree | undefined = undefined
 
     constructor(private data: Uint8Array) {
         this.data = new Uint8Array(data)
@@ -385,12 +386,13 @@ export class PDFDocumentParser {
      * Returns the latest version of the page tree object of the document
      * */
     getPageTree(): PageTree {
+        if (this.pageTree)
+            return this.pageTree
         let obj_table: ObjectLookupTable = this.documentHistory.createObjectLookupTable()
 
         let catalog_object = this.getCatalog()
 
         let pages_id = catalog_object.getPagesObjectId()
-        console.log(`pages_id: ${pages_id.obj} ${pages_id.generation}`)
         let pages_ref = obj_table[pages_id.obj]
 
         if (pages_ref.generation !== pages_id.generation)
@@ -398,6 +400,8 @@ export class PDFDocumentParser {
 
         let pageTree = new PageTree(this.data, obj_table)
         pageTree.extract(pages_ref.pointer)
+
+        this.pageTree = pageTree
 
         return pageTree
     }

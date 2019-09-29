@@ -147,8 +147,26 @@ export class ObjectUtil {
         ret_obj.id = object_id
 
         ptr = Util.locateSequence(Util.OBJ, data, ptr) + Util.OBJ.length
+        let ptr_obj_end = Util.locateSequence(Util.ENDOBJ, data, ptr)
+        console.log(`end object ptr: ${ptr_obj_end}`)
 
-        ObjectUtil.extractDictValueRec(data, ptr, ret_obj)
+        data = data.slice(ptr, ptr_obj_end)
+        Util.debug_printIndexed(data)
+
+        // determine the type of the object:
+        let next = Util.readNextWord(data, 0)
+
+        if (next[0] && next[0][0] === Util.DICT_START[0]) { // object contains a dict
+            let result_dict = {}
+            ObjectUtil.extractDictValueRec(data, 0, result_dict)
+            ret_obj.value = result_dict
+        } else if (next[0] && next[0][0] === Util.ARRAY_START[0]) { // object contains an array
+            let lst = Util.extractArray(data, next[1])
+            ret_obj.value = lst.result
+            console.log(`Extracted object list: ${JSON.stringify(lst.result)}`)
+        } else {
+            throw Error(`Invalid object type - starting with: ${next[0]}`)
+        }
 
         return ret_obj
     }

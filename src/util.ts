@@ -125,10 +125,14 @@ export class Util {
         return asciis
     }
 
-    public static isDelimiter(value: number): boolean {
+    public static isSpace(value: number): boolean {
         return value === 10 ||
             value === 13 ||
-            value === 32 ||
+            value === 32
+    }
+
+    public static isDelimiter(value: number): boolean {
+        return Util.isSpace(value) ||
             value === 47 || // /
             value === 37 || // %
             value === 60 || // <
@@ -599,7 +603,7 @@ export class Util {
                 outp += "\n" + i + ":"
             }
 
-            if (Util.isDelimiter(array[i]))
+            if (Util.isSpace(array[i]))
                 outp += " ."
             else
                 outp += " " + String.fromCharCode(array[i])

@@ -146,7 +146,6 @@ test('extractAnnotations', () => {
     let annots = doc.extractAnnotations()
 
     expect(annots[0].length).toBe(2)
-    //console.log(JSON.stringify(annots[0][0], null, 2))
 
     doc = new PDFDocumentParser(new Uint8Array(testDocument2))
 

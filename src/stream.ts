@@ -61,7 +61,7 @@ export class StreamObject {
      * Parses the Stream-Object at the given index
      * */
     extract(index: number = 0): Stream | undefined {
-        let sobj = ObjectUtil.extractObject(this.data, index)
+        let sobj = ObjectUtil.extractObject(this.data, index).value
 
         // check if filter is supported
         if (!sobj["/Filter"] || sobj["/Filter"] !== "/FlateDecode")

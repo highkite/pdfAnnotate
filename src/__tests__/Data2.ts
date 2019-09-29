@@ -1,6 +1,9 @@
 var te = require('text-encoder')
 var fs = require('fs')
 
+export var listObject_1 = new te.TextEncoder().encode(`
+2 0 obj [1 0 R 2 0 R] endobj `)
+
 export var simplePageObject = new te.TextEncoder().encode(`
 2 0 obj <<
 /Type /Page

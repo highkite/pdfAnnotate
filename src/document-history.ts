@@ -115,30 +115,30 @@ export class CrossReferenceStreamObject {
         this.data = this.data.slice(index, ptr_object_end)
 
         // check type
-        if (crs_object["/Type"] !== "/XRef")
-            throw Error(`Invalid Cross-Reference-Stream-object type: ${crs_object["/Type"]}`)
+        if (crs_object.value["/Type"] !== "/XRef")
+            throw Error(`Invalid Cross-Reference-Stream-object type: ${crs_object.value["/Type"]}`)
 
         // extract size
-        if (!crs_object["/Size"])
-            throw Error(`Invalid size value ${crs_object["/Size"]}`)
-        this.trailer.size = crs_object["/Size"]
+        if (!crs_object.value["/Size"])
+            throw Error(`Invalid size value ${crs_object.value["/Size"]}`)
+        this.trailer.size = crs_object.value["/Size"]
 
         // extract ROOT if it exists
-        if (crs_object["/Root"])
-            this.trailer.root = crs_object["/Root"]
+        if (crs_object.value["/Root"])
+            this.trailer.root = crs_object.value["/Root"]
 
         // extract PREV if it exists
-        if (crs_object["/Prev"])
-            this.trailer.prev = crs_object["/Prev"]
+        if (crs_object.value["/Prev"])
+            this.trailer.prev = crs_object.value["/Prev"]
 
         // extract W parameter
-        this.w = crs_object["/W"]
+        this.w = crs_object.value["/W"]
 
         if (!this.w || 0 === this.w.length)
             throw Error("Invalid /W parameter in Cross-Reference-Stream-Object")
 
         // extract Index parameter
-        this.index = crs_object["/Index"]
+        this.index = crs_object.value["/Index"]
 
         if (!this.index || 0 === this.index.length)
             throw Error("Invalid /Index parameter in Cross-Reference-Stream-Object")
