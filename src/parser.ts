@@ -1,4 +1,4 @@
-import { Util } from './util';
+import { Util, PDFVersion } from './util';
 import { ObjectUtil } from './object-util'
 import { DocumentHistory, ObjectLookupTable, XRef } from './document-history';
 
@@ -12,11 +12,6 @@ export interface Color {
     r: number
     g: number
     b: number
-}
-
-export interface PDFVersion {
-    major: number
-    minor: number
 }
 
 export interface Border {
@@ -327,13 +322,7 @@ export class PDFDocumentParser {
         if (this.version)
             return this.version
 
-        let ptr_version_start = Util.locateSequence(Util.VERSION, this.data) + Util.VERSION.length
-        let ptr_delimiter = Util.locateSequence([Util.DOT], this.data, ptr_version_start)
-        let major_version = Util.extractNumber(this.data, ptr_version_start, ptr_delimiter)
-        let ptr_end = Util.locateDelimiter(this.data, ptr_delimiter)
-        let minor_version = Util.extractNumber(this.data, ptr_delimiter + 1, ptr_end)
-
-        this.version = { major: major_version, minor: minor_version }
+        this.version = Util.extractVersion(this.data, 0)
 
         return this.version
     }

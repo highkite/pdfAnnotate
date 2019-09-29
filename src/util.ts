@@ -5,6 +5,12 @@ interface ExtractionResult {
     end_index: number
 }
 
+export interface PDFVersion {
+    major: number
+    minor: number
+}
+
+
 /**
  * This class provides methods to navigate through the byte array representing the PDF document
  * */
@@ -33,6 +39,20 @@ export class Util {
     public static STARTXREF: number[] = [115, 116, 97, 114, 116, 120, 114, 101, 102] // = 'startxref'
     public static XREF: number[] = [120, 114, 101, 102] // = 'xref'
     public static STREAM: number[] = [115, 116, 114, 101, 97, 109] // = 'stream'
+
+    /**
+     * Extracts the version information of a PDF file
+     * */
+    public static extractVersion(data: Uint8Array, index: number = 0): PDFVersion {
+
+        let ptr_version_start = Util.locateSequence(Util.VERSION, data, index) + Util.VERSION.length
+        let ptr_delimiter = Util.locateSequence([Util.DOT], data, ptr_version_start)
+        let major_version = Util.extractNumber(data, ptr_version_start, ptr_delimiter)
+        let ptr_end = Util.locateDelimiter(data, ptr_delimiter)
+        let minor_version = Util.extractNumber(data, ptr_delimiter + 1, ptr_end)
+
+        return { major: major_version, minor: minor_version }
+    }
 
     /**
      * Returns the next word. These are bytes that are not separated by a delimiter and a ptr to the position where the word ends
