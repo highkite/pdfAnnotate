@@ -14,10 +14,8 @@ export class Util {
     public static DOT: number = 46
     public static CR: number = 13
     public static LF: number = 10
-    public static CATALOG: number[] = [47, 67, 97, 116, 97, 108, 111, 103] // '/Catalog'
     public static TYPE: string = "/Type "
     public static SPACE: number = 32
-    public static _TYPE: number[] = [47, 84, 121, 112, 101] // '/Type'
     public static OBJ: number[] = [111, 98, 106] // 'obj'
     public static ENDOBJ: number[] = [101, 110, 100, 111, 98, 106] // 'endobj'
     public static ARRAY_START: number[] = [91] // '['
@@ -25,38 +23,16 @@ export class Util {
     public static STRING_START: number[] = [40] // '('
     public static STRING_END: number[] = [41] // ')'
     public static R: number[] = [82] // 'R'
-    public static ANNOT: number[] = [47, 65, 110, 110, 111, 116] // '/Annot'
     public static ANNOTS: number[] = [47, 65, 110, 110, 111, 116, 115] // '/Annot'
     public static DICT_START: number[] = [60, 60] // '<<'
     public static DICT_END: number[] = [62, 62] // '>>'
-    public static SUBTYPE: number[] = [47, 83, 117, 98, 116, 121, 112, 101] // '/Subtype'
-    public static PAGES: number[] = [47, 80, 97, 103, 101, 115] // /Pages
     public static PAGE: number[] = [47, 80, 97, 103, 101]
-    public static KIDS: number[] = [47, 75, 105, 100, 115]
-    public static COUNT: number[] = [47, 67, 111, 117, 110, 116]
-    public static RECT: number[] = [47, 82, 101, 99, 116]
-    public static INDEX: number[] = [47, 73, 110, 100, 101, 120] // /Index
     public static SIZE: number[] = [47, 83, 105, 122, 101] // /Size
     public static ROOT: number[] = [47, 82, 111, 111, 116] // /Root
-    public static FILTER: number[] = [47, 70, 105, 108, 116, 101, 114] // /Filter
     public static PREV: number[] = [47, 80, 114, 101, 118] // /Prev
-    public static M: number[] = [47, 77] // '/M'
-    public static W: number[] = [47, 87] // '/W'
-    public static T: number[] = [47, 84] // '/T'
-    public static F: number[] = [47, 70] // '/F'
-    public static C: number[] = [47, 67] // '/C'
-    public static LENGTH: number[] = [47, 76, 101, 110, 103, 116, 104] // '/Length'
-    public static CA: number[] = [47, 67, 65] // '/CA'
-    public static NM: number[] = [47, 78, 77] // '/NM'
-    public static P: number[] = [47, 80] // '/P'
-    public static CONTENTS: number[] = [47, 67, 111, 110, 116, 101, 110, 116, 115] // '/Contents'
-    public static BORDER: number[] = [47, 66, 111, 114, 100, 101, 114] // '/Border'
-    public static QUADPOINTS: number[] = [47, 81, 117, 97, 100, 80, 111, 105, 110, 116, 115] // '/QuadPoints'
-    public static INKLIST: number[] = [47, 73, 110, 107, 76, 105, 115, 116] // '/InkList'
     public static STARTXREF: number[] = [115, 116, 97, 114, 116, 120, 114, 101, 102] // = 'startxref'
     public static XREF: number[] = [120, 114, 101, 102] // = 'xref'
     public static STREAM: number[] = [115, 116, 114, 101, 97, 109] // = 'stream'
-    public static ENDSTREAM: number[] = [101, 110, 100, 115, 116, 114, 101, 97, 109] // = 'endstream'
 
     /**
      * Returns the next word. These are bytes that are not separated by a delimiter and a ptr to the position where the word ends
@@ -126,9 +102,9 @@ export class Util {
     }
 
     public static isSpace(value: number): boolean {
-        return value === 10 ||
-            value === 13 ||
-            value === 32
+        return value === Util.LF ||
+            value === Util.CR ||
+            value === Util.SPACE
     }
 
     public static isDelimiter(value: number): boolean {
