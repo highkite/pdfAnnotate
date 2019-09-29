@@ -120,7 +120,6 @@ test('getPageTree - testDocument2', () => {
 })
 
 test('getPage', () => {
-    Util.debug_printIndexed(new Uint8Array(testDocument))
     let doc = new PDFDocumentParser(new Uint8Array(testDocument))
 
     let pg = doc.getPage(0)

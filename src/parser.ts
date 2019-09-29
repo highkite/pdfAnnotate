@@ -84,8 +84,8 @@ export class Annotation {
     /**
      * Extract the annotation object (partially)
      * */
-    extract(ptr: number, page: Page) {
-        let annot_obj = ObjectUtil.extractObject(this.data, ptr)
+    extract(xref: XRef, page: Page, objectLookupTable: ObjectLookupTable) {
+        let annot_obj = ObjectUtil.extractObject(this.data, xref, objectLookupTable)
 
         this.object_id = annot_obj.id
 
@@ -112,30 +112,19 @@ export class CatalogObject {
     /**
      * Extracts the data representing the object.
      * */
-    constructor(private data: Uint8Array, private xref: XRef) {
+    constructor(private data: Uint8Array, private xref: XRef, private objectLookupTable: ObjectLookupTable) {
         this.data = new Uint8Array(data)
-        if (xref.compressed) { // Object is embedded into a stream object
-            let stream_object_id = xref.pointer
-            let stream_index = xref.generation
-            console.log(stream_object_id)
-        }
 
-        this.extract(xref.pointer)
+        let page_obj = ObjectUtil.extractObject(this.data, xref, objectLookupTable).value
+
+        if (page_obj["/Type"] !== "/Catalog")
+            throw Error(`Invalid catalog object at position ${xref.pointer}`)
+
+        this.pagesObjectId = page_obj["/Pages"]
+
     }
 
     private pagesObjectId: ReferencePointer = { obj: -1, generation: -1 }
-
-    /**
-     * Extract the catalog object from the data at the given ptr
-     * */
-    extract(ptr: number) {
-        let page_obj = ObjectUtil.extractObject(this.data, ptr).value
-
-        if (page_obj["/Type"] !== "/Catalog")
-            throw Error(`Invalid catalog object at position ${ptr}`)
-
-        this.pagesObjectId = page_obj["/Pages"]
-    }
 
     getPagesObjectId(): ReferencePointer {
         return this.pagesObjectId
@@ -191,9 +180,7 @@ export class PageTree {
                 if (xref.generation !== reference.generation)
                     throw Error("Page object out of date")
 
-                let ptr = xref.pointer
-
-                let kid_page_obj = ObjectUtil.extractObject(this.data, ptr).value
+                let kid_page_obj = ObjectUtil.extractObject(this.data, xref, this.objectLookupTable).value
 
                 this.extractPageReferences(kid_page_obj["/Kids"])
             }
@@ -203,8 +190,8 @@ export class PageTree {
     /**
      * Extract the object data at the given pointer
      * */
-    extract(ptr: number) {
-        let page_tree_obj = ObjectUtil.extractObject(this.data, ptr).value
+    extract(xref: XRef, objectLookupTable: ObjectLookupTable) {
+        let page_tree_obj = ObjectUtil.extractObject(this.data, xref, objectLookupTable).value
         this.pageCount = page_tree_obj["/Count"]
 
         if (!page_tree_obj["/Kids"])
@@ -262,9 +249,7 @@ export class Page {
         if (ref_annot_table.generation !== this.annotsPointer.generation)
             throw Error("Reference annotation table out of date")
 
-        let ptr = ref_annot_table.pointer
-
-        let annotations_obj = ObjectUtil.extractObject(this.data, ptr)
+        let annotations_obj = ObjectUtil.extractObject(this.data, ref_annot_table, obj_table)
 
         this.annots = annotations_obj.value
     }
@@ -272,9 +257,9 @@ export class Page {
     /**
      * Extracts the page object starting at position ptr
      * */
-    extract(ptr: number) {
+    extract(xref: XRef, objectLookupTable: ObjectLookupTable) {
 
-        let page_obj = ObjectUtil.extractObject(this.data, ptr)
+        let page_obj = ObjectUtil.extractObject(this.data, xref, objectLookupTable)
 
         this.object_id = page_obj.id
 
@@ -342,10 +327,11 @@ export class PDFDocumentParser {
         let recent_update = this.documentHistory.getRecentUpdate()
         if (recent_update.root) {
             let root_obj = recent_update.root
+            console.log(`fetch catalog from : ${JSON.stringify(root_obj)}`)
 
             let obj_table = this.documentHistory.createObjectLookupTable()
 
-            return new CatalogObject(this.data, obj_table[root_obj.obj])
+            return new CatalogObject(this.data, obj_table[root_obj.obj], obj_table)
         } else { // If we do not know the catalogue object we need to look it up
             // In cross reference stream objects no /ROOT field is required, however often it is provided anyway
             // otherwise run this routine, but buffer the catalog object
@@ -388,7 +374,7 @@ export class PDFDocumentParser {
             throw Error("Pages object out of date")
 
         let pageTree = new PageTree(this.data, obj_table)
-        pageTree.extract(pages_ref.pointer)
+        pageTree.extract(pages_ref, obj_table)
 
         this.pageTree = pageTree
 
@@ -407,10 +393,10 @@ export class PDFDocumentParser {
         if (obj_table[pageId.obj].generation !== pageId.generation)
             throw Error("Page object out of date")
 
-        let obj_ptr = obj_table[pageId.obj].pointer
+        let obj_ptr = obj_table[pageId.obj]
 
         let page = new Page(this.data, this.documentHistory)
-        page.extract(obj_ptr)
+        page.extract(obj_ptr, obj_table)
 
         return page
     }
@@ -434,7 +420,7 @@ export class PDFDocumentParser {
 
             for (let refPtr of annotationReferences) {
                 let a = new Annotation(this.data)
-                a.extract(obj_table[refPtr.obj].pointer, page)
+                a.extract(obj_table[refPtr.obj], page, obj_table)
                 a.page = i
                 pageAnnots.push(a)
             }

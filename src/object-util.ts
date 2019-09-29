@@ -1,4 +1,5 @@
 import { Util } from './util';
+import { ObjectLookupTable, XRef } from './document-history';
 /**
  * While the general Util class holds low level methods to navigate through the pdf data, the ObjectUtil
  * is purposefully build to extract complete objects. It returns those as json dictionaries.
@@ -82,8 +83,9 @@ export class ObjectUtil {
     /**
      * Parses a PDF object and returns a dictionary containing its fields
      * */
-    public static extractObject(data: Uint8Array, ptr: number): any {
+    public static extractObject(data: Uint8Array, xref: XRef, objectLookupTable: ObjectLookupTable | undefined = undefined): any {
         let ret_obj: any = {}
+        let ptr = xref.pointer
 
         let object_id = Util.extractObjectId(data, ptr)
 
@@ -93,7 +95,6 @@ export class ObjectUtil {
         let ptr_obj_end = Util.locateSequence(Util.ENDOBJ, data, ptr)
 
         data = data.slice(ptr, ptr_obj_end)
-        Util.debug_printIndexed(data)
 
         // determine the type of the object:
         let next = Util.readNextWord(data, 0)

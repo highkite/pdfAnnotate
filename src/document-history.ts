@@ -1,7 +1,6 @@
 import { ReferencePointer } from './parser';
 import { Util } from './util';
 import { ObjectUtil } from './object-util'
-import { PDFVersion } from './parser';
 import { Stream, StreamObject } from './stream';
 
 export interface XRef {
@@ -107,9 +106,10 @@ export class CrossReferenceStreamObject {
     /**
      * Parses the Cross-Reference-Stream-Object at the given index
      * */
-    extract(index: number) {
+    extract(xref: XRef) {
+        let index = xref.pointer
         this.start_pointer = index
-        let crs_object = ObjectUtil.extractObject(this.data, index)
+        let crs_object = ObjectUtil.extractObject(this.data, xref)
 
         let ptr_object_end = Util.locateSequence(Util.ENDOBJ, this.data, index)
         this.data = this.data.slice(index, ptr_object_end)
@@ -145,7 +145,7 @@ export class CrossReferenceStreamObject {
 
         let streamObj = new StreamObject(this.data)
 
-        let stream = streamObj.extract()
+        let stream = streamObj.extract(xref)
 
         if (!stream)
             throw Error("Invalid stream object")
@@ -381,9 +381,9 @@ export class DocumentHistory {
     /**
      * Extracts the cross reference stream object starting at the given index
      * */
-    extractCrossReferenceStreamObject(index: number): CrossReferenceStreamObject {
+    extractCrossReferenceStreamObject(xref: XRef): CrossReferenceStreamObject {
         let crs = new CrossReferenceStreamObject(this.data)
-        crs.extract(index)
+        crs.extract(xref)
 
         return crs
     }
@@ -410,6 +410,13 @@ export class DocumentHistory {
     extractDocumentHistory() {
 
         let ptr = this.extractDocumentEntry()
+        let xref = {
+            id: -1,
+            pointer: ptr,
+            generation: 0,
+            free: false,
+            update: true
+        }
 
         // Handle cross reference table
         if (Util.areArraysEqual(this.data.slice(ptr, ptr + Util.XREF.length), Util.XREF)) {
@@ -427,14 +434,21 @@ export class DocumentHistory {
             }
 
         } else { // handle cross reference stream object
-            let crs = this.extractCrossReferenceStreamObject(ptr)
+            let crs = this.extractCrossReferenceStreamObject(xref)
 
             this.updates.push(crs.getUpdateSection())
 
             let us = this.updates[0]
 
             while (us.prev) {
-                crs = this.extractCrossReferenceStreamObject(us.prev)
+                let _xref = {
+                    id: -1,
+                    pointer: us.prev,
+                    generation: 0,
+                    free: false,
+                    update: true
+                }
+                crs = this.extractCrossReferenceStreamObject(_xref)
                 this.updates.push(crs.getUpdateSection())
                 us = this.updates[this.updates.length - 1]
             }

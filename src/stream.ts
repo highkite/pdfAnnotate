@@ -1,5 +1,6 @@
 import { Util } from './util'
 import { ObjectUtil } from './object-util';
+import { XRef } from './document-history';
 import * as Pako from 'pako'
 
 export class Stream {
@@ -60,8 +61,8 @@ export class StreamObject {
     /**
      * Parses the Stream-Object at the given index
      * */
-    extract(index: number = 0): Stream | undefined {
-        let sobj = ObjectUtil.extractObject(this.data, index).value
+    extract(xref: XRef): Stream | undefined {
+        let sobj = ObjectUtil.extractObject(this.data, xref).value
 
         // check if filter is supported
         if (!sobj["/Filter"] || sobj["/Filter"] !== "/FlateDecode")
