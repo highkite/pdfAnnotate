@@ -1,4 +1,5 @@
 import { Util } from './util';
+import { Stream, FlateStream } from './stream';
 import { ObjectLookupTable, XRef } from './document-history';
 /**
  * While the general Util class holds low level methods to navigate through the pdf data, the ObjectUtil
@@ -6,7 +7,7 @@ import { ObjectLookupTable, XRef } from './document-history';
  * */
 export class ObjectUtil {
 
-    public static extractDictKeyRec(data: Uint8Array, ptr: number, dict: any): number {
+    private static extractDictKeyRec(data: Uint8Array, ptr: number, dict: any): number {
         let next = Util.readNextWord(data, ptr)
         let next_string: Uint8Array = next[0] || new Uint8Array([])
         let _ptr = Util.skipDelimiter(next_string, 0)
@@ -21,7 +22,7 @@ export class ObjectUtil {
         return ObjectUtil.extractDictValueRec(data, next[1], dict, Util.convertAsciiToString(next_string))
     }
 
-    public static extractDictValueRec(data: Uint8Array, ptr: number, dict: any, current_key: string | undefined = undefined): number {
+    private static extractDictValueRec(data: Uint8Array, ptr: number, dict: any, current_key: string | undefined = undefined): number {
         let next = Util.readNextWord(data, ptr)
         let next_string: Uint8Array = next[0] || new Uint8Array([])
         ptr = next[1] - next_string.length
@@ -84,6 +85,13 @@ export class ObjectUtil {
      * Parses a PDF object and returns a dictionary containing its fields
      * */
     public static extractObject(data: Uint8Array, xref: XRef, objectLookupTable: ObjectLookupTable | undefined = undefined): any {
+        if (xref.compressed) {
+            if (!objectLookupTable)
+                throw Error("Provide ObjectLookupTable to extract stream object")
+
+            return ObjectUtil.extractStreamObject(data, xref.generation, objectLookupTable[xref.pointer])
+        }
+
         let ret_obj: any = {}
         let ptr = xref.pointer
 
@@ -110,6 +118,77 @@ export class ObjectUtil {
             throw Error(`Invalid object type - starting with: ${next[0]}`)
         }
 
+        // check if the object has a stream part
+        ptr = Util.locateSequence(Util.STREAM, data, ptr)
+
+        if (-1 !== ptr) {
+            // extract stream part
+            let ptr_stream_data_start = ptr + Util.STREAM.length
+            ptr_stream_data_start = Util.skipDelimiter(data, ptr_stream_data_start)
+
+            let ptr_stream_data_end = ptr_stream_data_start + ret_obj.value["/Length"]
+
+            ret_obj.stream = ObjectUtil.extractStreamData(data.slice(ptr_stream_data_start, ptr_stream_data_end), ret_obj.value["/Filter"])
+        }
+
         return ret_obj
+    }
+
+    private static extractStreamObject(data: Uint8Array, offset: number, streamObj_xref: XRef): any {
+        let ptr = streamObj_xref.pointer
+        let ret_obj: any = {}
+        // extract object id
+        let object_id: any = Util.extractObjectId(data, ptr)
+        ret_obj.id = object_id
+
+        ptr = Util.locateSequence(Util.OBJ, data, ptr) + Util.OBJ.length
+        let ptr_obj_end = Util.locateSequence(Util.ENDOBJ, data, ptr)
+
+        data = data.slice(ptr, ptr_obj_end)
+
+        // extract dict part
+        let next = Util.readNextWord(data, 0)
+
+        if (!next[0] || next[0][0] !== Util.DICT_START[0]) {
+            throw Error("Invalid stream object -- no dict")
+        }
+
+        let result_dict: any = {}
+        ObjectUtil.extractDictValueRec(data, 0, result_dict)
+        ret_obj.value = result_dict
+
+        // check if filter is supported
+        if (!result_dict["/Filter"] || result_dict["/Filter"] !== "/FlateDecode")
+            throw Error(`Unsupported stream filter: ${result_dict["/Filter"]} - Only supported filter is FlateDecode`)
+
+        if (!result_dict["/Type"] || result_dict["/Type"] !== "/Objstm")
+            throw Error(`Invalid Stream object type: ${result_dict["/Type"]}`)
+
+        // extract the stream length
+        let streamLength = result_dict["/Length"]
+
+        // extract stream part
+        let ptr_stream_data_start = Util.locateSequence(Util.STREAM, data) + Util.STREAM.length
+        ptr_stream_data_start = Util.skipDelimiter(data, ptr_stream_data_start)
+
+        let ptr_stream_data_end = ptr_stream_data_start + streamLength
+
+        ObjectUtil.extractStreamData(data.slice(ptr_stream_data_start, ptr_stream_data_end), result_dict["/Filter"])
+    }
+
+    private static extractStreamData(streamData: Uint8Array, compression: string): Stream {
+        let stream: Stream | undefined = undefined
+        if (compression === '/FlateDecode') {
+            stream = new FlateStream(streamData)
+        } else {
+            throw Error(`Unsupported stream filter: ${compression} - Only supported filter is FlateDecode (right now)`)
+        }
+
+        if (!stream)
+            throw Error("Could not derive stream")
+
+        Util.debug_printIndexed(stream.getData())
+
+        return stream
     }
 }

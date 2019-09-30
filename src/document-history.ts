@@ -1,7 +1,7 @@
 import { ReferencePointer } from './parser';
 import { Util } from './util';
 import { ObjectUtil } from './object-util'
-import { Stream, StreamObject } from './stream';
+import { Stream } from './stream';
 
 export interface XRef {
     id: number
@@ -143,14 +143,15 @@ export class CrossReferenceStreamObject {
         if (!this.index || 0 === this.index.length)
             throw Error("Invalid /Index parameter in Cross-Reference-Stream-Object")
 
-        let streamObj = new StreamObject(this.data)
+        if (!crs_object.stream)
+            throw Error("Missing stream at cross reference stream object")
 
-        let stream = streamObj.extract(xref)
+        let stream = crs_object.stream
 
         if (!stream)
             throw Error("Invalid stream object")
 
-        this.streamLength = streamObj.streamLength
+        this.streamLength = crs_object.value["/Length"]
 
         this.extractStream(stream)
 
