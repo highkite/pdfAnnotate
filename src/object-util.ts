@@ -1,6 +1,11 @@
 import { Util } from './util';
 import { Stream, FlateStream } from './stream';
 import { ObjectLookupTable, XRef } from './document-history';
+
+interface StreamObjectLookupTable {
+    [id: number]: number
+}
+
 /**
  * While the general Util class holds low level methods to navigate through the pdf data, the ObjectUtil
  * is purposefully build to extract complete objects. It returns those as json dictionaries.
@@ -89,7 +94,7 @@ export class ObjectUtil {
             if (!objectLookupTable)
                 throw Error("Provide ObjectLookupTable to extract stream object")
 
-            return ObjectUtil.extractStreamObject(data, xref.generation, objectLookupTable[xref.pointer])
+            return ObjectUtil.extractStreamObject(data, xref.id, xref.generation, objectLookupTable[xref.pointer])
         }
 
         let ret_obj: any = {}
@@ -119,7 +124,7 @@ export class ObjectUtil {
         }
 
         // check if the object has a stream part
-        ptr = Util.locateSequence(Util.STREAM, data, ptr)
+        ptr = Util.locateSequence(Util.STREAM, data, 0)
 
         if (-1 !== ptr) {
             // extract stream part
@@ -134,7 +139,7 @@ export class ObjectUtil {
         return ret_obj
     }
 
-    private static extractStreamObject(data: Uint8Array, offset: number, streamObj_xref: XRef): any {
+    private static extractStreamObject(data: Uint8Array, object_id_to_extract: number, offset: number, streamObj_xref: XRef): any {
         let ptr = streamObj_xref.pointer
         let ret_obj: any = {}
         // extract object id
@@ -161,8 +166,8 @@ export class ObjectUtil {
         if (!result_dict["/Filter"] || result_dict["/Filter"] !== "/FlateDecode")
             throw Error(`Unsupported stream filter: ${result_dict["/Filter"]} - Only supported filter is FlateDecode`)
 
-        if (!result_dict["/Type"] || result_dict["/Type"] !== "/Objstm")
-            throw Error(`Invalid Stream object type: ${result_dict["/Type"]}`)
+        if (!result_dict["/Type"] || result_dict["/Type"] !== "/ObjStm")
+            throw Error(`Invalid stream object type: ${result_dict["/Type"]}`)
 
         // extract the stream length
         let streamLength = result_dict["/Length"]
@@ -173,7 +178,40 @@ export class ObjectUtil {
 
         let ptr_stream_data_end = ptr_stream_data_start + streamLength
 
-        ObjectUtil.extractStreamData(data.slice(ptr_stream_data_start, ptr_stream_data_end), result_dict["/Filter"])
+        let stream = ObjectUtil.extractStreamData(data.slice(ptr_stream_data_start, ptr_stream_data_end), result_dict["/Filter"])
+
+
+        if (!result_dict["/N"])
+            throw Error("Invalid stream object -- no number of objects specified")
+
+        if (!result_dict["/First"])
+            throw Error("Invalid stream object -- no offset to the first objct specified")
+
+        let streamReferences: StreamObjectLookupTable = ObjectUtil.extractStreamObjectTable(stream, result_dict["/N"], result_dict["/First"])
+
+        if (!streamReferences[object_id_to_extract])
+            throw Error(`Object ${object_id_to_extract} not in stream object`)
+
+        let result_obj: any = { id: { object_id_to_extract, generation: 0 } }
+
+        let value = {}
+        ObjectUtil.extractDictValueRec(stream.getData(), streamReferences[object_id_to_extract], value)
+        result_obj.value = value
+
+        return result_obj
+    }
+
+    private static extractStreamObjectTable(stream: Stream, number_of_obj: number, offset_first_obj: number): StreamObjectLookupTable {
+        let references: StreamObjectLookupTable = {}
+
+        for (let i = 0; i < number_of_obj; ++i) {
+            let obj_id = stream.getNumber()
+            let pointer = stream.getNumber() + offset_first_obj
+
+            references[obj_id] = pointer
+        }
+
+        return references
     }
 
     private static extractStreamData(streamData: Uint8Array, compression: string): Stream {
@@ -186,8 +224,6 @@ export class ObjectUtil {
 
         if (!stream)
             throw Error("Could not derive stream")
-
-        Util.debug_printIndexed(stream.getData())
 
         return stream
     }

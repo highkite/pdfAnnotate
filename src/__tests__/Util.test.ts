@@ -258,32 +258,41 @@ test('convertStringToAscii', () => {
 test('extractNumber', () => {
     let data = new Uint8Array([49])
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(1)
+    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(1)
 
     data = new Uint8Array([50, 51])
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(23)
+    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(2)
 
     data = new Uint8Array([53, 51, 49, 55])
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(5317)
+    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(4)
 
     // check with preceding delimiters
     data = new Uint8Array([32, 49])
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(1)
+    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(2)
 
     data = new Uint8Array([32, 13, 10, 49])
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(1)
+    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(4)
 
     data = new Uint8Array([32, 13, 10, 49])
     expect(Util.extractNumber(data, 0).result).toBe(1)
+    expect(Util.extractNumber(data, 0).end_index).toBe(4)
 
     data = new Uint8Array([32, 13, 10, 49, 32])
     expect(Util.extractNumber(data, 0).result).toBe(1)
+    expect(Util.extractNumber(data, 0).end_index).toBe(4)
 
     // test float values
     data = new Uint8Array([50, 46, 53])
     expect(Util.extractNumber(data, 0).result).toBe(2.5)
+    expect(Util.extractNumber(data, 0).end_index).toBe(3)
 
     data = new Uint8Array([50, 48, 46, 53, 56, 54, 54])
     expect(Util.extractNumber(data, 0).result).toBe(20.5866)
+    expect(Util.extractNumber(data, 0).end_index).toBe(7)
 
     data = new Uint8Array([32, 13, 10])
     expect(() => Util.extractNumber(data, 0).result).toThrow(Error)

@@ -434,7 +434,7 @@ export class Util {
             throw Error(`Could not parse number at position ${start}`)
         }
 
-        return { result: +str_id, end_index: end }
+        return { result: +str_id, end_index: end + 1 }
     }
 
     /**

@@ -146,43 +146,25 @@ export class PageTree {
     }
 
     /**
-     * Reads the provided reference and return true, if the object type is /Page
-     * */
-    isPage(reference: ReferencePointer): boolean {
-        let xref = this.objectLookupTable[reference.obj]
-
-        if (xref.generation !== reference.generation)
-            throw Error("Page object out of date")
-
-        let ptr = xref.pointer
-
-        ptr = Util.locateSequence(Util.ENDOBJ, this.data, ptr, true)
-
-        let _data = this.data.slice(xref.pointer, ptr)
-
-        return (-1 !== Util.locateSequence(Util.PAGE, _data, 0, true))
-    }
-
-    /**
      * Extracts the kids references recursively.
      * For every kid it checks if the referenced object type is:
      * - a /Pages object then it recursively lookups its children
      * - a /Page object then it adds the references
      * */
     extractPageReferences(references: ReferencePointer[]) {
+        console.log(`Extract references: ${JSON.stringify(references)}`)
 
         for (let reference of references) {
-            if (this.isPage(reference)) {
+            let xref = this.objectLookupTable[reference.obj]
+
+            let kid_page_obj = ObjectUtil.extractObject(this.data, xref, this.objectLookupTable).value
+
+            if (kid_page_obj["/Type"] === "/Page") {
                 this.pageReferences.push(reference)
-            } else { // handle array -- recursively call the function with the reference array
-                let xref = this.objectLookupTable[reference.obj]
-
-                if (xref.generation !== reference.generation)
-                    throw Error("Page object out of date")
-
-                let kid_page_obj = ObjectUtil.extractObject(this.data, xref, this.objectLookupTable).value
-
+            } else if (kid_page_obj["/Type"] === "/Pages") {
                 this.extractPageReferences(kid_page_obj["/Kids"])
+            } else {
+                throw Error(`Invalid object type ${kid_page_obj["/Type"]}`)
             }
         }
     }
@@ -245,9 +227,6 @@ export class Page {
             throw Error("Annotations pointer not set")
 
         let ref_annot_table = obj_table[this.annotsPointer.obj]
-
-        if (ref_annot_table.generation !== this.annotsPointer.generation)
-            throw Error("Reference annotation table out of date")
 
         let annotations_obj = ObjectUtil.extractObject(this.data, ref_annot_table, obj_table)
 
@@ -327,7 +306,6 @@ export class PDFDocumentParser {
         let recent_update = this.documentHistory.getRecentUpdate()
         if (recent_update.root) {
             let root_obj = recent_update.root
-            console.log(`fetch catalog from : ${JSON.stringify(root_obj)}`)
 
             let obj_table = this.documentHistory.createObjectLookupTable()
 
@@ -370,9 +348,6 @@ export class PDFDocumentParser {
         let pages_id = catalog_object.getPagesObjectId()
         let pages_ref = obj_table[pages_id.obj]
 
-        if (pages_ref.generation !== pages_id.generation)
-            throw Error("Pages object out of date")
-
         let pageTree = new PageTree(this.data, obj_table)
         pageTree.extract(pages_ref, obj_table)
 
@@ -389,9 +364,6 @@ export class PDFDocumentParser {
         let pageId = pageTree.getPageReferences()[pageNumber]
 
         let obj_table = this.documentHistory.createObjectLookupTable()
-
-        if (obj_table[pageId.obj].generation !== pageId.generation)
-            throw Error("Page object out of date")
 
         let obj_ptr = obj_table[pageId.obj]
 

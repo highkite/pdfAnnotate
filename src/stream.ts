@@ -39,6 +39,17 @@ export class Stream {
 
         return res
     }
+
+    /**
+     * Skips spaces and than adds as many bytes to the number until another space is reached
+     * */
+    getNumber(): number {
+        let nbr = Util.extractNumber(this.data, this._ptr)
+        this._ptr = nbr.end_index
+
+        return nbr.result
+
+    }
 }
 
 export class FlateStream extends Stream {
