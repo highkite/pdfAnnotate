@@ -85,7 +85,9 @@ export class Annotation {
      * Extract the annotation object (partially)
      * */
     extract(xref: XRef, page: Page, objectLookupTable: ObjectLookupTable) {
+        console.log(`Try to extract ${JSON.stringify(xref)}`)
         let annot_obj = ObjectUtil.extractObject(this.data, xref, objectLookupTable)
+        console.log("EXTRACTED ANNOTATION OBJECT")
 
         this.object_id = annot_obj.id
 
@@ -384,17 +386,24 @@ export class PDFDocumentParser {
         let pageCount: number = pt.getPageCount()
 
         for (let i = 0; i < pageCount; ++i) {
+            console.log(`Extract annotations of page ${i}`)
             let page: Page = this.getPage(i)
+            console.log("HERE")
 
             let annotationReferences: ReferencePointer[] = page.annots
+            console.log("PAGE ANNOTS")
+            console.log(page.annots)
 
             let pageAnnots: Annotation[] = []
 
             for (let refPtr of annotationReferences) {
+                console.log("ENTER LOOP")
                 let a = new Annotation(this.data)
                 a.extract(obj_table[refPtr.obj], page, obj_table)
+                console.log(`Annotaton ${a}`)
                 a.page = i
                 pageAnnots.push(a)
+                console.log("HERE 2")
             }
             annots.push(pageAnnots)
         }

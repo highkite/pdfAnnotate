@@ -384,12 +384,12 @@ export class Util {
      * Extratcs the string
      * */
     public static extractString(data: Uint8Array, index: number): ExtractionResult {
-        let string_start = Util.locateSequence(Util.STRING_START, data, 0)
-        let string_end = Util.locateSequence(Util.STRING_END, data, 0)
+        let string_start = Util.locateSequence(Util.STRING_START, data, index)
+        let string_end = Util.locateSequence(Util.STRING_END, data, index)
 
         data = data.slice(string_start + 1, string_end)
 
-        return { result: Util.convertUnicodeToString(data), end_index: string_end }
+        return { result: Util.convertUnicodeToString(data), end_index: string_end + 1 }
     }
 
     /**

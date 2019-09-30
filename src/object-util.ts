@@ -23,6 +23,8 @@ export class ObjectUtil {
                 return wordLookup[1]
             }
         }
+        console.log(`EXTRACT VALUE OF KEY: ${Util.convertAsciiToString(next_string)}`)
+        console.log(`KEY ${ptr} to ${next[1]}`)
 
         return ObjectUtil.extractDictValueRec(data, next[1], dict, Util.convertAsciiToString(next_string))
     }
@@ -30,7 +32,9 @@ export class ObjectUtil {
     private static extractDictValueRec(data: Uint8Array, ptr: number, dict: any, current_key: string | undefined = undefined): number {
         let next = Util.readNextWord(data, ptr)
         let next_string: Uint8Array = next[0] || new Uint8Array([])
+        console.log(`Start read value at position ${ptr} that ends at ${next[1]}`)
         ptr = next[1] - next_string.length
+        console.log(`READ NEXT VALUE ${Util.convertAsciiToString(next_string)}`)
 
         if (next_string[0] === Util.ARRAY_START[0]) {
             if (!current_key)
@@ -40,9 +44,11 @@ export class ObjectUtil {
             dict[current_key] = extracted_array.result
             return ObjectUtil.extractDictKeyRec(data, extracted_array.end_index + 1, dict)
         } else if (next_string[0] === Util.STRING_START[0]) {
+            console.log("VALUE IS STRING")
             if (!current_key)
                 throw Error("Invalid anonymous string definition")
             let extracted_string = Util.extractString(data, ptr)
+            console.log(`Value is: ${extracted_string.result}, Continue at index: ${next[1]}`)
             // handle string
             dict[current_key] = extracted_string.result
             return ObjectUtil.extractDictKeyRec(data, extracted_string.end_index, dict)
@@ -89,8 +95,8 @@ export class ObjectUtil {
     /**
      * Parses a PDF object and returns a dictionary containing its fields
      * */
-    public static extractObject(data: Uint8Array, xref: XRef, objectLookupTable: ObjectLookupTable | undefined = undefined): any {
-        if (xref.compressed) {
+    public static extractObject(data: Uint8Array, xref: XRef | number, objectLookupTable: ObjectLookupTable | undefined = undefined): any {
+        if (typeof xref !== 'number' && xref.compressed) {
             if (!objectLookupTable)
                 throw Error("Provide ObjectLookupTable to extract stream object")
 
@@ -98,7 +104,7 @@ export class ObjectUtil {
         }
 
         let ret_obj: any = {}
-        let ptr = xref.pointer
+        let ptr = typeof xref === 'number' ? xref : xref.pointer
 
         let object_id = Util.extractObjectId(data, ptr)
 
@@ -113,6 +119,7 @@ export class ObjectUtil {
         let next = Util.readNextWord(data, 0)
 
         if (next[0] && next[0][0] === Util.DICT_START[0]) { // object contains a dict
+            Util.debug_printIndexed(data)
             let result_dict = {}
             ObjectUtil.extractDictValueRec(data, 0, result_dict)
             ret_obj.value = result_dict

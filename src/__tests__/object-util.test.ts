@@ -1,5 +1,6 @@
 import { ObjectUtil } from '../object-util';
-import { listObject_1, pageObject_string, pageObject_string_3, pageObject_string_4, pageObject_string_5, simplePageObject, simplePageObject_2, simplePageObject_3, simplePageObject_4, simplePageObject_5, simplePageObject_6, simplePageObject_7 } from './Data2'
+import { Util } from '../util';
+import { simpleAnnotationObject, listObject_1, listObject_2, pageObject_string, pageObject_string_3, pageObject_string_4, pageObject_string_5, simplePageObject, simplePageObject_2, simplePageObject_3, simplePageObject_4, simplePageObject_5, simplePageObject_6, simplePageObject_7, simplePageObject_8, simplePageObject_9, simplePageObject_10 } from './Data2'
 
 test('extractObject_1', () => {
     let res = ObjectUtil.extractObject(simplePageObject, 0)
@@ -209,4 +210,48 @@ test('extractObject_8', () => {
 
     expect(res.value[1].obj).toBe(2)
     expect(res.value[1].generation).toBe(0)
+})
+
+test('extractObject_9', () => {
+    let res = ObjectUtil.extractObject(listObject_2, 0)
+    expect(res.id.obj).toBe(110)
+    expect(res.id.generation).toBe(0)
+
+    expect(res.value.length).toBe(12)
+})
+
+test('extractObject_10', () => {
+    let res = ObjectUtil.extractObject(simpleAnnotationObject, 0)
+    console.log(res)
+    expect(res.id.obj).toBe(111)
+    expect(res.id.generation).toBe(0)
+    expect(res.value["/Type"]).toBe("/Annot")
+    expect(res.value["/Subtype"]).toBe("/FreeText")
+    expect(res.value["/Rect"]).toEqual([523.827324, 393.722208, 597.420936, 407.233728])
+    expect(res.value["/DA"]).toBe("/Invalid_font 9 Tf")
+
+})
+
+test('extractObject_11', () => {
+    let res = ObjectUtil.extractObject(simplePageObject_8, 0)
+    expect(res.id.obj).toBe(2)
+    expect(res.id.generation).toBe(0)
+
+    expect(res.value["/Type"]).toBe("Some string value")
+})
+
+test('extractObject_12', () => {
+    let res = ObjectUtil.extractObject(simplePageObject_9, 0)
+    expect(res.id.obj).toBe(2)
+    expect(res.id.generation).toBe(0)
+
+    expect(res.value["/Type"]).toBe("/Invalid 10 TFa ")
+})
+
+test('extractObject_13', () => {
+    let res = ObjectUtil.extractObject(simplePageObject_10, 0)
+    expect(res.id.obj).toBe(2)
+    expect(res.id.generation).toBe(0)
+
+    expect(res.value["/Type"]).toBe("D:20180503095253")
 })
