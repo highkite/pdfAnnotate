@@ -322,11 +322,6 @@ export class CrossReferenceTable {
 
         let first_header = this.extractSubSectionHeader(start_ptr)
 
-        // the first header must be 0 to establish the linked list of free objects
-        if (first_header.id !== 0) {
-            throw Error("First object id not 0")
-        }
-
         let ref_start = Util.skipDelimiter(this.data, first_header.end_ptr + 1)
 
         // extract first reference
