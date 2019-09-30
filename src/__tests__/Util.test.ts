@@ -204,27 +204,27 @@ test('locateSequenceReversed', () => {
 
     sequence = [101, 40]
     data = new Uint8Array([47, 84, 121, 112, 101, 32, 80, 97, 103, 101, 115])
-    expect(Util.locateSequence(sequence, data)).toBe(-1)
+    expect(Util.locateSequenceReversed(sequence, data)).toBe(-1)
 
     sequence = [47, 84]
     data = new Uint8Array([47, 84, 121, 112, 101, 32, 80, 97, 103, 101, 115])
-    expect(Util.locateSequence(sequence, data)).toBe(0)
+    expect(Util.locateSequenceReversed(sequence, data)).toBe(0)
 
     sequence = [47, 84, 121, 112, 101, 32, 80, 97, 103, 101, 115]
     data = new Uint8Array([47, 84, 121, 112, 101, 32, 80, 97, 103, 101, 115])
-    expect(Util.locateSequence(sequence, data)).toBe(0)
+    expect(Util.locateSequenceReversed(sequence, data)).toBe(0)
 
     sequence = [80, 97, 103, 101, 115]
     data = new Uint8Array([47, 84, 121, 112, 101, 32, 80, 97, 103, 101, 115])
-    expect(Util.locateSequence(sequence, data)).toBe(6)
+    expect(Util.locateSequenceReversed(sequence, data)).toBe(6)
 
     sequence = [47, 84]
     data = new Uint8Array([47, 84, 121, 112, 101, 32, 80, 97, 103, 101, 115])
-    expect(Util.locateSequence(sequence, data, 4)).toBe(-1)
+    expect(Util.locateSequenceReversed(sequence, data, 4)).toBe(0)
 
     sequence = [80, 97, 103, 101, 115, 120]
     data = new Uint8Array([47, 84, 121, 112, 101, 32, 80, 97, 103, 101, 115])
-    expect(Util.locateSequence(sequence, data, 4)).toBe(-1)
+    expect(Util.locateSequenceReversed(sequence, data, 4)).toBe(-1)
 })
 
 test('locateSequenceReversed with closed flag', () => {

@@ -1,7 +1,8 @@
 import { WriterUtil } from '../writer-util'
+import { XRef } from '../document-history'
 import { Page, ReferencePointer } from '../parser'
 import { Util } from '../util'
-import { pageObject_string, pageObject_string_2, pageObject_string_3, pageObject_string_4, decode } from './Data2'
+import { pageObject_string, pageObject_string_2, pageObject_string_3, pageObject_string_4, pageObject_string_6, decode } from './Data2'
 
 test('writeReferencePointer', () => {
     let refPtr: ReferencePointer = { obj: 1, generation: 2 }
@@ -18,7 +19,7 @@ test('pad', () => {
 test('replaceAnnotsFieldInPageObject_1', () => {
     let data = pageObject_string
     let page = new Page(data, undefined!)
-    page.extract(0)
+    page.extract(<XRef>{ pointer: 0 }, undefined!)
     expect(decode(WriterUtil.replaceAnnotsFieldInPageObject(data, page, 0, { obj: 44, generation: 20 })).trim()).toEqual(`2 0 obj <<
 /Type /Page
 /Contents 10 0 R
@@ -32,7 +33,7 @@ test('replaceAnnotsFieldInPageObject_1', () => {
 test('replaceAnnotsFieldInPageObject_2', () => {
     let data = pageObject_string_2
     let page = new Page(data, undefined!)
-    page.extract(0)
+    page.extract(<XRef>{ pointer: 0 }, undefined!)
     expect(decode(WriterUtil.replaceAnnotsFieldInPageObject(data, page, 0, { obj: 44, generation: 20 })).trim()).toEqual(`2 0 obj <<
 /Type /Page
 /Contents 10 0 R
@@ -44,7 +45,7 @@ test('replaceAnnotsFieldInPageObject_2', () => {
 test('replaceAnnotsFieldInPageObject_3', () => {
     let data = pageObject_string_3
     let page = new Page(data, undefined!)
-    page.extract(0)
+    page.extract(<XRef>{ pointer: 0 }, undefined!)
     expect(decode(WriterUtil.replaceAnnotsFieldInPageObject(data, page, 0, { obj: 44, generation: 20 })).trim()).toEqual(`18 0 obj
 << /Type /Page
    /Parent 1 0 R
@@ -63,7 +64,7 @@ endobj`)
 test('replaceAnnotsFieldInPageObject_4', () => {
     let data = pageObject_string_4
     let page = new Page(data, undefined!)
-    page.extract(0)
+    page.extract(<XRef>{ pointer: 0 }, undefined!)
     expect(decode(WriterUtil.replaceAnnotsFieldInPageObject(data, page, 0, { obj: 44, generation: 20 })).trim()).toEqual(`22 0 obj
 <<
 /Type /Page
@@ -94,4 +95,11 @@ test('replaceAnnotsFieldInPageObject_4', () => {
 /Parent 11 0 R
 >>
 endobj`)
+})
+
+test('replaceAnnotsFieldInPageObject_5', () => {
+    let data = pageObject_string_6
+    let page = new Page(data, undefined!)
+    page.extract(<XRef>{ pointer: 0 }, undefined!)
+    expect(decode(WriterUtil.replaceAnnotsFieldInPageObject(data, page, 0, { obj: 44, generation: 20 })).trim()).toEqual(`1 0 obj<</CropBox[63.0 18.0 739.491 528.12]/Parent 462 0 R/Tabs/S/Contents 3 0 R/Rotate 0/MediaBox[0 0 802.491 537.12]/Resources 2 0 R/Type/Page/Annots 44 20 R >>endobj`)
 })
