@@ -47,9 +47,9 @@ export class Util {
 
         let ptr_version_start = Util.locateSequence(Util.VERSION, data, index) + Util.VERSION.length
         let ptr_delimiter = Util.locateSequence([Util.DOT], data, ptr_version_start)
-        let major_version = Util.extractNumber(data, ptr_version_start, ptr_delimiter)
+        let major_version = Util.extractNumber(data, ptr_version_start, ptr_delimiter).result
         let ptr_end = Util.locateDelimiter(data, ptr_delimiter)
-        let minor_version = Util.extractNumber(data, ptr_delimiter + 1, ptr_end)
+        let minor_version = Util.extractNumber(data, ptr_delimiter + 1, ptr_end).result
 
         return { major: major_version, minor: minor_version }
     }
@@ -289,7 +289,7 @@ export class Util {
 
             let i = 0
             while (i < arraySeq.length) {
-                nbrs.push(Util.extractNumber(arraySeq, i))
+                nbrs.push(Util.extractNumber(arraySeq, i).result)
 
                 i = Util.locateDelimiter(arraySeq, i + 1) + 1
                 i = Util.skipDelimiter(arraySeq, i + 1)
@@ -326,12 +326,12 @@ export class Util {
 
         let end_obj_ptr = Util.locateDelimiter(data, index + 1)
 
-        let obj = Util.extractNumber(data, index, end_obj_ptr)
+        let obj = Util.extractNumber(data, index, end_obj_ptr).result
 
         let start_gen_ptr = Util.skipDelimiter(data, end_obj_ptr + 1)
         let end_gen_ptr = Util.locateDelimiter(data, start_gen_ptr + 1)
 
-        let gen = Util.extractNumber(data, start_gen_ptr, end_gen_ptr)
+        let gen = Util.extractNumber(data, start_gen_ptr, end_gen_ptr).result
 
         return { obj: obj, generation: gen }
     }
@@ -355,8 +355,8 @@ export class Util {
 
         let del_index = this.locateDelimiter(ref_data, 0)
 
-        let id = this.extractNumber(ref_data, 0, del_index)
-        let gen = this.extractNumber(ref_data, del_index + 2)
+        let id = this.extractNumber(ref_data, 0, del_index).result
+        let gen = this.extractNumber(ref_data, del_index + 2).result
 
         return { result: { obj: id, generation: gen }, end_index: index + ref_data.length + 2 } // + _R
     }
@@ -413,7 +413,7 @@ export class Util {
     /**
      * Parses the ascii encoded number of the PDF file
      * */
-    public static extractNumber(data: Uint8Array, start: number, end: number = -1) {
+    public static extractNumber(data: Uint8Array, start: number, end: number = -1): ExtractionResult {
         start = Util.skipDelimiter(data, start)
 
         if (-1 == end) {
@@ -434,7 +434,7 @@ export class Util {
             throw Error(`Could not parse number at position ${start}`)
         }
 
-        return +str_id
+        return { result: +str_id, end_index: end }
     }
 
     /**

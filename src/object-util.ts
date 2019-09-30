@@ -68,7 +68,7 @@ export class ObjectUtil {
             let value_end_ptr = next[1]
 
             if (lookupNextWord[0] === 47 || lookupNextWord[0] === Util.DICT_END[0]) { // is a number
-                dict[current_key] = Util.extractNumber(data, ptr)
+                dict[current_key] = Util.extractNumber(data, ptr).result
             } else { // is a rereference
                 let extracted_reference = Util.extractReferenceTyped(data, ptr)
                 dict[current_key] = extracted_reference.result

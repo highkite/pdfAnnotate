@@ -224,7 +224,7 @@ export class CrossReferenceTable {
     extractSubSectionHeader(index: number): SubSectionHeader {
         let ptr = Util.locateDelimiter(this.data, index)
 
-        let obj_id = Util.extractNumber(this.data, index, ptr)
+        let obj_id = Util.extractNumber(this.data, index, ptr).result
 
         ptr = Util.skipDelimiter(this.data, ptr + 1)
 
@@ -232,7 +232,7 @@ export class CrossReferenceTable {
 
         ptr = Util.locateDelimiter(this.data, ptr)
 
-        let reference_count = Util.extractNumber(this.data, ptr_ref_count, ptr)
+        let reference_count = Util.extractNumber(this.data, ptr_ref_count, ptr).result
 
         return { id: obj_id, count: reference_count, end_ptr: ptr }
     }
@@ -252,13 +252,13 @@ export class CrossReferenceTable {
         for (let i = 0; i < count; ++i, index += 20) {
             let ptr_end_pointer = Util.locateDelimiter(this.data, index)
 
-            let pointer = Util.extractNumber(this.data, index, ptr_end_pointer)
+            let pointer = Util.extractNumber(this.data, index, ptr_end_pointer).result
 
             let ptr_gen_start = Util.skipDelimiter(this.data, ptr_end_pointer + 1)
 
             let ptr_gen_end = Util.locateDelimiter(this.data, ptr_gen_start)
 
-            let generation = Util.extractNumber(this.data, ptr_gen_start, ptr_gen_end)
+            let generation = Util.extractNumber(this.data, ptr_gen_start, ptr_gen_end).result
 
             let ptr_flag = Util.skipDelimiter(this.data, ptr_gen_end + 1)
 
@@ -288,7 +288,7 @@ export class CrossReferenceTable {
         let ptr_start_size = Util.locateSequence(Util.SIZE, _data, index, true) + Util.SIZE.length
         ptr_start_size = Util.skipDelimiter(_data, ptr_start_size)
 
-        let size = Util.extractNumber(_data, ptr_start_size)
+        let size = Util.extractNumber(_data, ptr_start_size).result
 
 
         let ptr_start_root = Util.locateSequence(Util.ROOT, _data, index, true) + Util.ROOT.length
@@ -301,7 +301,7 @@ export class CrossReferenceTable {
         if (-1 != ptr_start_prev) {
             ptr_start_prev = Util.skipDelimiter(_data, ptr_start_prev + Util.PREV.length)
 
-            prev = Util.extractNumber(_data, ptr_start_prev)
+            prev = Util.extractNumber(_data, ptr_start_prev).result
         }
 
         return {
@@ -398,7 +398,7 @@ export class DocumentHistory {
 
         let ptr_startxref = Util.locateSequenceReversed(Util.STARTXREF, this.data, ptr, true) + 9
 
-        ptr = Util.extractNumber(this.data, ptr_startxref)
+        ptr = Util.extractNumber(this.data, ptr_startxref).result
 
         return ptr
     }
