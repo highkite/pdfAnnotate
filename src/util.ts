@@ -134,7 +134,9 @@ export class Util {
             value === 60 || // <
             value === 62 || // >
             value === 91 || // [
-            value === 93 // ]
+            value === 93 || // ]
+            value === 40 || // (
+            value === 41 // )
     }
 
     /**
