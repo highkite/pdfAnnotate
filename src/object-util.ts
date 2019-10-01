@@ -199,7 +199,7 @@ export class ObjectUtil {
         if (!streamReferences[object_id_to_extract])
             throw Error(`Object ${object_id_to_extract} not in stream object`)
 
-        let result_obj: any = { id: { object_id_to_extract, generation: 0 } }
+        let result_obj: any = { id: { obj: object_id_to_extract, generation: 0 } }
 
         let value = {}
         ObjectUtil.extractDictValueRec(stream.getData(), streamReferences[object_id_to_extract], value)
