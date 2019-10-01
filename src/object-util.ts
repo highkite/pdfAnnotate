@@ -146,7 +146,6 @@ export class ObjectUtil {
     }
 
     private static extractStreamObject(data: Uint8Array, object_id_to_extract: number, offset: number, streamObj_xref: XRef): any {
-        console.log(`Extract object ${object_id_to_extract} from streamobject: ${JSON.stringify(streamObj_xref)}`)
         let ptr = streamObj_xref.pointer
         let ret_obj: any = {}
         // extract object id
@@ -202,8 +201,10 @@ export class ObjectUtil {
         let result_obj: any = { id: { obj: object_id_to_extract, generation: 0 } }
 
         let value = {}
-        ObjectUtil.extractDictValueRec(stream.getData(), streamReferences[object_id_to_extract], value)
+        result_obj.pointer_stream_end = ObjectUtil.extractDictValueRec(stream.getData(), streamReferences[object_id_to_extract], value)
         result_obj.value = value
+        result_obj.stream = stream
+        result_obj.pointer_stream_start = streamReferences[object_id_to_extract]
 
         return result_obj
     }

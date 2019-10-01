@@ -1,4 +1,5 @@
 import { Util } from './util'
+import { ObjectUtil } from './object-util'
 import { Annotation, ReferencePointer, PDFDocumentParser, Page } from './parser'
 import { XRef } from './document-history'
 import { WriterUtil } from './writer-util'
@@ -101,6 +102,21 @@ export class Writer {
         let lookupTable = this.parser.documentHistory.createObjectLookupTable()
 
         let page_ptr: XRef = lookupTable[page.object_id.obj]
+
+        if (page_ptr.compressed) {
+            let obj = ObjectUtil.extractObject(this.data, page_ptr, lookupTable)
+            let obj_data = obj.stream.getData().slice(obj.pointer_stream_start, obj.pointer_stream_end + 1)
+
+            let ref_ptr = WriterUtil.writeReferencePointer(obj.id, false).concat(32)
+
+            let new_data: Uint8Array = new Uint8Array(ref_ptr.length + Writer.OBJ.length + obj_data.length + Writer.ENDOBJ.length)
+            new_data.set(ref_ptr)
+            new_data.set(Writer.OBJ, ref_ptr.length)
+            new_data.set(obj_data, Writer.OBJ.length + ref_ptr.length)
+            new_data.set(Writer.ENDOBJ, Writer.OBJ.length + obj_data.length + ref_ptr.length)
+
+            return WriterUtil.replaceAnnotsFieldInPageObject(new_data, page, 0, annot_array_reference)
+        }
 
         return WriterUtil.replaceAnnotsFieldInPageObject(this.data, page, page_ptr.pointer, annot_array_reference)
     }

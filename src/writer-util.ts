@@ -100,14 +100,12 @@ export class WriterUtil {
             ret = ret.concat(Array.from(complete_page_object_data.slice(ptr_annots_array_end, complete_page_object_data.length)))
 
         } else {
-            Util.debug_printIndexed(complete_page_object_data)
             let ptr_dict_end = Util.locateSequenceReversed(Util.DICT_END, complete_page_object_data, complete_page_object_data.length - 1)
 
             if (-1 === ptr_dict_end)
                 throw Error("Could not identify dictionary end")
 
             ret = Array.from(complete_page_object_data.slice(0, ptr_dict_end))
-            Util.debug_printIndexed(ret)
             ret = ret.concat(Util.ANNOTS)
             ret.push(Util.SPACE)
             ret = ret.concat(WriterUtil.writeReferencePointer(annot_array_reference, true))
