@@ -14,7 +14,6 @@ interface StreamObjectLookupTable {
 export class ObjectUtil {
 
     public static extractDictKeyRec(data: Uint8Array, ptr: number, dict: any): number {
-        console.log(`read next word from ${ptr}`)
         let next = Util.readNextWord(data, ptr)
         let next_string: Uint8Array | undefined = next.result
 
@@ -22,15 +21,9 @@ export class ObjectUtil {
             return ptr
 
         let _ptr = Util.skipDelimiter(next_string, 0)
-        if (next_string)
-            console.log(`Process Key ${Util.convertAsciiToString(next_string!)}`)
-        else
-            console.log("Process key undefined")
 
         if (next_string[0] && Util.DICT_END[0] === next_string[0]) {
             let wordLookup = Util.readNextWord(data, next.end_index + 1)
-            console.log(wordLookup)
-            console.log(`Next word lookup ${Util.convertAsciiToString(wordLookup.result!)}`)
             if (wordLookup.result && Util.DICT_END[0] === wordLookup.result[0]) {
                 return wordLookup.end_index
             }
@@ -45,8 +38,6 @@ export class ObjectUtil {
         let next = Util.readNextWord(data, ptr)
         let next_string: Uint8Array = next.result || new Uint8Array([])
         ptr = next.end_index - next_string.length + 1
-        console.log(`read next word from ${ptr}`)
-        console.log(`Process Value ${Util.convertAsciiToString(next_string!)}`)
 
         if (next_string[0] === Util.ARRAY_START[0]) {
             if (!current_key)
@@ -63,7 +54,6 @@ export class ObjectUtil {
             return ObjectUtil.extractDictKeyRec(data, extracted_string.end_index + 1, dict)
         } else if (next_string[0] === Util.DICT_START[0]) { // <
             if (data[next.end_index + 1] === Util.DICT_START[0]) {
-                console.log("DICT START")
                 if (current_key) {
                     let sup_dict = {}
                     let end_sub_dict = ObjectUtil.extractDictKeyRec(data, next.end_index + 2, sup_dict)
@@ -74,7 +64,6 @@ export class ObjectUtil {
                 }
             }
         } else if (next_string[0] === 47) { // /
-            console.log("OPTION VALUE")
             if (!current_key)
                 throw Error("Invalid anonymous property definition")
             let opt_value = Util.extractOptionValue(data, ptr)
@@ -107,7 +96,6 @@ export class ObjectUtil {
      * Parses a PDF object and returns a dictionary containing its fields
      * */
     public static extractObject(data: Uint8Array, xref: XRef | number, objectLookupTable: ObjectLookupTable | undefined = undefined): any {
-        console.log(`Extract object ${JSON.stringify(xref)}`)
         if (typeof xref !== 'number' && xref.compressed) {
             if (!objectLookupTable)
                 throw Error("Provide ObjectLookupTable to extract stream object")
@@ -126,7 +114,6 @@ export class ObjectUtil {
         let ptr_obj_end = Util.locateSequence(Util.ENDOBJ, data, ptr)
 
         data = data.slice(ptr, ptr_obj_end)
-        Util.debug_printIndexed(data)
 
         // determine the type of the object:
         let next = Util.readNextWord(data, 0)

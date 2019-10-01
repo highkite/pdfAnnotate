@@ -10,8 +10,6 @@ export class ArrayUtil {
      * The function supports arbitrarily nesting of arrays and multiple types.
      * */
     public static extractArray(data: Uint8Array, ptr: number): ExtractionResult {
-        Util.debug_printIndexed(data)
-        console.log("######################### RUN ARRAY EXTRACTION")
         ptr = Util.skipSpaces(data, ptr)
 
         if (data[ptr] !== Util.ARRAY_START[0])
@@ -21,7 +19,6 @@ export class ArrayUtil {
 
         let next = Util.readNextWord(data, ptr)
         let next_string: Uint8Array | undefined = next.result
-        console.log(`Process ${Util.convertAsciiToString(next_string!)} with end index: ${next.end_index}`)
 
         let ret_list: any[] = []
 
@@ -60,24 +57,16 @@ export class ArrayUtil {
             } else if (next_string[0] === Util.ARRAY_END[0]) {
                 break
             } else {
-                console.log("---------------------NUMBER")
                 let nbr = Util.extractNumber(data, ptr)
                 ret_list.push(nbr.result)
                 ptr = nbr.end_index
-                console.log(JSON.stringify(nbr))
             }
-
-            console.log(`Set ptr to ${ptr}`)
-
 
             ++ptr
             next = Util.readNextWord(data, ptr)
             next_string = next.result
-            console.log(`Process ${Util.convertAsciiToString(next_string!)} at index ${next.end_index}`)
 
         }
-
-        console.log(ret_list)
 
         return { result: ret_list, end_index: next.end_index }
     }
