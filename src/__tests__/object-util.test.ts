@@ -1,9 +1,10 @@
 import { ObjectUtil } from '../object-util';
 import { Util } from '../util';
-import { simpleAnnotationObject, listObject_1, listObject_2, pageObject_string, pageObject_string_3, pageObject_string_4, pageObject_string_5, simplePageObject, simplePageObject_2, simplePageObject_3, simplePageObject_4, simplePageObject_5, simplePageObject_6, simplePageObject_7, simplePageObject_8, simplePageObject_9, simplePageObject_10, simplePageObject_11, simplePageObject_12 } from './Data2'
+import { encode, simpleAnnotationObject, listObject_1, listObject_2, pageObject_string, pageObject_string_3, pageObject_string_4, pageObject_string_5, simplePageObject, simplePageObject_2, simplePageObject_3, simplePageObject_4, simplePageObject_5, simplePageObject_6, simplePageObject_7, simplePageObject_8, simplePageObject_9, simplePageObject_10, simplePageObject_11, simplePageObject_12 } from './Data2'
 
 test('extractObject_1', () => {
     let res = ObjectUtil.extractObject(simplePageObject, 0)
+    console.log(res)
 
     expect(res.value["/Type"]).toBe("/Page")
     expect(res.id.obj).toBe(2)
@@ -286,4 +287,19 @@ test('extractObject_15', () => {
     expect(res.value["/Dest"][3]).toBe(756)
     expect(res.value["/Dest"][4]).toBe(0)
     expect(res.value["/StructParent"]).toBe(1)
+})
+
+test('extractObject_16', () => {
+    let data = encode(`461 0 obj<</Count 119/Type/Pages/Kids[462 0 R 463 0 R]>>endobj`)
+    let res = ObjectUtil.extractObject(data, 0)
+
+    expect(res.id.obj).toBe(461)
+    expect(res.id.generation).toBe(0)
+
+    expect(res.value["/Count"]).toBe(119)
+    expect(res.value["/Type"]).toBe("/Pages")
+    expect(res.value["/Kids"][0].obj).toBe(462)
+    expect(res.value["/Kids"][0].generation).toBe(0)
+    expect(res.value["/Kids"][1].obj).toBe(463)
+    expect(res.value["/Kids"][1].generation).toBe(0)
 })

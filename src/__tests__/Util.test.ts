@@ -3,141 +3,143 @@ import { crossReferenceStreamObject_string, simpleListObject_1, encode } from '.
 
 test('readNextWord', () => {
     let res = Util.readNextWord(crossReferenceStreamObject_string, 0)
-    expect(Util.convertAsciiToString(res[0]!)).toBe("625")
+    expect(Util.convertAsciiToString(res.result)).toBe("625")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("0")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("0")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("obj")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("obj")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("<")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("<")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("<")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("<")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("/Length")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("/Length")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("1644")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("1644")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("/ID")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("/ID")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("[")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("[")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("<9BFD8283F629F168063225BF31A92429")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("<9BFD8283F629F168063225BF31A92429")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe(">")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe(">")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("<6A28637CD303B944B7A012622D2884DD")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("<6A28637CD303B944B7A012622D2884DD")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe(">")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe(">")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("]")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("]")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("/Info")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("/Info")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("7")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("7")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("0")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("0")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("R")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("R")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("/Root")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("/Root")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("1")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("1")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("0")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("0")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("R")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("R")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("/Type")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("/Type")
 
-    res = Util.readNextWord(crossReferenceStreamObject_string, res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("/XRef")
+    res = Util.readNextWord(crossReferenceStreamObject_string, res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("/XRef")
 })
 
 test('readNextWord_2', () => {
     let res = Util.readNextWord(encode('hello'), 0)
-    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
-    expect(res[1]).toBe(5)
+    expect(Util.convertAsciiToString(res.result)).toBe("hello")
+    expect(res.end_index).toBe(4)
 
     res = Util.readNextWord(encode(' hello'), 0)
-    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
-    expect(res[1]).toBe(6)
+    expect(Util.convertAsciiToString(res.result)).toBe("hello")
+    expect(res.end_index).toBe(5)
 
     res = Util.readNextWord(encode('b hello'), 0)
-    expect(Util.convertAsciiToString(res[0]!)).toBe("b")
-    expect(res[1]).toBe(1)
+    expect(Util.convertAsciiToString(res.result)).toBe("b")
+    expect(res.end_index).toBe(0)
 })
 
 test('readNextWordWithComment', () => {
     let res = Util.readNextWord(encode('hello%comment stuff'), 0)
-    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
-    expect(res[1]).toBe(5)
+    expect(Util.convertAsciiToString(res.result)).toBe("hello")
+    expect(res.end_index).toBe(4)
 
     res = Util.readNextWord(encode('hello% comment stuff'), 0)
-    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
-    expect(res[1]).toBe(5)
+    expect(Util.convertAsciiToString(res.result)).toBe("hello")
+    expect(res.end_index).toBe(4)
 
     res = Util.readNextWord(encode(`%some comment
 hello`), 0)
-    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
-    expect(res[1]).toBe(19)
+    expect(Util.convertAsciiToString(res.result)).toBe("hello")
+    expect(res.end_index).toBe(18)
 
     res = Util.readNextWord(encode(` %some comment
 hello`), 0)
-    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
-    expect(res[1]).toBe(20)
+    expect(Util.convertAsciiToString(res.result)).toBe("hello")
+    expect(res.end_index).toBe(19)
 
     res = Util.readNextWord(encode(` 
 %some comment
 hello`), 0)
-    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+    expect(Util.convertAsciiToString(res.result)).toBe("hello")
 
     res = Util.readNextWord(encode(`hello %other comment`), 0)
-    expect(Util.convertAsciiToString(res[0]!)).toBe("hello")
+    expect(Util.convertAsciiToString(res.result)).toBe("hello")
+    expect(res.end_index).toBe(4)
 
     res = Util.readNextWord(encode('b hello%coment'), 0)
-    expect(Util.convertAsciiToString(res[0]!)).toBe("b")
+    expect(Util.convertAsciiToString(res.result)).toBe("b")
+    expect(res.end_index).toBe(0)
 
     res = Util.readNextWord(encode(`/Type /Page% comment directly after a value
 /Contents`), 0)
-    expect(Util.convertAsciiToString(res[0]!)).toBe("/Type")
-    expect(res[1]).toBe(5)
+    expect(Util.convertAsciiToString(res.result)).toBe("/Type")
+    expect(res.end_index).toBe(4)
 
     res = Util.readNextWord(encode(`/Type /Page% comment directly after a value
-/Contents`), res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("/Page")
-    expect(res[1]).toBe(11)
+/Contents`), res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("/Page")
+    expect(res.end_index).toBe(10)
 
     res = Util.readNextWord(encode(`/Type /Page% comment directly after a value
-/Contents`), res[1])
-    expect(Util.convertAsciiToString(res[0]!)).toBe("/Contents")
-    expect(res[1]).toBe(53)
+/Contents`), res.end_index + 1)
+    expect(Util.convertAsciiToString(res.result)).toBe("/Contents")
+    expect(res.end_index).toBe(52)
 
     res = Util.readNextWord(encode(`/Type /Page% comment directly after a value
-/Contents`), res[1])
-    expect(res[0]).toBeUndefined()
-    expect(res[1]).toBe(54)
+/Contents`), res.end_index + 1)
+    expect(res.result).toBeUndefined()
+    expect(res.end_index).toBe(52)
 })
 
 test('locateSequence', () => {
@@ -258,41 +260,41 @@ test('convertStringToAscii', () => {
 test('extractNumber', () => {
     let data = new Uint8Array([49])
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(1)
-    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(1)
+    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(0)
 
     data = new Uint8Array([50, 51])
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(23)
-    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(2)
+    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(1)
 
     data = new Uint8Array([53, 51, 49, 55])
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(5317)
-    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(4)
+    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(3)
 
     // check with preceding delimiters
     data = new Uint8Array([32, 49])
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(1)
-    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(2)
+    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(1)
 
     data = new Uint8Array([32, 13, 10, 49])
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(1)
-    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(4)
+    expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(3)
 
     data = new Uint8Array([32, 13, 10, 49])
     expect(Util.extractNumber(data, 0).result).toBe(1)
-    expect(Util.extractNumber(data, 0).end_index).toBe(4)
+    expect(Util.extractNumber(data, 0).end_index).toBe(3)
 
     data = new Uint8Array([32, 13, 10, 49, 32])
     expect(Util.extractNumber(data, 0).result).toBe(1)
-    expect(Util.extractNumber(data, 0).end_index).toBe(4)
+    expect(Util.extractNumber(data, 0).end_index).toBe(3)
 
     // test float values
     data = new Uint8Array([50, 46, 53])
     expect(Util.extractNumber(data, 0).result).toBe(2.5)
-    expect(Util.extractNumber(data, 0).end_index).toBe(3)
+    expect(Util.extractNumber(data, 0).end_index).toBe(2)
 
     data = new Uint8Array([50, 48, 46, 53, 56, 54, 54])
     expect(Util.extractNumber(data, 0).result).toBe(20.5866)
-    expect(Util.extractNumber(data, 0).end_index).toBe(7)
+    expect(Util.extractNumber(data, 0).end_index).toBe(6)
 
     data = new Uint8Array([32, 13, 10])
     expect(() => Util.extractNumber(data, 0).result).toThrow(Error)
@@ -301,22 +303,31 @@ test('extractNumber', () => {
 test('extractString', () => {
     let data = new Uint8Array([40, 97, 98, 99, 41])
     expect(Util.extractString(data, 0).result).toEqual('abc')
+    expect(Util.extractString(data, 0).end_index).toEqual(4)
 
     data = new Uint8Array([32, 10, 13, 40, 97, 98, 99, 41])
     expect(Util.extractString(data, 0).result).toEqual('abc')
+    expect(Util.extractString(data, 0).end_index).toEqual(7)
+
+    data = new Uint8Array([32, 10, 13, 40, 97, 98, 99, 41, 32])
+    expect(Util.extractString(data, 0).result).toEqual('abc')
+    expect(Util.extractString(data, 0).end_index).toEqual(7)
 })
 
 test('extractHexString', () => {
     let data = encode(`<abc>`)
     expect(Util.extractHexString(data, 0).result).toEqual('abc')
+    expect(Util.extractHexString(data, 0).end_index).toEqual(4)
 
     data = encode(` <abc> `)
     expect(Util.extractHexString(data, 0).result).toEqual('abc')
+    expect(Util.extractHexString(data, 0).end_index).toEqual(5)
 })
 
 test('extractOptionValue', () => {
     let data = new Uint8Array([47, 72, 105, 103, 104, 108, 105, 103, 104, 116])
-    expect(Util.extractOptionValue(data, 0)).toEqual('Highlight')
+    expect(Util.extractOptionValue(data, 0).result).toEqual('Highlight')
+    expect(Util.extractOptionValue(data, 0).end_index).toEqual(9)
 })
 
 test('extractObjectId', () => {
@@ -345,13 +356,16 @@ test('extractReferenceTyped', () => {
     let data = new Uint8Array([50, 32, 51, 32, 82])
     expect(Util.extractReferenceTyped(data, 0).result.obj).toEqual(2)
     expect(Util.extractReferenceTyped(data, 0).result.generation).toEqual(3)
+    expect(Util.extractReferenceTyped(data, 0).end_index).toEqual(4)
 
     data = new Uint8Array([50, 32, 51, 32, 82, 32, 52, 48, 32, 53, 32, 82])
     expect(Util.extractReferenceTyped(data, 0).result.obj).toEqual(2)
     expect(Util.extractReferenceTyped(data, 0).result.generation).toEqual(3)
+    expect(Util.extractReferenceTyped(data, 0).end_index).toEqual(4)
 
     expect(Util.extractReferenceTyped(data, 6).result.obj).toEqual(40)
     expect(Util.extractReferenceTyped(data, 6).result.generation).toEqual(5)
+    expect(Util.extractReferenceTyped(data, 6).end_index).toEqual(11)
 })
 
 test('skipDelimiter', () => {

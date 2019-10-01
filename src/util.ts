@@ -1,5 +1,11 @@
 import { ReferencePointer } from './parser';
 
+/**
+ * The result contains the extraction result and the
+ * end_index always points to the last position that describes the extracted result.
+ *
+ * NOT ONE POSITION AHEAD AND NO TRAILING SPACES.
+ * */
 export interface ExtractionResult {
     result: any
     end_index: number
@@ -60,7 +66,11 @@ export class Util {
      * Returns the next word. These are bytes that are not separated by a delimiter and a ptr to the position where the word ends
      * It ignores/skips comments.
      * */
-    public static readNextWord(data: Uint8Array, index: number = 0): [Uint8Array | undefined, number] {
+    public static readNextWord(data: Uint8Array, index: number = 0): ExtractionResult {
+        if (index >= data.length) {
+            return { result: undefined, end_index: data.length - 1 }
+        }
+
         index = Util.skipSpaces(data, index)
 
         if (data[index] === 37) {
@@ -76,9 +86,9 @@ export class Util {
         while (!Util.isDelimiter(data[index]) && index < data.length)++index
 
         if (index <= data.length)
-            return [data.slice(start_index, index), index]
+            return { result: data.slice(start_index, index), end_index: index - 1 }
 
-        return [undefined, index]
+        return { result: undefined, end_index: index - 1 }
     }
 
     /**
@@ -258,7 +268,7 @@ export class Util {
         let id = this.extractNumber(ref_data, 0, del_index).result
         let gen = this.extractNumber(ref_data, del_index + 2).result
 
-        return { result: { obj: id, generation: gen }, end_index: index + ref_data.length + 2 } // + _R
+        return { result: { obj: id, generation: gen }, end_index: index + ref_data.length + 1 } // + _R
     }
 
     /**
@@ -270,7 +280,7 @@ export class Util {
 
         data = data.slice(string_start + 1, string_end)
 
-        return { result: Util.convertUnicodeToString(data), end_index: string_end + 1 }
+        return { result: Util.convertUnicodeToString(data), end_index: string_end }
     }
 
     /**
@@ -282,7 +292,7 @@ export class Util {
 
         data = data.slice(string_start + 1, string_end)
 
-        return { result: Util.convertUnicodeToString(data), end_index: string_end + 1 }
+        return { result: Util.convertUnicodeToString(data), end_index: string_end }
     }
 
     /**
@@ -293,14 +303,14 @@ export class Util {
      *
      * The index must point to the "/"
      * */
-    public static extractOptionValue(data: Uint8Array, index: number = 0): string {
+    public static extractOptionValue(data: Uint8Array, index: number = 0): ExtractionResult {
 
         if (data[index] !== 47)
             throw Error("misplaced option value pointer")
 
         let end = Util.locateDelimiter(data, index + 1)
 
-        return Util.convertAsciiToString(Array.from(data.slice(index + 1, end + 1)))
+        return { result: Util.convertAsciiToString(Array.from(data.slice(index + 1, end + 1))), end_index: end }
     }
 
     /**
@@ -327,7 +337,7 @@ export class Util {
             throw Error(`Could not parse number at position ${start}`)
         }
 
-        return { result: +str_id, end_index: end + 1 }
+        return { result: +str_id, end_index: end }
     }
 
     /**

@@ -10,6 +10,7 @@ export class ArrayUtil {
      * The function supports arbitrarily nesting of arrays and multiple types.
      * */
     public static extractArray(data: Uint8Array, ptr: number): ExtractionResult {
+        Util.debug_printIndexed(data)
         console.log("######################### RUN ARRAY EXTRACTION")
         ptr = Util.skipSpaces(data, ptr)
 
@@ -19,54 +20,65 @@ export class ArrayUtil {
         ptr += 1
 
         let next = Util.readNextWord(data, ptr)
-        let next_string: Uint8Array | undefined = next[0]
-        console.log(`Process ${Util.convertAsciiToString(next_string!)}`)
+        let next_string: Uint8Array | undefined = next.result
+        console.log(`Process ${Util.convertAsciiToString(next_string!)} with end index: ${next.end_index}`)
 
         let ret_list: any[] = []
 
         while (next_string) {
             if (next_string[0] === Util.ARRAY_START[0]) {
                 let sub_array = ArrayUtil.extractArray(data, ptr)
-                next[1] = sub_array.end_index
+                ptr = sub_array.end_index
                 ret_list.push(sub_array.result)
             } else if (next_string[0] === Util.STRING_END[0]) {
-                return { result: ret_list, end_index: next[1] }
+                return { result: ret_list, end_index: next.end_index }
             } else if (next_string[0] === Util.STRING_START[0]) {
                 let extracted_string = Util.extractString(data, ptr)
                 ret_list.push(extracted_string.result)
-                next[1] = extracted_string.end_index
+                ptr = extracted_string.end_index
             } else if (next_string[0] === Util.DICT_START[0]) { // <
-                let lookup_word = Util.readNextWord(data, next[1])
-                if (lookup_word[0] && lookup_word[0][0] === Util.DICT_START[0]) {
+                let lookup_word = Util.readNextWord(data, next.end_index + 1)
+                if (lookup_word.result && lookup_word.result[0] === Util.DICT_START[0]) {
                     let dict = {}
-                    ObjectUtil.extractDictValueRec(data, ptr, dict)
+                    ptr = ObjectUtil.extractDictValueRec(data, ptr, dict)
                     ret_list.push(dict)
                 } else {
                     let hex_string = Util.extractHexString(data, ptr)
                     ret_list.push(hex_string.result)
-                    next[1] = hex_string.end_index
+                    ptr = hex_string.end_index
                 }
             } else if (next_string[0] === 47) { // /
-                ret_list.push("/" + Util.extractOptionValue(data, ptr))
+                let opt_value = Util.extractOptionValue(data, ptr)
+                ret_list.push("/" + opt_value.result)
+                ptr = opt_value.end_index
             } else if (next_string[0] === Util.R[0]) { // /
                 let obj = ret_list[ret_list.length - 2]
                 let generation = ret_list[ret_list.length - 1]
                 ret_list = ret_list.slice(0, ret_list.length - 2)
                 ret_list.push({ obj: obj, generation: generation })
+                ptr = next.end_index
             } else if (next_string[0] === Util.ARRAY_END[0]) {
                 break
             } else {
-                ret_list.push(Util.extractNumber(data, ptr).result)
+                console.log("---------------------NUMBER")
+                let nbr = Util.extractNumber(data, ptr)
+                ret_list.push(nbr.result)
+                ptr = nbr.end_index
+                console.log(JSON.stringify(nbr))
             }
 
-            ptr = next[1]
-            next = Util.readNextWord(data, next[1])
-            next_string = next[0]
-            console.log(`Process ${Util.convertAsciiToString(next_string!)}`)
+            console.log(`Set ptr to ${ptr}`)
+
+
+            ++ptr
+            next = Util.readNextWord(data, ptr)
+            next_string = next.result
+            console.log(`Process ${Util.convertAsciiToString(next_string!)} at index ${next.end_index}`)
+
         }
 
         console.log(ret_list)
 
-        return { result: ret_list, end_index: next[1] }
+        return { result: ret_list, end_index: next.end_index }
     }
 }
