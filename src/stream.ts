@@ -45,7 +45,7 @@ export class Stream {
      * */
     getNumber(): number {
         let nbr = Util.extractNumber(this.data, this._ptr)
-        this._ptr = nbr.end_index
+        this._ptr = nbr.end_index + 1
 
         return nbr.result
 

@@ -146,6 +146,7 @@ export class ObjectUtil {
     }
 
     private static extractStreamObject(data: Uint8Array, object_id_to_extract: number, offset: number, streamObj_xref: XRef): any {
+        console.log(`Extract object ${object_id_to_extract} from streamobject: ${JSON.stringify(streamObj_xref)}`)
         let ptr = streamObj_xref.pointer
         let ret_obj: any = {}
         // extract object id
