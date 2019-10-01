@@ -272,11 +272,18 @@ test('extractObject_14', () => {
 
 test('extractObject_15', () => {
     let res = ObjectUtil.extractObject(simplePageObject_12, 0)
-    expect(res.id.obj).toBe(2)
+    expect(res.id.obj).toBe(14)
     expect(res.id.generation).toBe(0)
 
-    expect(res.value["/Type"]).toBe("D:20180503095253")
-    expect(res.value["/A"]).toBe("something")
-    expect(res.value["/Resources"].obj).toBe(9)
-    expect(res.value["/Resources"].generation).toBe(0)
+    expect(res.value["/Subtype"]).toBe("/Link")
+    expect(res.value["/Rect"]).toEqual([69.75, 689.48, 525.05, 715.01])
+    expect(res.value["/BS"]["/W"]).toBe(0)
+    expect(res.value["/F"]).toBe(4)
+    expect(res.value["/Dest"][0].obj).toBe(15)
+    expect(res.value["/Dest"][0].generation).toBe(0)
+    expect(res.value["/Dest"][1]).toBe("/XYZ")
+    expect(res.value["/Dest"][2]).toBe(69)
+    expect(res.value["/Dest"][3]).toBe(756)
+    expect(res.value["/Dest"][4]).toBe(0)
+    expect(res.value["/StructParent"]).toBe(1)
 })
