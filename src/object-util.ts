@@ -53,8 +53,6 @@ export class ObjectUtil {
             if (!current_key)
                 throw Error("Invalid anonymous string definition")
             let extracted_string = Util.extractString(data, ptr)
-            console.log(`Value is: ${extracted_string.result}, Continue at index: ${next[1]}`)
-            // handle string
             dict[current_key] = extracted_string.result
             return ObjectUtil.extractDictKeyRec(data, extracted_string.end_index, dict)
         } else if (next_string[0] === Util.DICT_START[0]) { // <
