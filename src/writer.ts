@@ -1,4 +1,5 @@
 import { Util } from './util'
+import { ObjectUtil } from './object-util'
 import { Annotation, ReferencePointer, PDFDocumentParser, Page } from './parser'
 import { XRef } from './document-history'
 import { WriterUtil } from './writer-util'
@@ -101,6 +102,21 @@ export class Writer {
         let lookupTable = this.parser.documentHistory.createObjectLookupTable()
 
         let page_ptr: XRef = lookupTable[page.object_id.obj]
+
+        if (page_ptr.compressed) {
+            let obj = ObjectUtil.extractObject(this.data, page_ptr, lookupTable)
+            let obj_data = obj.stream.getData().slice(obj.pointer_stream_start, obj.pointer_stream_end + 1)
+
+            let ref_ptr = WriterUtil.writeReferencePointer(obj.id, false).concat(32)
+
+            let new_data: Uint8Array = new Uint8Array(ref_ptr.length + Writer.OBJ.length + obj_data.length + Writer.ENDOBJ.length)
+            new_data.set(ref_ptr)
+            new_data.set(Writer.OBJ, ref_ptr.length)
+            new_data.set(obj_data, Writer.OBJ.length + ref_ptr.length)
+            new_data.set(Writer.ENDOBJ, Writer.OBJ.length + obj_data.length + ref_ptr.length)
+
+            return WriterUtil.replaceAnnotsFieldInPageObject(new_data, page, 0, annot_array_reference)
+        }
 
         return WriterUtil.replaceAnnotsFieldInPageObject(this.data, page, page_ptr.pointer, annot_array_reference)
     }
@@ -510,9 +526,13 @@ export class Writer {
         ret = ret.concat(Util.convertNumberToCharArray(this.parser.documentHistory.trailerSize))
         ret.push(Writer.SPACE)
 
-        let trailer = this.parser.documentHistory.getRecentUpdate().trailer
+        let trailer = this.parser.documentHistory.getRecentUpdate()
         ret = ret.concat(Writer.ROOT)
         ret.push(Writer.SPACE)
+
+        if (!trailer.root)
+            throw Error("No root object in trailer, although this is an cross reference table document")
+
         ret = ret.concat(WriterUtil.writeReferencePointer(trailer.root, true))
         ret.push(Writer.SPACE)
 
@@ -550,7 +570,7 @@ export class Writer {
         let new_data: number[] = []
 
         // Fix case that there is no linebreak after the end of the file
-        if (this.data[ptr - 1] === 70) {
+        if (this.data[ptr - 1] === 70) { // 70 = 'F' (from [%%EO]F
             new_data.push(Writer.CR)
             new_data.push(Writer.LF)
             ptr += 2
@@ -574,7 +594,7 @@ export class Writer {
             ptr += annot_array.data.length
 
             // add adapted page object if it exists -- In the case the page had no annotation yet there exists
-            // no such array referring to its annotations. A pointer to such an array array must be added to the
+            // no such array referring to its annotations. A pointer to such an array must be added to the
             // page object. If this was done the `pageData` paramater is set and contains the adapted page object
             if (annot_array.pageData.length > 0) {
                 this.xrefs.push({

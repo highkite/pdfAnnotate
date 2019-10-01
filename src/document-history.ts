@@ -1,5 +1,7 @@
 import { ReferencePointer } from './parser';
 import { Util } from './util';
+import { ObjectUtil } from './object-util'
+import { Stream } from './stream';
 
 export interface XRef {
     id: number
@@ -7,6 +9,7 @@ export interface XRef {
     generation: number
     free: boolean
     update: boolean
+    compressed?: boolean
 }
 
 interface SubSectionHeader {
@@ -25,22 +28,163 @@ export interface ObjectLookupTable {
     [id: number]: XRef
 }
 
+export interface UpdateSection {
+    start_pointer: number,
+    size: number
+    refs: XRef[]
+    prev?: number
+    root?: { obj: number, generation: number }
+}
+
 /**
- * Holds the complete information of one update section. That comprises:
+ * Holds the complete information of one update section in the Cross-Reference-Stream Object format.
+ *
+ * */
+export class CrossReferenceStreamObject {
+    public refs: XRef[] = []
+    constructor(private data: Uint8Array) { }
+
+    public trailer: Trailer = { size: -1, root: { obj: -1, generation: -1 } }
+
+    public streamLength: number = -1
+
+    public w: number[] = []
+    public index: number[] = []
+    private start_pointer: number = 0
+
+    /**
+     * Extracts a cross reference section that is a continuous definition of cross reference entries
+     * */
+    extractCrossReferenceSection(first_object_id: number, object_count: number, stream: Stream) {
+        let current_object_id = first_object_id
+
+        for (let i = 0; i < object_count; ++i) {
+            let _type = stream.getNBytesAsNumber(this.w[0])
+
+            let xref = undefined
+
+            switch (_type) {
+                case 0:
+                    xref = { id: current_object_id++, pointer: stream.getNBytesAsNumber(this.w[1]), generation: this.w[2] === 0 ? 0 : stream.getNBytesAsNumber(this.w[2]), free: true, update: false }
+                    break
+                case 1:
+                    xref = { id: current_object_id++, pointer: stream.getNBytesAsNumber(this.w[1]), generation: this.w[2] === 0 ? 0 : stream.getNBytesAsNumber(this.w[2]), free: false, update: true }
+                    break
+                case 2:
+                    // in this case the pointer becomes the stream object id that contains the compressed object and the generation represents the index of the object in the stream
+                    xref = { id: current_object_id++, pointer: stream.getNBytesAsNumber(this.w[1]), generation: this.w[2] === 0 ? 0 : stream.getNBytesAsNumber(this.w[2]), free: true, update: false, compressed: true }
+                    break
+            }
+
+
+            if (xref)
+                this.refs.push(xref)
+            else
+                throw Error(`Invalid cross-reference-stream type ${_type}`)
+        }
+    }
+
+    /**
+     * Extracts the cross-reference-table from the stream
+     * */
+    extractStream(stream: Stream) {
+        let cross_reference_length = this.w.reduce((a, b) => a + b, 0)
+
+        // check if the data stream has a valid size
+        if (stream.getLength() !== cross_reference_length * this.index.filter((v, i) => i % 2 === 1).reduce((a, b) => a + b, 0))
+            throw Error(`Invalid stream length - is ${stream.getLength()} but should be ${cross_reference_length * this.index.filter((v, i) => i % 2 === 1).reduce((a, b) => a + b, 0)}`)
+
+        if (this.index.length % 2 === 1)
+            throw Error(`Invalid index flag ${this.index}`)
+
+        for (let i = 0; i < this.index.length; i += 2) {
+            this.extractCrossReferenceSection(this.index[i], this.index[i + 1], stream)
+        }
+
+    }
+
+    /**
+     * Parses the Cross-Reference-Stream-Object at the given index
+     * */
+    extract(xref: XRef) {
+        let index = xref.pointer
+        this.start_pointer = index
+        let crs_object = ObjectUtil.extractObject(this.data, xref)
+
+        let ptr_object_end = Util.locateSequence(Util.ENDOBJ, this.data, index)
+        this.data = this.data.slice(index, ptr_object_end)
+
+        // check type
+        if (crs_object.value["/Type"] !== "/XRef")
+            throw Error(`Invalid Cross-Reference-Stream-object type: ${crs_object.value["/Type"]}`)
+
+        // extract size
+        if (!crs_object.value["/Size"])
+            throw Error(`Invalid size value ${crs_object.value["/Size"]}`)
+        this.trailer.size = crs_object.value["/Size"]
+
+        // extract ROOT if it exists
+        if (crs_object.value["/Root"])
+            this.trailer.root = crs_object.value["/Root"]
+
+        // extract PREV if it exists
+        if (crs_object.value["/Prev"])
+            this.trailer.prev = crs_object.value["/Prev"]
+
+        // extract W parameter
+        this.w = crs_object.value["/W"]
+
+        if (!this.w || 0 === this.w.length)
+            throw Error("Invalid /W parameter in Cross-Reference-Stream-Object")
+
+        // extract Index parameter
+        this.index = crs_object.value["/Index"]
+
+        if (!this.index || 0 === this.index.length)
+            throw Error("Invalid /Index parameter in Cross-Reference-Stream-Object")
+
+        if (!crs_object.stream)
+            throw Error("Missing stream at cross reference stream object")
+
+        let stream = crs_object.stream
+
+        if (!stream)
+            throw Error("Invalid stream object")
+
+        this.streamLength = crs_object.value["/Length"]
+
+        this.extractStream(stream)
+
+        // the cross-reference-stream object is also a known reference
+        this.refs.push({ id: crs_object.id.obj, pointer: this.start_pointer, generation: crs_object.id.generation, free: false, update: true })
+    }
+
+    /**
+     * Returs the update section representing this CrossReferenceStreamObject
+     * */
+    getUpdateSection(): UpdateSection {
+        return {
+            start_pointer: this.start_pointer,
+            size: this.trailer.size,
+            prev: this.trailer.prev,
+            root: this.trailer.root,
+            refs: this.refs
+        }
+    }
+}
+
+/**
+ * Holds the complete information of one update section in the Cross-Reference-Table format. That comprises:
  * - the body update
  * - the crossiste reference table
  * - the trailer
  * */
-export class UpdateSection {
+export class CrossReferenceTable {
     public refs: XRef[] = []
 
     public start_pointer: number = -1
 
     public trailer: Trailer = { size: -1, root: { obj: -1, generation: -1 } }
-
-    private static SIZE: number[] = [47, 83, 105, 122, 101] // /Size
-    private static ROOT: number[] = [47, 82, 111, 111, 116] // /Root
-    private static PREV: number[] = [47, 80, 114, 101, 118] // /Prev
 
     constructor(private data: Uint8Array) { }
 
@@ -57,6 +201,19 @@ export class UpdateSection {
     }
 
     /**
+     * Returs the update section representing this CrossReferenceTable
+     * */
+    getUpdateSection(): UpdateSection {
+        return {
+            start_pointer: this.start_pointer,
+            size: this.trailer.size,
+            refs: this.refs,
+            prev: this.trailer.prev,
+            root: this.trailer.root
+        }
+    }
+
+    /**
      * Extracts the header of a sub section. For instance
      *
      * 0 1 // <--
@@ -67,7 +224,7 @@ export class UpdateSection {
     extractSubSectionHeader(index: number): SubSectionHeader {
         let ptr = Util.locateDelimiter(this.data, index)
 
-        let obj_id = Util.extractNumber(this.data, index, ptr)
+        let obj_id = Util.extractNumber(this.data, index, ptr).result
 
         ptr = Util.skipDelimiter(this.data, ptr + 1)
 
@@ -75,7 +232,7 @@ export class UpdateSection {
 
         ptr = Util.locateDelimiter(this.data, ptr)
 
-        let reference_count = Util.extractNumber(this.data, ptr_ref_count, ptr)
+        let reference_count = Util.extractNumber(this.data, ptr_ref_count, ptr).result
 
         return { id: obj_id, count: reference_count, end_ptr: ptr }
     }
@@ -95,17 +252,17 @@ export class UpdateSection {
         for (let i = 0; i < count; ++i, index += 20) {
             let ptr_end_pointer = Util.locateDelimiter(this.data, index)
 
-            let pointer = Util.extractNumber(this.data, index, ptr_end_pointer)
+            let pointer = Util.extractNumber(this.data, index, ptr_end_pointer).result
 
             let ptr_gen_start = Util.skipDelimiter(this.data, ptr_end_pointer + 1)
 
             let ptr_gen_end = Util.locateDelimiter(this.data, ptr_gen_start)
 
-            let generation = Util.extractNumber(this.data, ptr_gen_start, ptr_gen_end)
+            let generation = Util.extractNumber(this.data, ptr_gen_start, ptr_gen_end).result
 
             let ptr_flag = Util.skipDelimiter(this.data, ptr_gen_end + 1)
 
-            let isFree = this.data[ptr_flag] === 102
+            let isFree = this.data[ptr_flag] === 102 // 102 = f
 
             _refs.push({
                 id: first_object_id + i,
@@ -128,34 +285,34 @@ export class UpdateSection {
         let _data = this.data.slice(index, end_trailer_index)
         index = 0
 
-        let ptr_start_size = Util.locateSequence(UpdateSection.SIZE, _data, index, true) + UpdateSection.SIZE.length
+        let ptr_start_size = Util.locateSequence(Util.SIZE, _data, index, true) + Util.SIZE.length
         ptr_start_size = Util.skipDelimiter(_data, ptr_start_size)
 
-        let size = Util.extractNumber(_data, ptr_start_size)
+        let size = Util.extractNumber(_data, ptr_start_size).result
 
 
-        let ptr_start_root = Util.locateSequence(UpdateSection.ROOT, _data, index, true) + UpdateSection.ROOT.length
+        let ptr_start_root = Util.locateSequence(Util.ROOT, _data, index, true) + Util.ROOT.length
         ptr_start_root = Util.skipDelimiter(_data, ptr_start_root)
         let root_reference = Util.extractReferenceTyped(_data, ptr_start_root)
 
 
-        let ptr_start_prev = Util.locateSequence(UpdateSection.PREV, _data, index, true)
+        let ptr_start_prev = Util.locateSequence(Util.PREV, _data, index, true)
         let prev = undefined
         if (-1 != ptr_start_prev) {
-            ptr_start_prev = Util.skipDelimiter(_data, ptr_start_prev + UpdateSection.PREV.length)
+            ptr_start_prev = Util.skipDelimiter(_data, ptr_start_prev + Util.PREV.length)
 
-            prev = Util.extractNumber(_data, ptr_start_prev)
+            prev = Util.extractNumber(_data, ptr_start_prev).result
         }
 
         return {
             size: size,
-            root: root_reference,
+            root: root_reference.result,
             prev: prev
         }
     }
 
     /**
-     * Parses the Update section at the given index
+     * Parses the Cross Reference Table at the given index
      * */
     extract(index: number) {
         this.start_pointer = index
@@ -164,11 +321,6 @@ export class UpdateSection {
         start_ptr = Util.skipDelimiter(this.data, start_ptr)
 
         let first_header = this.extractSubSectionHeader(start_ptr)
-
-        // the first header must be 0 to establish the linked list of free objects
-        if (first_header.id !== 0) {
-            throw Error("First object id not 0")
-        }
 
         let ref_start = Util.skipDelimiter(this.data, first_header.end_ptr + 1)
 
@@ -205,8 +357,7 @@ export class DocumentHistory {
 
     /**
      * Holds object ids that were formerly freed and are now 'already' reused.
-     * This is used to prevent a freed object a second time
-     * */
+     * This is used to prevent a freed object a second time */
     private already_reused_ids: XRef[] = []
 
     constructor(private data: Uint8Array) {
@@ -214,43 +365,92 @@ export class DocumentHistory {
     }
 
     /**
-     * Extracts the update section starting at the given index
+     * Extracts the cross reference table starting at the given index
      * */
-    extractUpdateSection(index: number) {
-        let updateSection = new UpdateSection(this.data)
-        updateSection.extract(index)
+    extractCrossReferenceTable(index: number): CrossReferenceTable {
+        let crt = new CrossReferenceTable(this.data)
+        crt.extract(index)
 
-        this.updates.push(updateSection)
+        return crt
+    }
+
+    /**
+     * Extracts the cross reference stream object starting at the given index
+     * */
+    extractCrossReferenceStreamObject(xref: XRef): CrossReferenceStreamObject {
+        let crs = new CrossReferenceStreamObject(this.data)
+        crs.extract(xref)
+
+        return crs
     }
 
     /**
      * Extracts the last update section of a document (that means
      * the most recent update locating at the end of the file)
      * */
-    extractDocumentEntry() {
+    extractDocumentEntry(): number {
         let ptr = this.data.length - 1
 
         let ptr_startxref = Util.locateSequenceReversed(Util.STARTXREF, this.data, ptr, true) + 9
 
-        ptr = Util.extractNumber(this.data, ptr_startxref)
+        ptr = Util.extractNumber(this.data, ptr_startxref).result
 
-        this.extractUpdateSection(ptr)
+        return ptr
     }
 
     /**
      * Extracts the entire update sections
+     *
+     * Needs to adapt depending whether the document uses a cross-reference table or a cross-reference stream object
      * */
     extractDocumentHistory() {
-        this.extractDocumentEntry()
 
-        let us = this.updates[0]
-
-        while (us.trailer.prev) {
-            this.extractUpdateSection(us.trailer.prev)
-            us = this.updates[this.updates.length - 1]
+        let ptr = this.extractDocumentEntry()
+        let xref = {
+            id: -1,
+            pointer: ptr,
+            generation: 0,
+            free: false,
+            update: true
         }
 
-        this.trailerSize = this.getRecentUpdate().trailer.size
+        // Handle cross reference table
+        if (Util.areArraysEqual(this.data.slice(ptr, ptr + Util.XREF.length), Util.XREF)) {
+
+            let crt = this.extractCrossReferenceTable(ptr)
+
+            this.updates.push(crt.getUpdateSection())
+
+            let us = this.updates[0]
+
+            while (us.prev) {
+                crt = this.extractCrossReferenceTable(us.prev)
+                this.updates.push(crt.getUpdateSection())
+                us = this.updates[this.updates.length - 1]
+            }
+
+        } else { // handle cross reference stream object
+            let crs = this.extractCrossReferenceStreamObject(xref)
+
+            this.updates.push(crs.getUpdateSection())
+
+            let us = this.updates[0]
+
+            while (us.prev) {
+                let _xref = {
+                    id: -1,
+                    pointer: us.prev,
+                    generation: 0,
+                    free: false,
+                    update: true
+                }
+                crs = this.extractCrossReferenceStreamObject(_xref)
+                this.updates.push(crs.getUpdateSection())
+                us = this.updates[this.updates.length - 1]
+            }
+        }
+
+        this.trailerSize = this.getRecentUpdate().size
     }
 
     /**
@@ -270,8 +470,8 @@ export class DocumentHistory {
     createObjectLookupTable(): ObjectLookupTable {
         let objTable: { [id: number]: XRef } = {}
 
-        let update = this.getRecentUpdate()
-        let obj_count = update.trailer.size
+        let update: UpdateSection = this.getRecentUpdate()
+        let obj_count = update.size
 
         let i = 1
         while (Object.keys(objTable).length < obj_count) {

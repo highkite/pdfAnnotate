@@ -1,5 +1,6 @@
-import { Util } from './util';
-import { DocumentHistory, ObjectLookupTable } from './document-history';
+import { Util, PDFVersion } from './util';
+import { ObjectUtil } from './object-util'
+import { DocumentHistory, ObjectLookupTable, XRef } from './document-history';
 
 /**
  * Note that this parser does not parses the PDF file completely. It lookups those
@@ -76,30 +77,31 @@ export class Annotation {
     is_deleted?: boolean
 
 
-    constructor(private data: Uint8Array = new Uint8Array([])) { }
+    constructor(private data: Uint8Array = new Uint8Array([])) {
+        this.data = new Uint8Array(data)
+    }
 
     /**
      * Extract the annotation object (partially)
      * */
-    extract(ptr: number, page: Page) {
-        // restrict the data array to the partition that actually contains the annotation data
-        let obj_end_ptr: number = Util.locateSequence(Util.ENDOBJ, this.data, ptr, true)
+    extract(xref: XRef, page: Page, objectLookupTable: ObjectLookupTable) {
+        let annot_obj = ObjectUtil.extractObject(this.data, xref, objectLookupTable)
 
-        this.data = this.data.slice(ptr, obj_end_ptr)
+        this.object_id = annot_obj.id
 
-        this.object_id = Util.extractObjectId(this.data, 0)
+        annot_obj = annot_obj.value
 
-        this.type = "/" + Util.extractField(this.data, Util.SUBTYPE)
-        this.rect = Util.extractField(this.data, Util.RECT)
+        this.type = annot_obj["/Type"]
+        this.rect = annot_obj["/Rect"]
         this.pageReference = page
-        this.updateDate = Util.extractField(this.data, Util.M)
-        this.border = Util.extractField(this.data, Util.BORDER)
-        this.color = Util.extractField(this.data, Util.C)
-        this.author = Util.extractField(this.data, Util.T)
-        this.id = Util.extractField(this.data, Util.NM)
-        this.contents = Util.extractField(this.data, Util.CONTENTS)
-        this.quadPoints = Util.extractField(this.data, Util.QUADPOINTS)
-        this.inkList = Util.extractField(this.data, Util.INKLIST)
+        this.updateDate = annot_obj["/M"]
+        this.border = annot_obj["/Border"]
+        this.color = annot_obj["/C"]
+        this.author = annot_obj["/T"]
+        this.author = annot_obj["/NM"]
+        this.contents = annot_obj["/Contents"]
+        this.quadPoints = annot_obj["/Quadpoints"]
+        this.inkList = annot_obj["/Inklist"]
     }
 }
 
@@ -107,18 +109,22 @@ export class Annotation {
  * Represents the Catalog object of the PDF document
  * */
 export class CatalogObject {
-    constructor(private data: Uint8Array) { }
+    /**
+     * Extracts the data representing the object.
+     * */
+    constructor(private data: Uint8Array, private xref: XRef, private objectLookupTable: ObjectLookupTable) {
+        this.data = new Uint8Array(data)
+
+        let page_obj = ObjectUtil.extractObject(this.data, xref, objectLookupTable).value
+
+        if (page_obj["/Type"] !== "/Catalog")
+            throw Error(`Invalid catalog object at position ${xref.pointer}`)
+
+        this.pagesObjectId = page_obj["/Pages"]
+
+    }
 
     private pagesObjectId: ReferencePointer = { obj: -1, generation: -1 }
-
-    /**
-     * Extract the catalog object from the data at the given ptr
-     * */
-    extract(ptr: number) {
-        let ptr_pages_key = Util.locateSequence(Util.PAGES, this.data, ptr, true) + Util.PAGES.length
-
-        this.pagesObjectId = Util.extractReferenceTyped(this.data, ptr_pages_key)
-    }
 
     getPagesObjectId(): ReferencePointer {
         return this.pagesObjectId
@@ -131,34 +137,12 @@ export class CatalogObject {
  * */
 export class PageTree {
 
-    private id: number = -1
-
-    private generation: number = -1
-
     private pageCount: number = -1
 
     private pageReferences: ReferencePointer[] = []
 
     constructor(private data: Uint8Array, private objectLookupTable: ObjectLookupTable) {
         this.data = new Uint8Array(data)
-    }
-
-    /**
-     * Reads the provided reference and return true, if the object type is /Page
-     * */
-    isPage(reference: ReferencePointer): boolean {
-        let xref = this.objectLookupTable[reference.obj]
-
-        if (xref.generation !== reference.generation)
-            throw Error("Page object out of date")
-
-        let ptr = xref.pointer
-
-        ptr = Util.locateSequence(Util.ENDOBJ, this.data, ptr, true)
-
-        let _data = this.data.slice(xref.pointer, ptr)
-
-        return (-1 !== Util.locateSequence(Util.PAGE, _data, 0, true))
     }
 
     /**
@@ -170,23 +154,16 @@ export class PageTree {
     extractPageReferences(references: ReferencePointer[]) {
 
         for (let reference of references) {
-            if (this.isPage(reference)) {
+            let xref = this.objectLookupTable[reference.obj]
+
+            let kid_page_obj = ObjectUtil.extractObject(this.data, xref, this.objectLookupTable).value
+
+            if (kid_page_obj["/Type"] === "/Page") {
                 this.pageReferences.push(reference)
-            } else { // handle array -- recursively call the function with the reference array
-                let xref = this.objectLookupTable[reference.obj]
-
-                if (xref.generation !== reference.generation)
-                    throw Error("Page object out of date")
-
-                let ptr = xref.pointer
-
-                let kids_index = Util.locateSequence(Util.KIDS, this.data, ptr, true) + Util.KIDS.length
-
-                let array_data = Util.extractArraySequence(this.data, kids_index + 1)
-
-                let refs = Util.extractReferencesFromArraySequence(array_data)
-
-                this.extractPageReferences(refs)
+            } else if (kid_page_obj["/Type"] === "/Pages") {
+                this.extractPageReferences(kid_page_obj["/Kids"])
+            } else {
+                throw Error(`Invalid object type ${kid_page_obj["/Type"]}`)
             }
         }
     }
@@ -194,23 +171,16 @@ export class PageTree {
     /**
      * Extract the object data at the given pointer
      * */
-    extract(ptr: number) {
-        this.pageCount = Util.extractField(this.data, Util.COUNT, ptr)
+    extract(xref: XRef, objectLookupTable: ObjectLookupTable) {
+        let page_tree_obj = ObjectUtil.extractObject(this.data, xref, objectLookupTable).value
+        this.pageCount = page_tree_obj["/Count"]
 
-        // it is possible that an object of type /Pages references again to objects of types /Pages so we must
-        // apply a recursive evaluation
-        let kids_index = Util.locateSequence(Util.KIDS, this.data, ptr, true)
-
-        if (-1 === kids_index)
+        if (!page_tree_obj["/Kids"])
             throw Error(`Could not find index of /Kids in /Pages object`)
 
-        kids_index += Util.KIDS.length
-
-        let array_data = Util.extractArraySequence(this.data, kids_index + 1)
+        let refs = page_tree_obj["/Kids"]
 
         this.pageReferences = []
-
-        let refs = Util.extractReferencesFromArraySequence(array_data)
 
         this.extractPageReferences(refs)
     }
@@ -242,7 +212,9 @@ export class Page {
 
     public annotsPointer: ReferencePointer | undefined
 
-    constructor(private data: Uint8Array, private documentHistory: DocumentHistory) { }
+    constructor(private data: Uint8Array, private documentHistory: DocumentHistory) {
+        this.data = new Uint8Array(data)
+    }
 
     /**
      * Extracts the references in the linked annotations array
@@ -255,40 +227,21 @@ export class Page {
 
         let ref_annot_table = obj_table[this.annotsPointer.obj]
 
-        if (ref_annot_table.generation !== this.annotsPointer.generation)
-            throw Error("Reference annotation table out of date")
+        let annotations_obj = ObjectUtil.extractObject(this.data, ref_annot_table, obj_table)
 
-        let ptr = ref_annot_table.pointer
-
-        ptr = Util.locateSequence(Util.OBJ, this.data, ptr, true) + Util.OBJ.length
-
-        ptr = Util.skipDelimiter(this.data, ptr)
-
-        let array_sequence = Util.extractArraySequence(this.data, ptr)
-
-        let refs = Util.extractReferencesFromArraySequence(array_sequence)
-
-        this.annots = refs
+        this.annots = annotations_obj.value
     }
 
     /**
      * Extracts the page object starting at position ptr
      * */
-    extract(ptr: number) {
+    extract(xref: XRef, objectLookupTable: ObjectLookupTable) {
 
-        let id_ptr = Util.skipDelimiter(this.data, ptr)
-        let object_id: number = Util.extractNumber(this.data, id_ptr)
+        let page_obj = ObjectUtil.extractObject(this.data, xref, objectLookupTable)
 
-        let end_id_ptr = Util.locateDelimiter(this.data, id_ptr + 1) + 1
-        let object_gen: number = Util.extractNumber(this.data, end_id_ptr)
+        this.object_id = page_obj.id
 
-        this.object_id = { obj: object_id, generation: object_gen }
-
-        let end_ptr = Util.locateSequence(Util.ENDOBJ, this.data, ptr, true)
-
-        let _data = this.data.slice(ptr, end_ptr)
-
-        let annots = Util.extractField(_data, Util.ANNOTS)
+        let annots = page_obj.value["/Annots"]
 
         if (annots) {
             this.hasAnnotsField = true
@@ -310,13 +263,31 @@ export class Page {
  * */
 export class PDFDocumentParser {
 
+    private version: PDFVersion | undefined = undefined
+
     public documentHistory: DocumentHistory = new DocumentHistory(new Uint8Array([]))
+
+    private catalogObject: CatalogObject | undefined = undefined
+
+    private pageTree: PageTree | undefined = undefined
 
     constructor(private data: Uint8Array) {
         this.data = new Uint8Array(data)
 
         this.documentHistory = new DocumentHistory(this.data)
         this.documentHistory.extractDocumentHistory()
+    }
+
+    /**
+     * Returns the major and minor version of the pdf document
+     * */
+    getPDFVersion(): PDFVersion {
+        if (this.version)
+            return this.version
+
+        this.version = Util.extractVersion(this.data, 0)
+
+        return this.version
     }
 
     /**
@@ -331,21 +302,44 @@ export class PDFDocumentParser {
      * Returns the catalog object of the PDF file
      * */
     getCatalog(): CatalogObject {
-        let root_obj = this.documentHistory.getRecentUpdate().trailer.root
-        let obj_table = this.documentHistory.createObjectLookupTable()
+        let recent_update = this.documentHistory.getRecentUpdate()
+        if (recent_update.root) {
+            let root_obj = recent_update.root
 
-        let catalog_ptr = obj_table[root_obj.obj].pointer
+            let obj_table = this.documentHistory.createObjectLookupTable()
 
-        let catalog_object = new CatalogObject(this.data)
-        catalog_object.extract(catalog_ptr)
+            return new CatalogObject(this.data, obj_table[root_obj.obj], obj_table)
+        } else { // If we do not know the catalogue object we need to look it up
+            // In cross reference stream objects no /ROOT field is required, however often it is provided anyway
+            // otherwise run this routine, but buffer the catalog object
+            if (this.catalogObject)
+                return this.catalogObject
 
-        return catalog_object
+            throw Error("Does not work for compressed data")
+
+            //let obj_table = this.documentHistory.createObjectLookupTable()
+
+            //for (let i = 1; i < recent_update.size; ++i) {
+            //    let _type = Util.extractField(this.data, Util._TYPE, obj_table[i].pointer)
+
+            //    if (Util.areArraysEqual(_type, Util.CATALOG)) {
+            //        this.catalogObject = new CatalogObject(this.data, obj_table[i])
+
+            //        if (this.catalogObject)
+            //            return this.catalogObject
+            //    }
+            //}
+        }
+
+        throw Error("Could not identify catalog object")
     }
 
     /**
      * Returns the latest version of the page tree object of the document
      * */
     getPageTree(): PageTree {
+        if (this.pageTree)
+            return this.pageTree
         let obj_table: ObjectLookupTable = this.documentHistory.createObjectLookupTable()
 
         let catalog_object = this.getCatalog()
@@ -353,11 +347,10 @@ export class PDFDocumentParser {
         let pages_id = catalog_object.getPagesObjectId()
         let pages_ref = obj_table[pages_id.obj]
 
-        if (pages_ref.generation !== pages_id.generation)
-            throw Error("Pages object out of date")
-
         let pageTree = new PageTree(this.data, obj_table)
-        pageTree.extract(pages_ref.pointer)
+        pageTree.extract(pages_ref, obj_table)
+
+        this.pageTree = pageTree
 
         return pageTree
     }
@@ -371,13 +364,10 @@ export class PDFDocumentParser {
 
         let obj_table = this.documentHistory.createObjectLookupTable()
 
-        if (obj_table[pageId.obj].generation !== pageId.generation)
-            throw Error("Page object out of date")
-
-        let obj_ptr = obj_table[pageId.obj].pointer
+        let obj_ptr = obj_table[pageId.obj]
 
         let page = new Page(this.data, this.documentHistory)
-        page.extract(obj_ptr)
+        page.extract(obj_ptr, obj_table)
 
         return page
     }
@@ -401,7 +391,7 @@ export class PDFDocumentParser {
 
             for (let refPtr of annotationReferences) {
                 let a = new Annotation(this.data)
-                a.extract(obj_table[refPtr.obj].pointer, page)
+                a.extract(obj_table[refPtr.obj], page, obj_table)
                 a.page = i
                 pageAnnots.push(a)
             }

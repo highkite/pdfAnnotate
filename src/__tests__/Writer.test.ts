@@ -35,12 +35,13 @@ test('getAnnotations', () => {
 })
 
 test('MISC', () => {
-    let data = loadFromFile('./test.pdf')
+    let data = loadFromFile('./test9.pdf')
     let fac: AnnotationFactory = new AnnotationFactory(data)
-    fac.createHighlightAnnotation(0, [50, 50, 80, 80], "Test123", "Max")
-    fac.getAnnotations().then((annots) => {
-        console.log(annots)
-    })
+    // look for the red annotation!
+    fac.createHighlightAnnotation(0, [50, 50, 80, 80], "Test123", "Max", { r: 100, g: 16, b: 0 })
+    //fac.getAnnotations().then((annots) => {
+    //    console.log(annots)
+    //})
     let data2 = fac.write()
     save('output.pdf', data2)
 

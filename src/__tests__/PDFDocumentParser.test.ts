@@ -3,6 +3,22 @@ import { testDocument, testDocument2 } from './Data';
 import { pageObject_string } from './Data2';
 import { Util } from '../util';
 
+test('extractPDFVersion', () => {
+    let doc = new PDFDocumentParser(new Uint8Array(testDocument))
+
+    let version = doc.getPDFVersion()
+
+    expect(version.major).toBe(1)
+    expect(version.minor).toBe(7)
+
+    doc = new PDFDocumentParser(new Uint8Array(testDocument2))
+
+    version = doc.getPDFVersion()
+
+    expect(version.major).toBe(1)
+    expect(version.minor).toBe(4)
+})
+
 test('pageExtraction', () => {
     let data = new Uint8Array(pageObject_string)
 
@@ -129,7 +145,6 @@ test('extractAnnotations', () => {
     let annots = doc.extractAnnotations()
 
     expect(annots[0].length).toBe(2)
-    //console.log(JSON.stringify(annots[0][0], null, 2))
 
     doc = new PDFDocumentParser(new Uint8Array(testDocument2))
 
