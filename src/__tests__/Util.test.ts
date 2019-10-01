@@ -320,6 +320,19 @@ test('extractArray', () => {
     expect(Util.extractArray(data, 0).result[1].generation).toEqual(0)
 })
 
+test('extractArray_2', () => {
+    let data = encode(`[ 15 0 R/XYZ 69 756 0]`)
+    expect(Util.extractArray(data, 0).result[0].obj).toEqual(15)
+    expect(Util.extractArray(data, 0).result[0].generation).toEqual(0)
+
+    expect(Util.extractArray(data, 0).result[1]).toBe("/XYZ")
+
+    expect(Util.extractArray(data, 0).result[2]).toBe(69)
+    expect(Util.extractArray(data, 0).result[2]).toBe(756)
+    expect(Util.extractArray(data, 0).result[2]).toBe(0)
+
+})
+
 test('extractArrayNested', () => {
     let data = new Uint8Array([91, 91, 49, 32, 50, 32, 51, 32, 93, 32, 91, 49, 32, 50, 32, 51, 32, 93, 93])
     expect(Util.extractArray(data, 0).result).toEqual([[1, 2, 3], [1, 2, 3]])

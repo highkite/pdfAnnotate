@@ -1,6 +1,6 @@
 import { ObjectUtil } from '../object-util';
 import { Util } from '../util';
-import { simpleAnnotationObject, listObject_1, listObject_2, pageObject_string, pageObject_string_3, pageObject_string_4, pageObject_string_5, simplePageObject, simplePageObject_2, simplePageObject_3, simplePageObject_4, simplePageObject_5, simplePageObject_6, simplePageObject_7, simplePageObject_8, simplePageObject_9, simplePageObject_10, simplePageObject_11 } from './Data2'
+import { simpleAnnotationObject, listObject_1, listObject_2, pageObject_string, pageObject_string_3, pageObject_string_4, pageObject_string_5, simplePageObject, simplePageObject_2, simplePageObject_3, simplePageObject_4, simplePageObject_5, simplePageObject_6, simplePageObject_7, simplePageObject_8, simplePageObject_9, simplePageObject_10, simplePageObject_11, simplePageObject_12 } from './Data2'
 
 test('extractObject_1', () => {
     let res = ObjectUtil.extractObject(simplePageObject, 0)
@@ -261,6 +261,17 @@ test('extractObject_13', () => {
 
 test('extractObject_14', () => {
     let res = ObjectUtil.extractObject(simplePageObject_11, 0)
+    expect(res.id.obj).toBe(2)
+    expect(res.id.generation).toBe(0)
+
+    expect(res.value["/Type"]).toBe("D:20180503095253")
+    expect(res.value["/A"]).toBe("something")
+    expect(res.value["/Resources"].obj).toBe(9)
+    expect(res.value["/Resources"].generation).toBe(0)
+})
+
+test('extractObject_15', () => {
+    let res = ObjectUtil.extractObject(simplePageObject_12, 0)
     expect(res.id.obj).toBe(2)
     expect(res.id.generation).toBe(0)
 

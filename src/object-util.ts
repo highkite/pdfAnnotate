@@ -29,12 +29,17 @@ export class ObjectUtil {
         return ObjectUtil.extractDictValueRec(data, next[1], dict, Util.convertAsciiToString(next_string))
     }
 
+    private static i: number = 0
+
     private static extractDictValueRec(data: Uint8Array, ptr: number, dict: any, current_key: string | undefined = undefined): number {
         let next = Util.readNextWord(data, ptr)
         let next_string: Uint8Array = next[0] || new Uint8Array([])
         console.log(`Start read value at position ${ptr} that ends at ${next[1]}`)
         ptr = next[1] - next_string.length
         console.log(`READ NEXT VALUE ${Util.convertAsciiToString(next_string)}`)
+
+        console.log(dict)
+        if (ObjectUtil.i++ >= 6) throw Error("endend")
 
         if (next_string[0] === Util.ARRAY_START[0]) {
             if (!current_key)
@@ -96,6 +101,7 @@ export class ObjectUtil {
      * Parses a PDF object and returns a dictionary containing its fields
      * */
     public static extractObject(data: Uint8Array, xref: XRef | number, objectLookupTable: ObjectLookupTable | undefined = undefined): any {
+        console.log("$#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         if (typeof xref !== 'number' && xref.compressed) {
             if (!objectLookupTable)
                 throw Error("Provide ObjectLookupTable to extract stream object")
@@ -107,6 +113,7 @@ export class ObjectUtil {
         let ptr = typeof xref === 'number' ? xref : xref.pointer
 
         let object_id = Util.extractObjectId(data, ptr)
+        console.log(object_id)
 
         ret_obj.id = object_id
 
@@ -114,6 +121,8 @@ export class ObjectUtil {
         let ptr_obj_end = Util.locateSequence(Util.ENDOBJ, data, ptr)
 
         data = data.slice(ptr, ptr_obj_end)
+
+        Util.debug_printIndexed(data)
 
         // determine the type of the object:
         let next = Util.readNextWord(data, 0)

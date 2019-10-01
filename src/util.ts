@@ -366,9 +366,7 @@ export class Util {
     /**
      * Extracts array of numbers and arrays of references
      *
-     * Mark that this function does not support arrays that contain different types, so either
-     * it returns an array of references or an array of numbers. However the function supports
-     * arbitrarily nesting of arrays.
+     * The function supports arbitrarily nesting of arrays and multiple types.
      * */
     public static extractArray(data: Uint8Array, index: number): ExtractionResult {
         for (let i = index; i < data.length; ++i) {

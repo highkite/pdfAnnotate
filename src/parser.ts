@@ -384,6 +384,7 @@ export class PDFDocumentParser {
         let obj_table = this.documentHistory.createObjectLookupTable()
 
         let pageCount: number = pt.getPageCount()
+        console.log(pageCount)
 
         for (let i = 0; i < pageCount; ++i) {
             console.log(`Extract annotations of page ${i}`)
