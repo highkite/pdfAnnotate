@@ -90,6 +90,7 @@ export class CrossReferenceStreamObject {
     extractStream(stream: Stream) {
         let cross_reference_length = this.w.reduce((a, b) => a + b, 0)
 
+        Util.debug_printIndexed(stream.getData())
         // check if the data stream has a valid size
         if (stream.getLength() !== cross_reference_length * this.index.filter((v, i) => i % 2 === 1).reduce((a, b) => a + b, 0))
             throw Error(`Invalid stream length - is ${stream.getLength()} but should be ${cross_reference_length * this.index.filter((v, i) => i % 2 === 1).reduce((a, b) => a + b, 0)}`)
@@ -110,6 +111,7 @@ export class CrossReferenceStreamObject {
         let index = xref.pointer
         this.start_pointer = index
         let crs_object = ObjectUtil.extractObject(this.data, xref)
+        console.log(`Extract stream object: ${JSON.stringify(crs_object)}`)
 
         let ptr_object_end = Util.locateSequence(Util.ENDOBJ, this.data, index)
         this.data = this.data.slice(index, ptr_object_end)
