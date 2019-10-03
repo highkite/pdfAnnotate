@@ -67,10 +67,14 @@ export class Stream {
 export class FlateStream extends Stream {
     constructor(protected data: Uint8Array, private decodeParameters: DecodeParameters | undefined = undefined) {
         super(data)
-        this.data = Pako.inflate(data)
 
-        if (decodeParameters)
+        if (this.data.length > 0) {
+            this.data = Pako.inflate(data)
+        }
+
+        if (decodeParameters) {
             this.data = this.applyFilter(this.data, decodeParameters)
+        }
     }
 
     private applyFilter(data: Uint8Array, decodeParameters: DecodeParameters): Uint8Array {
@@ -83,46 +87,56 @@ export class FlateStream extends Stream {
         return data
     }
 
-    private applyPNGFilter(data: Uint8Array, decodeParameters: DecodeParameters): Uint8Array {
+    public applyPNGFilter(data: Uint8Array, decodeParameters: DecodeParameters): Uint8Array {
         if (data.length % (decodeParameters.columns + 1) !== 0)
             throw Error("Invalid decode parameters")
 
+        let total_columns = decodeParameters.columns + 1
+
+        let unfiltered_data: number[] = []
 
         let encoding: number = 0
-        for (let i = 0; i < data.length; i += decodeParameters.columns + 1) {
-            if (i % (decodeParameters.columns + 1) === 0) {
+        for (let i = 0; i < data.length; ++i) {
+            let left_value: number = 0
+            let upper_value: number = 0
+            let index_upper_value: number = 0
+            let left_upper_value: number = 0
+            if (i % total_columns === 0) {
                 encoding = data[i]
             } else {
                 switch (encoding) {
                     case 0: // no encoding
+                        unfiltered_data.push(data[i])
                         break
                     case 1: // Sub fitler -- the difference of the current pixel and the pxiel before
                         // add the left already decoded pixel and 0 at the start of a row
-                        if ((i - 1) % (decodeParameters.columns + 1) !== 0)
-                            data[i] = (data[i] + data[i - 1]) % 256
+                        left_value = ((i % total_columns) - 2 < 0) ? 0 : unfiltered_data[((i - 2) % decodeParameters.columns) + Math.floor(i / total_columns) * (decodeParameters.columns - 1)]
+                        unfiltered_data.push((data[i] + left_value) % 256)
                         break
                     case 2: // Up filter -- the difference of the current prixel and the pixel above
-                        let index: number = i - (decodeParameters.columns + 1)
-                        if (index >= 0) {
-                            data[i] = (data[i] + data[index]) % 256
-                        }
+                        index_upper_value = i - (total_columns + Math.floor(i / total_columns))
+                        upper_value = (index_upper_value < 0) ? 0 : unfiltered_data[index_upper_value]
+                        unfiltered_data.push((data[i] + upper_value) % 256)
                         break
                     case 3: // Average filter -- considers the average of the upper and the left pixel
-                        let value_upper = (i - (decodeParameters.columns + 1)) > 0 ? data[i - (decodeParameters.columns + 1)] : 0
-                        let left_value = ((i - 1) % (decodeParameters.columns + 1) === 0) ? 0 : data[i - 1]
-                        data[i] = (data[i] + Math.floor((value_upper + left_value) / 2)) % 256
+                        index_upper_value = i - (total_columns + Math.floor(i / total_columns))
+                        index_upper_value = i - (total_columns + Math.floor(i / total_columns))
+                        upper_value = (index_upper_value < 0) ? 0 : unfiltered_data[index_upper_value]
+                        left_value = ((i % total_columns) - 2 < 0) ? 0 : unfiltered_data[((i - 2) % decodeParameters.columns) + Math.floor(i / total_columns) * (decodeParameters.columns - 1)]
+                        unfiltered_data.push((data[i] + Math.floor((upper_value + left_value) / 2)) % 256)
                         break
                     case 4: // Paeth -- uses three neighbouring bytes (left, upper and upper left) to compute a linear function
-                        value_upper = (i - (decodeParameters.columns + 1)) > 0 ? data[i - (decodeParameters.columns + 1)] : 0
-                        let value_upper_left = (i - (decodeParameters.columns + 1) - 1) > 0 ? data[i - (decodeParameters.columns + 1) - 1] : 0
-                        left_value = ((i - 1) % (decodeParameters.columns + 1) === 0) ? 0 : data[i - 1]
-                        data[i] = (data[i] + this.paethPredictor(left_value, value_upper, value_upper_left)) % 256
+                        index_upper_value = i - (total_columns + Math.floor(i / total_columns))
+                        upper_value = (index_upper_value < 0) ? 0 : unfiltered_data[index_upper_value]
+                        left_value = ((i % total_columns) - 2 < 0) ? 0 : unfiltered_data[((i - 2) % decodeParameters.columns) + Math.floor(i / total_columns) * (decodeParameters.columns - 1)]
+                        left_upper_value = (index_upper_value - 1 < 0) ? 0 : unfiltered_data[index_upper_value - 1]
+                        unfiltered_data.push((data[i] + this.paethPredictor(left_value, upper_value, left_upper_value)) % 256)
                         break
                 }
             }
         }
 
-        return data
+        return new Uint8Array(unfiltered_data)
     }
 
     /**

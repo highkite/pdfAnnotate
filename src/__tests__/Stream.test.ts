@@ -45,7 +45,7 @@ test('testPNGFilter_None', () => {
 
 test('testPNGFilter_Sub', () => {
     let source = new Uint8Array(
-        [1, 52, 55, 61, 66, 70,
+        [1, 52, 3, 6, 5, 4,
             1, 63, -4, -4, 35, 19]
     )
     let target = new Uint8Array(
@@ -61,7 +61,7 @@ test('testPNGFilter_Sub', () => {
 test('testPNGFilter_Up', () => {
     let source = new Uint8Array(
         [2, 52, 55, 61, 66, 70,
-            2, 63, 4, -6, 24, 39]
+            2, 11, 4, -6, 24, 39]
     )
     let target = new Uint8Array(
         [52, 55, 61, 66, 70,
@@ -75,8 +75,8 @@ test('testPNGFilter_Up', () => {
 
 test('testPNGFilter_Avg', () => {
     let source = new Uint8Array(
-        [3, 52, 55, 61, 66, 70,
-            3, 63, 0, -5, 30, 29]
+        [3, 52, 29, 34, 36, 37,
+            3, 37, 0, -5, 30, 29]
     )
     let target = new Uint8Array(
         [52, 55, 61, 66, 70,
@@ -90,8 +90,8 @@ test('testPNGFilter_Avg', () => {
 
 test('testPNGFilter_Paeth', () => {
     let source = new Uint8Array(
-        [4, 52, 55, 61, 66, 70,
-            4, 63, -4, -4, 35, 19]
+        [4, 52, 3, 6, 5, 4,
+            4, 11, -4, -6, 29, 19]
     )
     let target = new Uint8Array(
         [52, 55, 61, 66, 70,

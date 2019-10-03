@@ -1,6 +1,6 @@
 import { Util } from './util';
 import { ArrayUtil } from './array-util'
-import { Stream, FlateStream } from './stream';
+import { Stream, FlateStream, DecodeParameters } from './stream';
 import { ObjectLookupTable, XRef } from './document-history';
 
 interface StreamObjectLookupTable {
@@ -139,7 +139,7 @@ export class ObjectUtil {
 
             let ptr_stream_data_end = ptr_stream_data_start + ret_obj.value["/Length"]
 
-            ret_obj.stream = ObjectUtil.extractStreamData(data.slice(ptr_stream_data_start, ptr_stream_data_end), ret_obj.value["/Filter"])
+            ret_obj.stream = ObjectUtil.extractStreamData(data.slice(ptr_stream_data_start, ptr_stream_data_end), ret_obj.value["/Filter"], ObjectUtil.translateDecodeParams(ret_obj))
         }
 
         return ret_obj
@@ -184,7 +184,7 @@ export class ObjectUtil {
 
         let ptr_stream_data_end = ptr_stream_data_start + streamLength
 
-        let stream = ObjectUtil.extractStreamData(data.slice(ptr_stream_data_start, ptr_stream_data_end), result_dict["/Filter"])
+        let stream = ObjectUtil.extractStreamData(data.slice(ptr_stream_data_start, ptr_stream_data_end), result_dict["/Filter"], ObjectUtil.translateDecodeParams(result_dict))
 
 
         if (!result_dict["/N"])
@@ -209,6 +209,22 @@ export class ObjectUtil {
         return result_obj
     }
 
+    private static translateDecodeParams(dict: any): DecodeParameters | undefined {
+        if (!dict.value)
+            return undefined
+
+        if (!dict.value["/DecodeParms"])
+            return undefined
+
+        if (!dict.value["/DecodeParms"]["/Columns"])
+            return undefined
+
+        if (!dict.value["/DecodeParms"]["/Predictor"])
+            return undefined
+
+        return { columns: dict.value["/DecodeParms"]["/Columns"], predictor: dict.value["/DecodeParms"]["/Predictor"] }
+    }
+
     private static extractStreamObjectTable(stream: Stream, number_of_obj: number, offset_first_obj: number): StreamObjectLookupTable {
         let references: StreamObjectLookupTable = {}
 
@@ -222,10 +238,10 @@ export class ObjectUtil {
         return references
     }
 
-    private static extractStreamData(streamData: Uint8Array, compression: string): Stream {
+    private static extractStreamData(streamData: Uint8Array, compression: string, decodeParameters: DecodeParameters | undefined = undefined): Stream {
         let stream: Stream | undefined = undefined
         if (compression === '/FlateDecode') {
-            stream = new FlateStream(streamData)
+            stream = new FlateStream(streamData, decodeParameters)
         } else {
             throw Error(`Unsupported stream filter: ${compression} - Only supported filter is FlateDecode (right now)`)
         }
