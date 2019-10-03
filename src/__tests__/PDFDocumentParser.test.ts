@@ -23,7 +23,7 @@ test('pageExtraction', () => {
     let data = new Uint8Array(pageObject_string)
 
     let page = new Page(data, (<any>undefined))
-    page.extract(0)
+    page.extract({ pointer: 0, id: 3, generation: 0, free: false, update: true }, {})
 
     expect(page.object_id).toBeDefined()
     expect(page.object_id!.obj).toBe(2)

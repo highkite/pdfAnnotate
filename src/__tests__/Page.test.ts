@@ -10,7 +10,7 @@ test('testPageExtraction', () => {
     let docHist = new DocumentHistory()
 
     let page = new Page(data, <any>docHist!)
-    page.extract(0)
+    page.extract({ pointer: 0, id: 3, generation: 0, free: false, update: true }, {})
     expect(page.object_id!.obj).toBe(3)
     expect(page.object_id!.generation).toBe(0)
     expect(page.hasAnnotsField).toBeTruthy()

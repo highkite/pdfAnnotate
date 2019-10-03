@@ -6,7 +6,7 @@ import { testDocument } from './Data';
 
 test('extractCrossReferenceStreamObjectWithStreamSection', () => {
     let crs = new CrossReferenceStreamObject(new Uint8Array(crossReferenceStreamObjectWithStreamSection))
-    crs.extract(0)
+    crs.extract({ pointer: 0, id: 3, generation: 0, free: false, update: true })
 
     expect(crs.trailer.size).toBe(626)
     expect(crs.trailer.prev!).toBeUndefined()
@@ -23,7 +23,7 @@ test('extractCrossReferenceStreamObjectWithStreamSection', () => {
 
 test('extractCrossReferenceStreamObjectWithStreamSection_2', () => {
     let crs = new CrossReferenceStreamObject(new Uint8Array(test_9_cross_reference_stream_object))
-    crs.extract(0)
+    crs.extract({ pointer: 0, id: 3, generation: 0, free: false, update: true })
 
     expect(crs.trailer.size).toBe(3681)
     expect(crs.trailer.prev!).toBeUndefined()
