@@ -4,7 +4,6 @@ import { encode, simpleAnnotationObject, listObject_1, listObject_2, pageObject_
 
 test('extractObject_1', () => {
     let res = ObjectUtil.extractObject(simplePageObject, 0)
-    console.log(res)
 
     expect(res.value["/Type"]).toBe("/Page")
     expect(res.id.obj).toBe(2)
@@ -223,7 +222,6 @@ test('extractObject_9', () => {
 
 test('extractObject_10', () => {
     let res = ObjectUtil.extractObject(simpleAnnotationObject, 0)
-    console.log(res)
     expect(res.id.obj).toBe(111)
     expect(res.id.generation).toBe(0)
     expect(res.value["/Type"]).toBe("/Annot")
