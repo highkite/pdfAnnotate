@@ -40,6 +40,9 @@
         2. [Adding an Annotation](#AddingAnnotation)
         3. [Document Updates](#DocumentUpdates)
         4. [PDF Objects](#PDFObjects)
+        5. [Cross-Reference Stream Objects](#CrossReferenceStreamObjects)
+        6. [Stream Objects](#StreamObjects)
+        7. [Compression](#Compression)
 
 # <a name="Documentation"></a>Documentation
 
