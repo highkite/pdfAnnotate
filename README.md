@@ -362,7 +362,7 @@ If you want to use this method you need to uncomment it in the code. Sorry for t
 |----------|-------------|------|
 | fileName | string |  Specify a file name of the file. By default it is called 'output.pdf'. |
 
-# <a name="HowWorks"></a>How does the Library Works?
+# <a name="HowWorks"></a>How does the Library Works? -- Head Jump into the Rabbit Hole
 
 ## <a name="Trivia"></a>Trivia
 
@@ -448,3 +448,68 @@ When referencing an object we need to provide the object id, as well as the gene
 ```
 3 0 R
 ```
+
+### <a name="Cross-Reference-Stream-Objects"></a>Cross-Reference Stream Objects
+
+Since the introduction of PDF 1.5 there exists apart from the cross-reference tables the feature to compress the reference information using *cross-reference stream objects*. Basically these are regular PDF stream objects consisting of a dictionary containing
+information about the structure of the stream and at the end of the object a stream section holding the compressed reference table.
+
+An example is given in the following:
+
+```
+3680 0 obj <<
+/Type /XRef
+/Index [0 3681]
+/Size 3681
+/W [1 3 1]
+/Root 3678 0 R
+/Info 3679 0 R
+/ID [<4E4CF7709370170501AFF281926C390D> <4E4CF7709370170501AFF281926C390D>]
+/Length 8605
+/Filter /FlateDecode
+>>
+stream
+...
+endstream
+endobj
+```
+
+Note that a cross-refeerence stream object must have the type `/XRef`. In this example the actual stream is replaced by `...`, since this is only a bytestream and cannot be displayed in character encodings anyway.
+
+In general the stream data is compressed. The used compressing algorithm is determined by the attribute `/Filter`. Before one can work with the stream data it is necessary to uncompress them. We will discuss compression
+algorithms later, but assume in the following that we already have an uncompressed data stream.
+
+The most important information provided by the cross-reference stream object to interprete the stream data is given by the `/W` attribute. It determines the length of a cross-reference entry. In this case the value of
+`/W` is `[1 3 1]`, what means that the total length of a cross-reference entry is `5` bytes. It further determines that the first value is encoded using one byte, the second value with three bytes and the last value
+again with one byte.
+
+So in this case a cross-reference entry is determined by three values. Note that it is posisble that a field becomes *0*, in which case it is omitted, since `0` bytes are used to represent it.
+
+The meaning of the three values is explained in the PDF standard. The first value determines the type. A `0` as value means that a freed object is encoded, a `1` determines a regular object and a `2` a compressed one.
+
+**Type 0**: For understanding freed objects, please read [Document Updates](#DocumentUpdates). The three bytes of a freed object encode the object id of the next freed object and the third value represents the generation to use
+when reusing the freed object. This establishes a linked list of freed object ids, as we already discussed in  [Document Updates](#DocumentUpdates).
+
+```
+00000000 00000000 00000000 00000000 00000000
+|-Type-| |-------first value------| |2. value|
+```
+
+**Type 1**: Those types are regular cross-reference objects, as we already know from the regular cross-reference tables. In this case the three byte value represents the pointer start position of the PDF object in the document.
+
+**Type 3**: This type is introduced with stream objects. Besides the option to compress the cross-reference table it is now possible to compress PDF objects in general. In this case multiple objects are encoded in a stream object.
+In this case the three byte value determines the object id of the stream object that contains the actual object. The third value determines an offset. In a stream objects multiple objects are encoded sequentiell in the object stream.
+The offset determines the position of the object in the stream.
+
+Note that the **object id** is not directly encoded in the cross reference stream. That is similar to the concept of section headers in the cross-reference tables. If no `/Index` field is available, the cross-reference stream object
+is considered as one long cross-reference section, with the first encoded cross-reference entry representing the object with id *0*, the second entry the object with id *1* and so on.
+
+The `/Index` attribute determines the length of such a sequence. In this case it says `[0 3681]` what means starting at object id *0* the stream section encodes *3681* objects. Which is also stated in the `/Size` field. However,
+as in the case of cross-reference tables multiple incoherent sequences can be encoded.
+
+```
+/Index [0 4 10 2]
+```
+This for example can be interpreted that the tream first encodes four objects starting with id *0* (so objects with ids: 0, 1, 2 and 3) and than again two objects starting with id *10* (so objects with ids: 10 and 11).
+
+Note that as in case of cross-reference tables there might be mulitple cross-reference stream objects that build upon each other. In this case a stream object contains a `/Prev` attribute that points to the previous object.
