@@ -449,7 +449,7 @@ When referencing an object we need to provide the object id, as well as the gene
 3 0 R
 ```
 
-### <a name="Cross-Reference-Stream-Objects"></a>Cross-Reference Stream Objects
+### <a name="CrossReferenceStreamObjects"></a>Cross-Reference Stream Objects
 
 Since the introduction of PDF 1.5 there exists apart from the cross-reference tables the feature to compress the reference information using *cross-reference stream objects*. Basically these are regular PDF stream objects consisting of a dictionary containing
 information about the structure of the stream and at the end of the object a stream section holding the compressed reference table.
@@ -497,7 +497,7 @@ when reusing the freed object. This establishes a linked list of freed object id
 
 **Type 1**: Those types are regular cross-reference objects, as we already know from the regular cross-reference tables. In this case the three byte value represents the pointer start position of the PDF object in the document.
 
-**Type 3**: This type is introduced with stream objects. Besides the option to compress the cross-reference table it is now possible to compress PDF objects in general. In this case multiple objects are encoded in a stream object.
+**Type 3**: This type is introduced with stream objects (cf. [Stream Objects](#StreamObjects)). Besides the option to compress the cross-reference table it is now possible to compress PDF objects in general. In this case multiple objects are encoded in a stream object.
 In this case the three byte value determines the object id of the stream object that contains the actual object. The third value determines an offset. In a stream objects multiple objects are encoded sequentiell in the object stream.
 The offset determines the position of the object in the stream.
 
@@ -513,3 +513,38 @@ as in the case of cross-reference tables multiple incoherent sequences can be en
 This for example can be interpreted that the tream first encodes four objects starting with id *0* (so objects with ids: 0, 1, 2 and 3) and than again two objects starting with id *10* (so objects with ids: 10 and 11).
 
 Note that as in case of cross-reference tables there might be mulitple cross-reference stream objects that build upon each other. In this case a stream object contains a `/Prev` attribute that points to the previous object.
+
+### <a name="StreamObjects"></a>Stream Objects
+
+The non-stream part of a stream object represents a dictionary containing information about the structure of the stream data. The `/Type` attribute of a stream object is always `/ObjStm`. The number of encoded objects is
+given by the `/N` attribute and the first attribute starts at the value given by the `/First` attribute.
+
+```
+3488 0 obj <<
+/Type /ObjStm
+/N 100
+/First 1021
+/Length 6246
+/Filter /FlateDecode
+>>
+stream
+...
+endstream
+endobj
+```
+
+The reason for providing a `/First` attribute is that the stream consist of two parts. The firs part can be considered as a cross reference table for the objetcs within the stream object, while the second part contains the actual
+object data.
+
+Two important remarks about the structure of the stream:
+
+* All **generation** values of objects within a stream object are **0**. That means objects with reused object ids can not be compressed into stream objects.
+* The `obj` and `endobj` key words for determining the limits of an object are omitted within the stream.
+
+As in case of [Cross-Reference Stream Objects](#CrossReferenceStreamObjects) the data stream is compressed. We assume in the following that we already deal with an uncompressed data stream.
+
+The first part of a cross reference stream object determines the position of encoded objects within the stream.
+
+Every entry consists of two values: the *object id* and an *offset*.
+
+So a the object data of an object with id $i$ can be found at position $\textit{/First} + \textit{offset}_{i}$
