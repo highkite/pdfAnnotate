@@ -477,7 +477,7 @@ endobj
 Note that a cross-refeerence stream object must have the type `/XRef`. In this example the actual stream is replaced by `...`, since this is only a bytestream and cannot be displayed in character encodings anyway.
 
 In general the stream data is compressed. The used compressing algorithm is determined by the attribute `/Filter`. Before one can work with the stream data it is necessary to uncompress them. We will discuss compression
-algorithms later, but assume in the following that we already have an uncompressed data stream.
+algorithms later, but assume in the following that we already have an uncompressed data stream. See the [Compression](#Compression) section for more information.
 
 The most important information provided by the cross-reference stream object to interprete the stream data is given by the `/W` attribute. It determines the length of a cross-reference entry. In this case the value of
 `/W` is `[1 3 1]`, what means that the total length of a cross-reference entry is `5` bytes. It further determines that the first value is encoded using one byte, the second value with three bytes and the last value
@@ -541,10 +541,18 @@ Two important remarks about the structure of the stream:
 * All **generation** values of objects within a stream object are **0**. That means objects with reused object ids can not be compressed into stream objects.
 * The `obj` and `endobj` key words for determining the limits of an object are omitted within the stream.
 
-As in case of [Cross-Reference Stream Objects](#CrossReferenceStreamObjects) the data stream is compressed. We assume in the following that we already deal with an uncompressed data stream.
+As in case of [Cross-Reference Stream Objects](#CrossReferenceStreamObjects) the data stream is compressed. We assume in the following that we already deal with an uncompressed data stream. See the [Compression](#Compression) section for more information.
 
 The first part of a cross reference stream object determines the position of encoded objects within the stream.
 
 Every entry consists of two values: the *object id* and an *offset*.
 
-So a the object data of an object with id $i$ can be found at position $\textit{/First} + \textit{offset}_{i}$
+So a the object data of an object with id $i$ can be found at position $\textit{/First} + \textit{offset}_{i}$.
+
+### <a name="Compression"></a>Compression
+
+The compression of a stream object is determined by two flags: `/Filter` and `/DecodeParms`. The first determines the actual compression algorithm. In the example above it is the Flate decoding, which is right now the only supported
+encoding. If this becomes a problem, please file a feature request.
+
+The optional decode parameters determine additional filtering of the stream data. So for instance it is possible to apply the PNG predictor functions to improve the actual compression. When uncompressing a stream data it is then necessary
+to invert the predictor values.
