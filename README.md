@@ -248,13 +248,14 @@ Adds a circle annotation to the document.
 ![ Example of a circle annotation](./documentation/CircleAnnotation.png  "Example of a circle annotation")
 
 #### Parameters:
-| Paramater   |     Type      |  Description |
-|----------|-------------|------|
-| page |  number | The page number where the annotation must be added (starting with 0)|
-| rect  |   number array   |   The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the circle. |
-| contents | string |  The annotation text  |
-| author | string |    The author name.  |
-| color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
+| Paramater | Type         | Description                                                                                                                                        |
+|-----------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| page      | number       | The page number where the annotation must be added (starting with 0)                                                                               |
+| rect      | number array | The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the circle.                                       |
+| contents  | string       | The annotation text                                                                                                                                |
+| author    | string       | The author name.                                                                                                                                   |
+| color     | object       | Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.            |
+| fill      | object       | Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the background color of the annotation. |
 
 ### <a name="createsquare"></a>createSquareAnnotation(...)
 
@@ -263,13 +264,14 @@ Adds a square annotation to the document.
 ![ Example of a square annotation](./documentation/SquareAnnotation.png  "Example of a square annotation")
 
 #### Parameters:
-| Paramater   |     Type      |  Description |
-|----------|-------------|------|
-| page |  number | The page number where the annotation must be added (starting with 0)|
-| rect  |   number array   |   The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the square. |
-| contents | string |  The annotation text  |
-| author | string |    The author name.  |
-| color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
+| Paramater | Type         | Description                                                                                                                                        |
+|-----------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| page      | number       | The page number where the annotation must be added (starting with 0)                                                                               |
+| rect      | number array | The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the square.                                       |
+| contents  | string       | The annotation text                                                                                                                                |
+| author    | string       | The author name.                                                                                                                                   |
+| color     | object       | Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.            |
+| fill      | object       | Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the background color of the annotation. |
 
 ### <a name="createpolygon"></a>createPolygonAnnotation(...)
 
