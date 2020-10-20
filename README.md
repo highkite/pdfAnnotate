@@ -1,6 +1,6 @@
 # pdfAnnotate
 
-*pdfAnnotate* allows the annotation of PDF documents in javascript. It works in a browser, as well as in a nodejs environment and its intention is to provide a simple interface to annotate PDF documents. The annotated PDF document can be easily downloaded or further processed.
+*pdfAnnotate* allows to annotate PDF documents in javascript. It works in a browser, as well as, in a nodejs environment. The idea is to provide a simple interface to annotate PDF documents. The annotated PDF document can be easily downloaded or further processed.
 
 **Note:** pdAnnotate is **no** PDF viewer/ renderer. It provides an API to create different types of PDF annotations. For implementing a web-based PDF editor we recommend to use it in combination with *PDF.js* or a similar renderer.
 
