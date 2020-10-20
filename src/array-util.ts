@@ -27,6 +27,9 @@ export class ArrayUtil {
                 let sub_array = ArrayUtil.extractArray(data, ptr)
                 ptr = sub_array.end_index
                 ret_list.push(sub_array.result)
+            } else if (Util.areArraysEqual(next_string, Util.NULL)) {
+                ret_list.push("null")
+                ptr += next_string.length
             } else if (next_string[0] === Util.STRING_END[0]) {
                 return { result: ret_list, end_index: next.end_index }
             } else if (next_string[0] === Util.STRING_START[0]) {
@@ -48,7 +51,7 @@ export class ArrayUtil {
                 let opt_value = Util.extractOptionValue(data, ptr)
                 ret_list.push("/" + opt_value.result)
                 ptr = opt_value.end_index
-            } else if (next_string[0] === Util.R[0]) { // /
+            } else if (next_string[0] === Util.R[0]) { // Reference pointer
                 let obj = ret_list[ret_list.length - 2]
                 let generation = ret_list[ret_list.length - 1]
                 ret_list = ret_list.slice(0, ret_list.length - 2)
@@ -63,6 +66,7 @@ export class ArrayUtil {
             }
 
             ++ptr
+            ptr = Util.skipSpaces(data, ptr)
             next = Util.readNextWord(data, ptr)
             next_string = next.result
 

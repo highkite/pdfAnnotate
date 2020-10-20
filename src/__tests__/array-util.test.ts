@@ -57,6 +57,17 @@ test('extractArray_5', () => {
 
 })
 
+test('extractArray_6', () => {
+    let data = encode('[4 0 R /XYZ null null null]')
+    expect(ArrayUtil.extractArray(data, 0).end_index).toEqual(data.length - 1)
+    expect(ArrayUtil.extractArray(data, 0).result[0].obj).toEqual(4)
+    expect(ArrayUtil.extractArray(data, 0).result[0].generation).toEqual(0)
+    expect(ArrayUtil.extractArray(data, 0).result[1]).toBe("/XYZ")
+    expect(ArrayUtil.extractArray(data, 0).result[2]).toBe("null")
+    expect(ArrayUtil.extractArray(data, 0).result[3]).toBe("null")
+    expect(ArrayUtil.extractArray(data, 0).result[4]).toBe("null")
+})
+
 test('extractArrayNested', () => {
     let data = new Uint8Array([91, 91, 49, 32, 50, 32, 51, 32, 93, 32, 91, 49, 32, 50, 32, 51, 32, 93, 93])
     expect(ArrayUtil.extractArray(data, 0).end_index).toEqual(data.length - 1)
