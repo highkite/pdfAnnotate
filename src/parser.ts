@@ -48,6 +48,7 @@ export class Annotation {
     appearance_state?: any // change the appearance according to states
     border?: Border | null = null// define the border
     color?: Color | null = null// the color set
+    fill?: Color | null = null// the fill color set
     opacity?: number // the opacity value (CA called in the PDF spec)
     richtext?: string // rich text string displayed in the popup window when the annotation is opened
     initiallyOpen?: boolean // flag to describe whether the annotation shall initially be open

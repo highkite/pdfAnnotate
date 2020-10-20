@@ -32,6 +32,7 @@ export class Writer {
     public static FLAG: number[] = [47, 70] // = '/F'
     public static ID: number[] = [47, 78, 77] // = '/NM'
     public static COLOR: number[] = [47, 67] // = '/C'
+    public static FILL: number[] = [47, 73, 67] // = '/IC'
     public static OPACITY: number[] = [47, 67, 65] // = '/CA'
     public static BORDER: number[] = [47, 66, 111, 114, 100, 101, 114] // = '/Border'
     public static PAGE_REFERENCE: number[] = [47, 80] // = '/P'
@@ -103,22 +104,22 @@ export class Writer {
 
         let page_ptr: XRef = lookupTable[page.object_id.obj]
 
-        if (page_ptr.compressed) {
-            let obj = ObjectUtil.extractObject(this.data, page_ptr, lookupTable)
-            let obj_data = obj.stream.getData().slice(obj.pointer_stream_start, obj.pointer_stream_end + 1)
+if (page_ptr.compressed) {
+    let obj = ObjectUtil.extractObject(this.data, page_ptr, lookupTable)
+    let obj_data = obj.stream.getData().slice(obj.pointer_stream_start, obj.pointer_stream_end + 1)
 
-            let ref_ptr = WriterUtil.writeReferencePointer(obj.id, false).concat(32)
+    let ref_ptr = WriterUtil.writeReferencePointer(obj.id, false).concat(32)
 
-            let new_data: Uint8Array = new Uint8Array(ref_ptr.length + Writer.OBJ.length + obj_data.length + Writer.ENDOBJ.length)
-            new_data.set(ref_ptr)
-            new_data.set(Writer.OBJ, ref_ptr.length)
-            new_data.set(obj_data, Writer.OBJ.length + ref_ptr.length)
-            new_data.set(Writer.ENDOBJ, Writer.OBJ.length + obj_data.length + ref_ptr.length)
+    let new_data: Uint8Array = new Uint8Array(ref_ptr.length + Writer.OBJ.length + obj_data.length + Writer.ENDOBJ.length)
+    new_data.set(ref_ptr)
+    new_data.set(Writer.OBJ, ref_ptr.length)
+    new_data.set(obj_data, Writer.OBJ.length + ref_ptr.length)
+    new_data.set(Writer.ENDOBJ, Writer.OBJ.length + obj_data.length + ref_ptr.length)
 
-            return WriterUtil.replaceAnnotsFieldInPageObject(new_data, page, 0, annot_array_reference)
-        }
+    return WriterUtil.replaceAnnotsFieldInPageObject(new_data, page, 0, annot_array_reference)
+}
 
-        return WriterUtil.replaceAnnotsFieldInPageObject(this.data, page, page_ptr.pointer, annot_array_reference)
+return WriterUtil.replaceAnnotsFieldInPageObject(this.data, page, page_ptr.pointer, annot_array_reference)
     }
 
     /**
@@ -188,214 +189,226 @@ export class Writer {
         return { ptr: refArray_id, data: ret, pageReference: page.object_id, pageData: page_data }
     }
 
-    /**
-     * Converts a subtype to its byte representation
-     * */
-    convertSubtype(st: string): number[] {
-        switch (st) {
-            case 'Text':
-            case '/Text':
-                return [47, 84, 101, 120, 116] // = '/Text'
-            case 'Highlight':
-            case '/Highlight':
-                return [47, 72, 105, 103, 104, 108, 105, 103, 104, 116] // = '/Highlight'
-            case 'Underline':
-            case '/Underline':
-                return [47, 85, 110, 100, 101, 114, 108, 105, 110, 101] // = '/Underline'
-            case 'Squiggly':
-            case '/Squiggly':
-                return [47, 83, 113, 117, 105, 103, 103, 108, 121] // = '/Squiggly'
-            case 'StrikeOut':
-            case '/StrikeOut':
-                return [47, 83, 116, 114, 105, 107, 101, 79, 117, 116] // = '/StrikeOut'
-            case 'Square':
-            case '/Square':
-                return [47, 83, 113, 117, 97, 114, 101] // = '/Square'
-            case 'Circle':
-            case '/Circle':
-                return [47, 67, 105, 114, 99, 108, 101] // = '/Circle'
-            case 'FreeText':
-            case '/FreeText':
-                return [47, 70, 114, 101, 101, 84, 101, 120, 116] // = '/FreeText'
-            case 'Polygon':
-            case '/Polygon':
-                return [47, 80, 111, 108, 121, 103, 111, 110] // = '/Polygon'
-            case 'PolyLine':
-            case '/PolyLine':
-                return [47, 80, 111, 108, 121, 76, 105, 110, 101] // '/PolyLine
-            case 'Stamp':
-            case '/Stamp':
-                return [47, 83, 116, 97, 109, 112] // = '/Stamp'
-            case 'Caret':
-            case '/Caret':
-                return [47, 67, 97, 114, 101, 116] // = '/Caret'
-            case 'Ink':
-            case '/Ink':
-                return [47, 73, 110, 107] // = '/Ink'
+        /**
+         * Converts a subtype to its byte representation
+         * */
+        convertSubtype(st: string): number[] {
+            switch (st) {
+                case 'Text':
+                case '/Text':
+                    return [47, 84, 101, 120, 116] // = '/Text'
+                case 'Highlight':
+                case '/Highlight':
+                    return [47, 72, 105, 103, 104, 108, 105, 103, 104, 116] // = '/Highlight'
+                case 'Underline':
+                case '/Underline':
+                    return [47, 85, 110, 100, 101, 114, 108, 105, 110, 101] // = '/Underline'
+                case 'Squiggly':
+                case '/Squiggly':
+                    return [47, 83, 113, 117, 105, 103, 103, 108, 121] // = '/Squiggly'
+                case 'StrikeOut':
+                case '/StrikeOut':
+                    return [47, 83, 116, 114, 105, 107, 101, 79, 117, 116] // = '/StrikeOut'
+                case 'Square':
+                case '/Square':
+                    return [47, 83, 113, 117, 97, 114, 101] // = '/Square'
+                case 'Circle':
+                case '/Circle':
+                    return [47, 67, 105, 114, 99, 108, 101] // = '/Circle'
+                case 'FreeText':
+                case '/FreeText':
+                    return [47, 70, 114, 101, 101, 84, 101, 120, 116] // = '/FreeText'
+                case 'Polygon':
+                case '/Polygon':
+                    return [47, 80, 111, 108, 121, 103, 111, 110] // = '/Polygon'
+                case 'PolyLine':
+                case '/PolyLine':
+                    return [47, 80, 111, 108, 121, 76, 105, 110, 101] // '/PolyLine
+                case 'Stamp':
+                case '/Stamp':
+                    return [47, 83, 116, 97, 109, 112] // = '/Stamp'
+                case 'Caret':
+                case '/Caret':
+                    return [47, 67, 97, 114, 101, 116] // = '/Caret'
+                case 'Ink':
+                case '/Ink':
+                    return [47, 73, 110, 107] // = '/Ink'
+            }
+
+            return []
         }
 
-        return []
-    }
+        /**
+         * Writes an annotation object
+         * */
+        writeAnnotationObject(annot: Annotation): { ptr: ReferencePointer, data: number[] } {
+            if (!annot.author)
+                annot.author = ""
 
-    /**
-     * Writes an annotation object
-     * */
-    writeAnnotationObject(annot: Annotation): { ptr: ReferencePointer, data: number[] } {
-        if (!annot.author)
-            annot.author = ""
+            if (!annot.contents)
+                annot.contents = ""
 
-        if (!annot.contents)
-            annot.contents = ""
+            if (!annot.object_id)
+                throw Error("No object_id")
 
-        if (!annot.object_id)
-            throw Error("No object_id")
-
-        let ret: number[] = WriterUtil.writeReferencePointer(annot.object_id)
-        ret.push(Writer.SPACE)
-        ret = ret.concat(Writer.OBJ)
-        ret.push(Writer.SPACE)
-        ret = ret.concat(Writer.DICT_START)
-        ret = ret.concat(Writer.TYPE_ANNOT)
-        ret.push(Writer.SPACE)
-
-        if (annot.rect && annot.rect.length > 0) {
-            ret = ret.concat(Writer.RECT)
+            let ret: number[] = WriterUtil.writeReferencePointer(annot.object_id)
             ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeNumberArray(annot.rect))
+            ret = ret.concat(Writer.OBJ)
             ret.push(Writer.SPACE)
-        }
+            ret = ret.concat(Writer.DICT_START)
+            ret = ret.concat(Writer.TYPE_ANNOT)
+            ret.push(Writer.SPACE)
 
-        ret = ret.concat(Writer.SUBTYPE)
-        ret.push(Writer.SPACE)
-        ret = ret.concat(this.convertSubtype(annot.type))
-        ret.push(Writer.SPACE)
+            if (annot.rect && annot.rect.length > 0) {
+                ret = ret.concat(Writer.RECT)
+                ret.push(Writer.SPACE)
+                ret = ret.concat(WriterUtil.writeNumberArray(annot.rect))
+                ret.push(Writer.SPACE)
+            }
 
-        ret = ret.concat(Writer.UPDATE_DATE)
-        ret.push(Writer.SPACE)
-        ret = ret.concat(Util.convertStringToAscii(annot.updateDate))
-        ret.push(Writer.SPACE)
+            ret = ret.concat(Writer.SUBTYPE)
+            ret.push(Writer.SPACE)
+            ret = ret.concat(this.convertSubtype(annot.type))
+            ret.push(Writer.SPACE)
 
-        ret = ret.concat(Writer.AUTHOR)
-        ret.push(Writer.SPACE)
-        ret.push(Writer.BRACKET_START)
-        ret = ret.concat(Util.convertStringToAscii(annot.author))
-        ret.push(Writer.BRACKET_END)
-        ret.push(Writer.SPACE)
+            ret = ret.concat(Writer.UPDATE_DATE)
+            ret.push(Writer.SPACE)
+            ret = ret.concat(Util.convertStringToAscii(annot.updateDate))
+            ret.push(Writer.SPACE)
 
-        if (annot.contents) {
-            ret = ret.concat(Writer.CONTENTS)
+            ret = ret.concat(Writer.AUTHOR)
             ret.push(Writer.SPACE)
             ret.push(Writer.BRACKET_START)
-            ret = ret.concat(Util.convertStringToAscii(annot.contents))
+            ret = ret.concat(Util.convertStringToAscii(annot.author))
             ret.push(Writer.BRACKET_END)
             ret.push(Writer.SPACE)
+
+            if (annot.contents) {
+                ret = ret.concat(Writer.CONTENTS)
+                ret.push(Writer.SPACE)
+                ret.push(Writer.BRACKET_START)
+                ret = ret.concat(Util.convertStringToAscii(annot.contents))
+                ret.push(Writer.BRACKET_END)
+                ret.push(Writer.SPACE)
+            }
+
+            ret = ret.concat(Writer.ID)
+            ret.push(Writer.SPACE)
+            ret = ret.concat(Util.convertStringToAscii(annot.id))
+            ret.push(Writer.SPACE)
+
+            if (annot.annotation_flag) {
+                ret = ret.concat(Writer.FLAG)
+                ret.push(Writer.SPACE)
+                ret = ret.concat(Util.convertNumberToCharArray(annot.annotation_flag))
+                ret.push(Writer.SPACE)
+            }
+
+            if (annot.color) {
+                if (annot.color.r > 1) annot.color.r /= 255
+                if (annot.color.g > 1) annot.color.g /= 255
+                if (annot.color.b > 1) annot.color.b /= 255
+
+                ret.push(Writer.SPACE)
+                ret = ret.concat(Writer.COLOR)
+                ret.push(Writer.SPACE)
+                ret = ret.concat(WriterUtil.writeNumberArray([annot.color.r, annot.color.g, annot.color.b]))
+                ret.push(Writer.SPACE)
+            }
+
+            if (annot.fill) {
+                if (annot.fill.r > 1) annot.fill.r /= 255
+                if (annot.fill.g > 1) annot.fill.g /= 255
+                if (annot.fill.b > 1) annot.fill.b /= 255
+
+                ret.push(Writer.SPACE)
+                ret = ret.concat(Writer.FILL)
+                ret.push(Writer.SPACE)
+                ret = ret.concat(WriterUtil.writeNumberArray([annot.fill.r, annot.fill.g, annot.fill.b]))
+                ret.push(Writer.SPACE)
+            }
+
+
+            let opacity = annot.opacity
+            if (opacity) {
+                ret = ret.concat(Writer.OPACITY)
+                ret.push(Writer.SPACE)
+                ret = ret.concat(Util.convertNumberToCharArray(opacity))
+                ret.push(Writer.SPACE)
+            }
+
+            if (annot.border) {
+                ret.push(Writer.SPACE)
+                ret = ret.concat(Writer.BORDER)
+                ret.push(Writer.SPACE)
+                ret = ret.concat(WriterUtil.writeNumberArray([annot.border.horizontal_corner_radius, annot.border.vertical_corner_radius, annot.border.border_width]))
+                ret.push(Writer.SPACE)
+            }
+
+            if (annot.defaultAppearance) {
+                ret.push(Writer.SPACE)
+                ret = ret.concat(Writer.DEFAULT_APPEARANCE)
+                ret.push(Writer.SPACE)
+                ret.push(Writer.BRACKET_START)
+                ret = ret.concat(Util.convertStringToAscii(annot.defaultAppearance))
+                ret.push(Writer.BRACKET_END)
+                ret.push(Writer.SPACE)
+            }
+
+            if (!annot.pageReference)
+                throw Error("No page reference")
+
+            if (annot.pageReference.object_id) {
+                ret.push(Writer.SPACE)
+                ret = ret.concat(Writer.PAGE_REFERENCE)
+                ret.push(Writer.SPACE)
+                ret = ret.concat(WriterUtil.writeReferencePointer(annot.pageReference.object_id, true))
+                ret.push(Writer.SPACE)
+            }
+
+            if (annot.quadPoints) {
+                ret = ret.concat(Writer.QUADPOINTS)
+                ret.push(Writer.SPACE)
+                ret = ret.concat(WriterUtil.writeNumberArray(annot.quadPoints))
+                ret.push(Writer.SPACE)
+            }
+
+            if (annot.vertices) {
+                ret = ret.concat(Writer.VERTICES)
+                ret.push(Writer.SPACE)
+                ret = ret.concat(WriterUtil.writeNumberArray(annot.vertices))
+                ret.push(Writer.SPACE)
+            }
+
+            if (annot.stampType) {
+                ret = ret.concat(Writer.NAME)
+                ret.push(Writer.SPACE)
+                ret = ret.concat(Writer.DRAFT)
+                ret.push(Writer.SPACE)
+            }
+
+            if (annot.caretSymbol) {
+                ret = ret.concat(Writer.SY)
+                ret.push(Writer.SPACE)
+                ret.push(Writer.P)
+                ret.push(Writer.SPACE)
+            }
+
+            if (annot.inkList) {
+                ret = ret.concat(Writer.INKLIST)
+                ret.push(Writer.SPACE)
+                ret = ret.concat(WriterUtil.writeNestedNumberArray(annot.inkList))
+                ret.push(Writer.SPACE)
+            }
+
+            ret = ret.concat(Writer.DICT_END)
+            ret.push(Writer.SPACE)
+            ret = ret.concat(Writer.ENDOBJ)
+            ret.push(Writer.CR)
+            ret.push(Writer.LF)
+
+            return { ptr: annot.object_id, data: ret }
         }
-
-        ret = ret.concat(Writer.ID)
-        ret.push(Writer.SPACE)
-        ret = ret.concat(Util.convertStringToAscii(annot.id))
-        ret.push(Writer.SPACE)
-
-        if (annot.annotation_flag) {
-            ret = ret.concat(Writer.FLAG)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Util.convertNumberToCharArray(annot.annotation_flag))
-            ret.push(Writer.SPACE)
-        }
-
-        if (annot.color) {
-            if (annot.color.r > 1) annot.color.r /= 255
-            if (annot.color.g > 1) annot.color.g /= 255
-            if (annot.color.b > 1) annot.color.b /= 255
-
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Writer.COLOR)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeNumberArray([annot.color.r, annot.color.g, annot.color.b]))
-            ret.push(Writer.SPACE)
-        }
-
-
-        let opacity = annot.opacity
-        if (opacity) {
-            ret = ret.concat(Writer.OPACITY)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Util.convertNumberToCharArray(opacity))
-            ret.push(Writer.SPACE)
-        }
-
-        if (annot.border) {
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Writer.BORDER)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeNumberArray([annot.border.horizontal_corner_radius, annot.border.vertical_corner_radius, annot.border.border_width]))
-            ret.push(Writer.SPACE)
-        }
-
-        if (annot.defaultAppearance) {
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Writer.DEFAULT_APPEARANCE)
-            ret.push(Writer.SPACE)
-            ret.push(Writer.BRACKET_START)
-            ret = ret.concat(Util.convertStringToAscii(annot.defaultAppearance))
-            ret.push(Writer.BRACKET_END)
-            ret.push(Writer.SPACE)
-        }
-
-        if (!annot.pageReference)
-            throw Error("No page reference")
-
-        if (annot.pageReference.object_id) {
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Writer.PAGE_REFERENCE)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeReferencePointer(annot.pageReference.object_id, true))
-            ret.push(Writer.SPACE)
-        }
-
-        if (annot.quadPoints) {
-            ret = ret.concat(Writer.QUADPOINTS)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeNumberArray(annot.quadPoints))
-            ret.push(Writer.SPACE)
-        }
-
-        if (annot.vertices) {
-            ret = ret.concat(Writer.VERTICES)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeNumberArray(annot.vertices))
-            ret.push(Writer.SPACE)
-        }
-
-        if (annot.stampType) {
-            ret = ret.concat(Writer.NAME)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Writer.DRAFT)
-            ret.push(Writer.SPACE)
-        }
-
-        if (annot.caretSymbol) {
-            ret = ret.concat(Writer.SY)
-            ret.push(Writer.SPACE)
-            ret.push(Writer.P)
-            ret.push(Writer.SPACE)
-        }
-
-        if (annot.inkList) {
-            ret = ret.concat(Writer.INKLIST)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeNestedNumberArray(annot.inkList))
-            ret.push(Writer.SPACE)
-        }
-
-        ret = ret.concat(Writer.DICT_END)
-        ret.push(Writer.SPACE)
-        ret = ret.concat(Writer.ENDOBJ)
-        ret.push(Writer.CR)
-        ret.push(Writer.LF)
-
-        return { ptr: annot.object_id, data: ret }
-    }
 
     /**
      * Takes all the cross site reference table entries and extracts the consecutive sequences

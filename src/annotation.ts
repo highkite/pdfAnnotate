@@ -307,14 +307,16 @@ export class AnnotationFactory {
      * contents : the content of the annotation
      * author : the author of the annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createSquareCircleAnnotation(page: number, rect: number[], contents: string, author: string, subtype: string, color: Color = { r: 1, g: 1, b: 0 }): Annotation {
+    createSquareCircleAnnotation(page: number, rect: number[], contents: string, author: string, subtype: string, color: Color = { r: 1, g: 1, b: 0 }, fill: Color = { r: 1, g: 1, b: 0 }): Annotation {
 
         let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
             opacity: 1,
             initiallyOpen: false,
             annotation_flag: 4,
-            color: color
+            color: color,
+            fill: fill
         })
 
         annot.type = subtype
@@ -330,10 +332,11 @@ export class AnnotationFactory {
      * contents : the content of the annotation
      * author : the author of the annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createSquareAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }) {
+    createSquareAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, fill: Color = { r: 1, g: 1, b: 0 }) {
         this.checkRect(4, rect)
-        let annot: Annotation = this.createSquareCircleAnnotation(page, rect, contents, author, "/Square", color)
+        let annot: Annotation = this.createSquareCircleAnnotation(page, rect, contents, author, "/Square", color, fill)
 
         this.annotations.push(annot)
     }
