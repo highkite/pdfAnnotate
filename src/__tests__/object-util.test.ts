@@ -1,6 +1,6 @@
 import { ObjectUtil } from '../object-util';
 import { Util } from '../util';
-import { encode, simpleAnnotationObject, listObject_1, listObject_2, pageObject_string, pageObject_string_3, pageObject_string_4, pageObject_string_5, simplePageObject, simplePageObject_2, simplePageObject_3, simplePageObject_4, simplePageObject_5, simplePageObject_6, simplePageObject_7, simplePageObject_8, simplePageObject_9, simplePageObject_10, simplePageObject_11, simplePageObject_12 } from './Data2'
+import { encode, simpleAnnotationObject, listObject_1, listObject_2, pageObject_string, pageObject_string_3, pageObject_string_4, pageObject_string_5, simplePageObject, simplePageObject_2, simplePageObject_3, simplePageObject_4, simplePageObject_5, simplePageObject_6, simplePageObject_7, simplePageObject_8, simplePageObject_9, simplePageObject_10, simplePageObject_11, simplePageObject_12, catalogObject } from './Data2'
 
 test('extractObject_1', () => {
     let res = ObjectUtil.extractObject(simplePageObject, 0)
@@ -300,4 +300,18 @@ test('extractObject_16', () => {
     expect(res.value["/Kids"][0].generation).toBe(0)
     expect(res.value["/Kids"][1].obj).toBe(463)
     expect(res.value["/Kids"][1].generation).toBe(0)
+})
+
+test('extractCatalogObject_1', () => {
+    let res = ObjectUtil.extractObject(catalogObject, 0)
+
+    expect(res.value["/Type"]).toBe("/Catalog")
+    expect(res.id.obj).toBe(1)
+    expect(res.id.generation).toBe(0)
+    expect(res.value["/OpenAction"][0].obj).toBe(4)
+    expect(res.value["/OpenAction"][0].generation).toBe(0)
+    expect(res.value["/OpenAction"][1]).toBe("/XYZ")
+    expect(res.value["/OpenAction"][2]).toBe("null")
+    expect(res.value["/OpenAction"][3]).toBe("null")
+    expect(res.value["/OpenAction"][4]).toBe("null")
 })
