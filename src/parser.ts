@@ -78,7 +78,7 @@ export class Annotation {
 
 
     constructor(private data: Uint8Array = new Uint8Array([])) {
-        this.data = new Uint8Array(data)
+        this.data = data
     }
 
     /**
@@ -113,7 +113,7 @@ export class CatalogObject {
      * Extracts the data representing the object.
      * */
     constructor(private data: Uint8Array, private xref: XRef, private objectLookupTable: ObjectLookupTable) {
-        this.data = new Uint8Array(data)
+        this.data = data
 
         let page_obj = ObjectUtil.extractObject(this.data, xref, objectLookupTable).value
 
@@ -142,7 +142,7 @@ export class PageTree {
     private pageReferences: ReferencePointer[] = []
 
     constructor(private data: Uint8Array, private objectLookupTable: ObjectLookupTable) {
-        this.data = new Uint8Array(data)
+        this.data = data
     }
 
     /**
@@ -213,7 +213,7 @@ export class Page {
     public annotsPointer: ReferencePointer | undefined
 
     constructor(private data: Uint8Array, private documentHistory: DocumentHistory) {
-        this.data = new Uint8Array(data)
+        this.data = data
     }
 
     /**
