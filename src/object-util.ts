@@ -46,23 +46,27 @@ export class ObjectUtil {
             let extracted_array = ArrayUtil.extractArray(data, ptr)
             dict[current_key] = extracted_array.result
             return ObjectUtil.extractDictKeyRec(data, extracted_array.end_index + 1, dict)
-        } else if (next_string[0] === Util.STRING_START[0]) {
+        } else if (next_string[0] === Util.DICT_START[0] && data[next.end_index + 1] === Util.DICT_START[0]) {
+            if (current_key) {
+                let sup_dict = {}
+                let end_sub_dict = ObjectUtil.extractDictKeyRec(data, next.end_index + 2, sup_dict)
+                dict[current_key] = sup_dict
+                return ObjectUtil.extractDictKeyRec(data, end_sub_dict + 1, dict)
+            } else {
+                return ObjectUtil.extractDictKeyRec(data, next.end_index + 2, dict)
+            }
+        } else if (next_string[0] === Util.HEX_STRING_START[0]) {
+            if (!current_key)
+                throw Error("Invalid anonymous string definition")
+            let extracted_string = Util.extractHexString(data, ptr)
+            dict[current_key] = extracted_string.result
+            return ObjectUtil.extractDictKeyRec(data, extracted_string.end_index + 1, dict)
+        } else if (next_string[0] === Util.LITERAL_STRING_START[0]) {
             if (!current_key)
                 throw Error("Invalid anonymous string definition")
             let extracted_string = Util.extractString(data, ptr)
             dict[current_key] = extracted_string.result
             return ObjectUtil.extractDictKeyRec(data, extracted_string.end_index + 1, dict)
-        } else if (next_string[0] === Util.DICT_START[0]) { // <
-            if (data[next.end_index + 1] === Util.DICT_START[0]) {
-                if (current_key) {
-                    let sup_dict = {}
-                    let end_sub_dict = ObjectUtil.extractDictKeyRec(data, next.end_index + 2, sup_dict)
-                    dict[current_key] = sup_dict
-                    return ObjectUtil.extractDictKeyRec(data, end_sub_dict + 1, dict)
-                } else {
-                    return ObjectUtil.extractDictKeyRec(data, next.end_index + 2, dict)
-                }
-            }
         } else if (next_string[0] === 47) { // /
             if (!current_key)
                 throw Error("Invalid anonymous property definition")

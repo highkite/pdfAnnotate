@@ -33,9 +33,9 @@ export class Util {
     public static ENDOBJ: number[] = [101, 110, 100, 111, 98, 106] // 'endobj'
     public static ARRAY_START: number[] = [91] // '['
     public static ARRAY_END: number[] = [93] // ']'
-    public static STRING_START: number[] = [40] // '('
+    public static LITERAL_STRING_START: number[] = [40] // '('
     public static HEX_STRING_START: number[] = [60] // '<'
-    public static STRING_END: number[] = [41] // ')'
+    public static LITERAL_STRING_END: number[] = [41] // ')'
     public static HEX_STRING_END: number[] = [62] // '>'
     public static R: number[] = [82] // 'R'
     public static ANNOTS: number[] = [47, 65, 110, 110, 111, 116, 115] // '/Annot'
@@ -288,8 +288,8 @@ export class Util {
      * Extratcs a string (...)
      * */
     public static extractString(data: Uint8Array, index: number): ExtractionResult {
-        let string_start = Util.locateSequence(Util.STRING_START, data, index)
-        let string_end = Util.locateSequence(Util.STRING_END, data, index)
+        let string_start = Util.locateSequence(Util.LITERAL_STRING_START, data, index)
+        let string_end = Util.locateSequence(Util.LITERAL_STRING_END, data, index)
 
         data = data.slice(string_start + 1, string_end)
 

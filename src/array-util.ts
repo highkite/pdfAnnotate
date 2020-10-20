@@ -30,9 +30,9 @@ export class ArrayUtil {
             } else if (Util.areArraysEqual(next_string, Util.NULL)) {
                 ret_list.push("null")
                 ptr += next_string.length - 1
-            } else if (next_string[0] === Util.STRING_END[0]) {
+            } else if (next_string[0] === Util.LITERAL_STRING_END[0]) {
                 return { result: ret_list, end_index: next.end_index }
-            } else if (next_string[0] === Util.STRING_START[0]) {
+            } else if (next_string[0] === Util.LITERAL_STRING_START[0]) {
                 let extracted_string = Util.extractString(data, ptr)
                 ret_list.push(extracted_string.result)
                 ptr = extracted_string.end_index
