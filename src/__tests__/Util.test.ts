@@ -108,7 +108,7 @@ hello`), 0)
     expect(Util.convertAsciiToString(res.result)).toBe("hello")
     expect(res.end_index).toBe(19)
 
-    res = Util.readNextWord(encode(` 
+    res = Util.readNextWord(encode(`
 %some comment
 hello`), 0)
     expect(Util.convertAsciiToString(res.result)).toBe("hello")
@@ -394,4 +394,22 @@ test('areArraysEqual', () => {
     expect(Util.areArraysEqual(data, data2)).toBeFalsy()
     data2 = new Uint8Array([91, 50, 32])
     expect(Util.areArraysEqual(data, data2)).toBeFalsy()
+})
+
+test('convertHexStringToByteArray', () => {
+    let val : string = "ab"
+    expect(Util.convertHexStringToByteArray(val)).toEqual([171])
+    val = "a"
+    expect(Util.convertHexStringToByteArray(val)).toEqual([10])
+    val = "AB"
+    expect(Util.convertHexStringToByteArray(val)).toEqual([171])
+    val = "Z"
+    expect(Util.convertHexStringToByteArray(val)).toEqual([NaN])
+})
+
+test('convertByteArrayToHexString', () => {
+    let val : number[] = [171]
+    expect(Util.convertByteArrayToHexString(val)).toEqual("AB")
+    val = [10]
+    expect(Util.convertByteArrayToHexString(val)).toEqual("A")
 })

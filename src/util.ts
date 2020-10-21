@@ -436,6 +436,44 @@ export class Util {
     }
 
     /**
+     * Converts a hex string into a byte array
+     * That means two consecutive hex values are merged into one byte that is appended to the array
+     * */
+    public static convertHexStringToByteArray(hex_string : string) : number[] {
+        let ret_val : number[] = []
+
+        for (let i = 0; i < hex_string.length - 1; i+= 2) {
+            ret_val.push((parseInt(hex_string.charAt(i), 16) << 4) + parseInt(hex_string.charAt(i + 1), 16))
+        }
+
+        if (hex_string.length % 2 !== 0) {
+            ret_val.push(parseInt(hex_string.charAt(hex_string.length - 1), 16))
+        }
+
+        return ret_val
+    }
+
+    /**
+     * Converts an array of byte values into a hex string
+     * */
+    public static convertByteArrayToHexString(values : Uint8Array | number[]) : string {
+        let ret_val : string = ""
+
+        let HEX_VALUES = "0123456789ABCDEF"
+
+        for (let i = 0; i < values.length; ++i) {
+            ret_val += HEX_VALUES.charAt(values[i] >> 4)
+            ret_val += HEX_VALUES.charAt(values[i] & 15)
+        }
+
+        // remove leading zeros
+        let i : number = 0
+        while('0' === ret_val.charAt(i) && i < ret_val.length) ++i
+
+        return ret_val.slice(i, ret_val.length)
+    }
+
+    /**
      * takes two arrays and checks their equality
      * */
     public static areArraysEqual(array_one: Uint8Array | number[], array_two: Uint8Array | number[]): boolean {
