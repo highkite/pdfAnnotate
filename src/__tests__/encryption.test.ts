@@ -26,3 +26,13 @@ test('testPadding_3', () => {
     expect(encryption.padPasswortString(pwd).length).toEqual(32)
     expect(encryption.padPasswortString(pwd)).toEqual(pwd_padded)
 })
+
+test('testComputeEncryptionKey', () => {
+    let encryption = new Encryption()
+    encryption.computeEncryptionKey("")
+})
+
+test('testComputeOwnerPassword', () => {
+    let encryption = new Encryption()
+    encryption.computeOwnerPassword("")
+})
