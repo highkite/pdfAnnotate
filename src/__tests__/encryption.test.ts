@@ -36,3 +36,9 @@ test('testComputeOwnerPassword', () => {
     let encryption = new Encryption()
     encryption.computeOwnerPassword("")
 })
+
+test('testComputeUserPassword', () => {
+    let encryption = new Encryption()
+    encryption.computeUserPassword_3("", "103676fe04d5658096322d745ba2937674a87cfa5aa3c84631c6bcb828b6ed14", -3904, "59523cb0e70e03cd47937869d5490bf8")
+    //encryption.computeUserPassword_3("", "5c74bb5c6688f5eeb18f87b82246a416c481a0877462a4cb401676f49569404c7a5c6e", -3904, "1b26722268299ae2ac3f8d84472c1536")
+})

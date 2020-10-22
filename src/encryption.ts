@@ -286,4 +286,201 @@ export class Encryption {
         }
         return ret_val
     }
+
+    getRC4Key() : any {
+        console.log("###########################################")
+        console.log("getRC4Key")
+        let userpwd = Encryption.PADDING_STRING
+        userpwd = Array.from(this.padPasswortString(new Uint8Array(Util.convertStringToAscii("123"))))
+        console.log("userpwd: " + userpwd.join(" "))
+        let o_entry = [0x10, 0x36, 0x76, 0xfe, 0x04, 0xd5, 0x65, 0x80, 0x96, 0x32, 0x2d, 0x74, 0x5b, 0xa2, 0x93, 0x76, 0x74, 0xa8, 0x7c, 0xfa, 0x5a, 0xa3, 0xc8, 0x46, 0x31, 0xc6, 0xbc, 0xb8, 0x5c, 0x28, 0xb6, 0xed, 0x14]
+        console.log("o_entry: " + o_entry.join(" "))
+        console.log("o_entry Length: " + o_entry.length)
+        console.log(Util.convertHexStringToByteArray("103676fe04d5658096322d745ba2937674a87cfa5aa3c84631c6bcb828b6ed14").join(" "))
+        let P_2 = this.convertInt32ArrayToUint8Array(new Int32Array([-3904]))
+        let P = new Uint8Array([128, 0, 15, 64])
+        //P = new Uint8Array([64, 15, 0, 128])
+        P = P_2.reverse()
+        console.log("P: " + P.join(" "))
+        let id_str : string = "59523cb0e70e03cd47937869d5490bf8"
+        let file_id : number[] = Util.convertHexStringToByteArray(id_str)
+        console.log("file_id: " + file_id.join(" "))
+
+        let stuff = new Uint8Array(userpwd.length + o_entry.length + P.length + file_id.length)
+        stuff.set(userpwd, 0)
+        stuff.set(o_entry, userpwd.length)
+        stuff.set(P, userpwd.length + o_entry.length)
+        stuff.set(file_id, userpwd.length + o_entry.length + P.length)
+
+        console.log("aggregated: " + stuff.join(" "))
+
+        let stuff_word_array = crypto.lib.WordArray.create(Array.from(this.convertUint8ArrayToInt32Array(stuff)), stuff.length)
+
+        let h = crypto.MD5(stuff_word_array)
+
+        for (let i = 0; i < 50; ++i) {
+            h = crypto.MD5(h)
+        }
+
+        return this.convertInt32ArrayToUint8Array(new Int32Array(h.words))
+    }
+
+    computeUserPassword(password : string | Uint8Array) : Uint8Array {
+        if (typeof password === "string") {
+            password = new Uint8Array(Util.convertStringToAscii(password))
+        }
+
+        let userpwd_string = "28BF4E5E4E758A4164004E56FFFA01082E2E00B6D0683E802F0CA9FE6453697A"
+        let userpwd =  Util.convertHexStringToByteArray(userpwd_string)
+        let userpwd_int32 = this.convertUint8ArrayToInt32Array(new Uint8Array(userpwd))
+
+        let new_val_word_array = crypto.lib.WordArray.create(Array.from(userpwd_int32), userpwd.length)
+
+        console.log(crypto.MD5(new_val_word_array).toString())
+        console.log("===========================================")
+        console.log(crypto.MD5(crypto.enc.Hex.parse(userpwd_string)).toString())
+
+        let qa = function(ba : number[]) {
+            var wa : number[] = [],
+                i;
+            for (i = 0; i < ba.length; i++) {
+                wa[(i / 4) | 0] |= ba[i] << (24 - 8 * i);
+            }
+
+            return crypto.lib.WordArray.create(wa, ba.length);
+        }
+
+        console.log("===========================================")
+        console.log(crypto.MD5(qa(userpwd)).toString())
+
+        return password
+    }
+
+    computeUserPassword_3(password:string, _o_entry : string, permission : number, file_id_string : string) : Uint8Array {
+
+        let id_str_array : number[] = Util.convertHexStringToByteArray(file_id_string)
+
+        let userpwd = Encryption.PADDING_STRING
+
+        let new_val : Uint8Array = new Uint8Array(userpwd.length + id_str_array.length)
+        new_val.set(userpwd, 0)
+        new_val.set(id_str_array, userpwd.length)
+
+        let new_val_int32 = this.convertUint8ArrayToInt32Array(new_val)
+        let new_val_word_array = crypto.lib.WordArray.create(Array.from(new_val_int32), new_val.length)
+
+        let x = crypto.MD5(new_val_word_array)
+
+        let rc4key = this.getRC4Key_2(password, _o_entry, permission, file_id_string)
+
+        let f_xorbytes = (_byte_array : Uint8Array, _k : number) =>  {
+            let _ret_val : number[] = []
+            for (let i = 0; i < _byte_array.length; ++i){
+                _ret_val.push(_byte_array[i] ^ _k)
+            }
+
+            return crypto.lib.WordArray.create(Array.from(this.convertUint8ArrayToInt32Array(new Uint8Array(_ret_val))), _ret_val.length)
+        }
+
+        for(let i = 0; i < 20; ++i) {
+            x = crypto.RC4.encrypt(x, f_xorbytes(rc4key, i)).ciphertext
+        }
+
+        console.log("-----------------------------------------")
+        console.log(x.toString(crypto.enc.Hex))
+        console.log("6db3 2764 85b3 6a74 4087 7d6f a911 d11a")
+
+        return new Uint8Array()
+    }
+
+    computeUserPassword_2(password : string | Uint8Array) : Uint8Array {
+        if (typeof password === "string") {
+            password = new Uint8Array(Util.convertStringToAscii(password))
+        }
+
+        let userpwd = Encryption.PADDING_STRING
+        let userpwd_string = "28BF4E5E4E758A4164004E56FFFA01082E2E00B6D0683E802F0CA9FE6453697A"
+        console.log("Userpwd: " + userpwd.join(" "))
+        console.log("Userpwd from string: " + Util.convertHexStringToByteArray(userpwd_string).join(" "))
+        let id_str : string = "59523cb0e70e03cd47937869d5490bf8"
+        let id_str_array : number[] = Util.convertHexStringToByteArray(id_str)
+        console.log("file_id: " + id_str_array.join(" "))
+
+        let new_val : Uint8Array = new Uint8Array(userpwd.length + id_str_array.length)
+        new_val.set(userpwd, 0)
+        new_val.set(id_str_array, userpwd.length)
+        console.log("Merged: " + new_val.join(" "))
+
+        let new_val_int32 = this.convertUint8ArrayToInt32Array(new_val)
+
+        console.log("int32 array: " + new_val_int32.join(" "))
+        console.log("Double check: " + this.convertInt32ArrayToUint8Array(new_val_int32).join(" "))
+
+        let new_val_word_array = crypto.lib.WordArray.create(Array.from(new_val_int32), new_val.length)
+        console.log(new_val_word_array)
+        console.log("Merged from string as byte array: " + Util.convertHexStringToByteArray(userpwd_string + id_str).join(" "))
+
+        console.log("---- ALTERNATE WORD ARRAY")
+        let new_val_word_array_2 = crypto.enc.Hex.parse(userpwd_string + id_str)
+        console.log(new_val_word_array_2)
+
+        // new_val_word_array = new_val_word_array_2
+
+        let x = crypto.MD5(new_val_word_array)
+
+        console.log("COMPUTE HASH")
+        console.log(x)
+
+        let rc4key = this.getRC4Key()
+
+        console.log("RC4KEY: " + rc4key.join(" "))
+
+        let f_xorbytes = (_byte_array : Uint8Array, _k : number) =>  {
+            let _ret_val : number[] = []
+            for (let i = 0; i < _byte_array.length; ++i){
+                _ret_val.push(_byte_array[i] ^ _k)
+            }
+
+            return crypto.lib.WordArray.create(Array.from(this.convertUint8ArrayToInt32Array(new Uint8Array(_ret_val))), _ret_val.length)
+        }
+
+        for(let i = 0; i < 20; ++i) {
+            x = crypto.RC4.encrypt(x, f_xorbytes(rc4key, i)).ciphertext
+        }
+
+        console.log("-----------------------------------------")
+        console.log(x.toString(crypto.enc.Hex))
+        console.log("6db3 2764 85b3 6a74 4087 7d6f a911 d11a")
+
+        return password
+    }
+
+    getRC4Key_2(password : string, _o_entry : string, permission : number, file_id_string : string) : any {
+        let userpwd = Array.from(this.padPasswortString(new Uint8Array(Util.convertStringToAscii(password))))
+        console.log(Util.convertByteArrayToHexString(userpwd))
+        let o_entry = Util.convertHexStringToByteArray(_o_entry)
+        console.log(Util.convertByteArrayToHexString(o_entry))
+        console.log("Length: " + o_entry.length)
+        let P = this.convertInt32ArrayToUint8Array(new Int32Array([permission])).reverse()
+        console.log(P)
+
+        let file_id : number[] = Util.convertHexStringToByteArray(file_id_string)
+
+        let stuff = new Uint8Array(userpwd.length + o_entry.length + P.length + file_id.length)
+        stuff.set(userpwd, 0)
+        stuff.set(o_entry, userpwd.length)
+        stuff.set(P, userpwd.length + o_entry.length)
+        stuff.set(file_id, userpwd.length + o_entry.length + P.length)
+
+        let stuff_word_array = crypto.lib.WordArray.create(Array.from(this.convertUint8ArrayToInt32Array(stuff)), stuff.length)
+
+        let h = crypto.MD5(stuff_word_array)
+
+        for (let i = 0; i < 50; ++i) {
+            h = crypto.MD5(h)
+        }
+
+        return this.convertInt32ArrayToUint8Array(new Int32Array(h.words))
+
+    }
 }
