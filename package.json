@@ -41,7 +41,9 @@
         },
         "homepage": "https://github.com/highkite/pdfAnnotate.git",
         "dependencies": {
+                "@types/crypto-js": "^4.0.1",
                 "@types/pako": "^1.0.1",
+                "crypto-js": "^4.0.0",
                 "pako": "^1.0.10"
         }
 }

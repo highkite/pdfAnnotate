@@ -1,5 +1,4 @@
 import { Util } from './util'
-import { Md5 } from 'ts-md5/dist/md5';
 import * as crypto from "crypto-js";
 
 class ARCFourCipher {
@@ -94,7 +93,7 @@ export class Encryption {
 
         password = this.padPasswortString(password)
 
-        console.log(new Md5().appendByteArray(password).end())
+        //console.log(new Md5().appendByteArray(password).end())
 
         return password
     }
@@ -225,11 +224,11 @@ export class Encryption {
         console.log(this.convertUint8ArrayToInt32Array(new Uint8Array(byte_array)))
         console.log("<<<<<<<<<<<<<<<<<<<<<")
 
-        let h = new Md5().appendByteArray(password).end()
+        let h = ""//new Md5().appendByteArray(password).end()
 
-        for (let i = 0; i < 50; ++i) {
-            h = new Md5().appendAsciiStr(h as string).end()
-        }
+        //for (let i = 0; i < 50; ++i) {
+        //    h = new Md5().appendAsciiStr(h as string).end()
+        //}
 
         console.log(h)
         let rc4_key = Util.convertHexStringToByteArray(h as string)

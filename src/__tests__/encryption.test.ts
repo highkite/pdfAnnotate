@@ -92,6 +92,8 @@ test('testDecrypt_4', () => {
 
     encryption.testEncryption("0123456789abcdef", "0123456789abcdef")
     console.log("MUST BE: 75b7878099e0c596")
+    encryption.testEncryption("0123456789abcdef", "75b7878099e0c596")
+    console.log("MUST BE: 0123456789abcdef")
     encryption.testEncryption("0123456789abcdef", "0000000000000000")
     console.log("MUST BE: 7494c2e7104b0879")
     encryption.testEncryption("0000000000000000", "0000000000000000")
