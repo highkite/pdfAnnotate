@@ -22,6 +22,13 @@ interface Trailer {
     size: number
     root: ReferencePointer
     prev?: number
+    is_encrypted : boolean // true, if the document is enrypted otherwise false
+    encrypt?: ReferencePointer // reference to the encryption dictionary if document is encrypted
+    id? : string[] // document id
+}
+
+var generateDefaultTrailer = () => {
+    return { size: -1, root: { obj: -1, generation: -1 }, is_encrypted : false}
 }
 
 export interface ObjectLookupTable {
@@ -29,7 +36,7 @@ export interface ObjectLookupTable {
 }
 
 export interface UpdateSection {
-    start_pointer: number,
+    start_pointer: number
     size: number
     refs: XRef[]
     prev?: number
@@ -45,7 +52,7 @@ export class CrossReferenceStreamObject {
 
     constructor(private data: Uint8Array) { }
 
-    public trailer: Trailer = { size: -1, root: { obj: -1, generation: -1 } }
+    public trailer: Trailer = generateDefaultTrailer()
 
     public streamLength: number = -1
 
@@ -185,7 +192,7 @@ export class CrossReferenceTable {
 
     public start_pointer: number = -1
 
-    public trailer: Trailer = { size: -1, root: { obj: -1, generation: -1 } }
+    public trailer: Trailer = generateDefaultTrailer()
 
     constructor(private data: Uint8Array) { }
 
@@ -250,7 +257,7 @@ export class CrossReferenceTable {
     extractReferences(index: number, count: number, first_object_id: number): XRef[] {
         let _refs: XRef[] = []
 
-        for (let i = 0; i < count; ++i, index += 20) {
+        for (let i = 0; i < count; ++i, index += 19) {
             let ptr_end_pointer = Util.locateDelimiter(this.data, index)
 
             let pointer = Util.extractNumber(this.data, index, ptr_end_pointer).result
@@ -282,33 +289,19 @@ export class CrossReferenceTable {
      * in particular the trailer dictionary
      * */
     extractTrailer(index: number): Trailer {
-        let end_trailer_index: number = Util.locateSequence(Util.STARTXREF, this.data, index, true)
-        let _data = this.data.slice(index, end_trailer_index)
-        index = 0
+        // run forward to the dictionary start
+        index = Util.locateSequence(Util.DICT_START, this.data, index) + 2
 
-        let ptr_start_size = Util.locateSequence(Util.SIZE, _data, index, true) + Util.SIZE.length
-        ptr_start_size = Util.skipDelimiter(_data, ptr_start_size)
-
-        let size = Util.extractNumber(_data, ptr_start_size).result
-
-
-        let ptr_start_root = Util.locateSequence(Util.ROOT, _data, index, true) + Util.ROOT.length
-        ptr_start_root = Util.skipDelimiter(_data, ptr_start_root)
-        let root_reference = Util.extractReferenceTyped(_data, ptr_start_root)
-
-
-        let ptr_start_prev = Util.locateSequence(Util.PREV, _data, index, true)
-        let prev = undefined
-        if (-1 != ptr_start_prev) {
-            ptr_start_prev = Util.skipDelimiter(_data, ptr_start_prev + Util.PREV.length)
-
-            prev = Util.extractNumber(_data, ptr_start_prev).result
-        }
+        let obj: any = {}
+        ObjectUtil.extractDictKeyRec(this.data, index, obj)
 
         return {
-            size: size,
-            root: root_reference.result,
-            prev: prev
+            size: obj["/Size"],
+            root: obj["/Root"],
+            prev: obj["/Prev"] ? obj["/Prev"] : undefined,
+            is_encrypted: obj["/Encrypt"] ? true : false,
+            encrypt: obj["/Encrypt"] ? obj["/Encrypt"] : undefined,
+            id: obj["/ID"] ? obj["/ID"] : undefined
         }
     }
 
@@ -322,11 +315,14 @@ export class CrossReferenceTable {
         start_ptr = Util.skipDelimiter(this.data, start_ptr)
 
         let first_header = this.extractSubSectionHeader(start_ptr)
+        console.log("section header")
+        console.log(first_header)
 
         let ref_start = Util.skipDelimiter(this.data, first_header.end_ptr + 1)
 
         // extract first reference
         this.refs = this.refs.concat(this.extractReferences(ref_start, first_header.count, first_header.id))
+        console.log(this.refs)
 
         // extract remaining references
         start_ptr = ref_start + first_header.count * 20
@@ -407,6 +403,8 @@ export class DocumentHistory {
     extractDocumentHistory() {
 
         let ptr = this.extractDocumentEntry()
+        console.log("ptr: " + ptr)
+        console.log(this.data)
         let xref = {
             id: -1,
             pointer: ptr,

@@ -571,7 +571,7 @@ export class AnnotationFactory {
      * Saves the adapted PDF document in a nodejs environment
      * */
     // see https://github.com/angular/angular-cli/issues/9827
-    // why is it so reprehensible to create libraries for both environments (browser and nodejs)? Those guys at angular might know.
+    // why is it so reprehensible to create libraries for both environments (browser and nodejs)?
     //
     // uncomment it if you want to use it.
     save(fileName: string = "output.pdf") {

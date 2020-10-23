@@ -322,4 +322,5 @@ test('extractAnnot_1', () => {
     expect(res.value["/Type"]).toBe("/Annot")
     expect(res.id.obj).toBe(1173)
     expect(res.id.generation).toBe(0)
+    expect(res.value["/A"]["/URI"]).toBe("EB345AA632781A90E90781A4A0BF42680D1F1AD67910B293798B0AFFED8407CE12684F21B7F471D96DCE4864CAB970A98E7F911C207A12C6E6900D789BC13AE87E76A9D6B8EDDADE7A53EAA521E6421295EA31305C")
 })
