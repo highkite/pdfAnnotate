@@ -40,7 +40,10 @@ export interface UpdateSection {
     size: number
     refs: XRef[]
     prev?: number
-    root?: { obj: number, generation: number }
+    root?: ReferencePointer
+    is_encrypted : boolean// true, if the document is enrypted otherwise false
+    encrypt?: ReferencePointer// reference to the encryption dictionary if document is encrypted
+    id?: string[]// document id
 }
 
 /**
@@ -176,7 +179,10 @@ export class CrossReferenceStreamObject {
             size: this.trailer.size,
             prev: this.trailer.prev,
             root: this.trailer.root,
-            refs: this.refs
+            refs: this.refs,
+            is_encrypted: this.trailer.is_encrypted,
+            encrypt: this.trailer.encrypt,
+            id: this.trailer.id
         }
     }
 }
@@ -217,7 +223,10 @@ export class CrossReferenceTable {
             size: this.trailer.size,
             refs: this.refs,
             prev: this.trailer.prev,
-            root: this.trailer.root
+            root: this.trailer.root,
+            is_encrypted: this.trailer.is_encrypted,
+            encrypt: this.trailer.encrypt,
+            id: this.trailer.id
         }
     }
 
@@ -257,7 +266,7 @@ export class CrossReferenceTable {
     extractReferences(index: number, count: number, first_object_id: number): XRef[] {
         let _refs: XRef[] = []
 
-        for (let i = 0; i < count; ++i, index += 19) {
+        for (let i = 0; i < count; ++i, index += 20) {
             let ptr_end_pointer = Util.locateDelimiter(this.data, index)
 
             let pointer = Util.extractNumber(this.data, index, ptr_end_pointer).result
@@ -315,14 +324,11 @@ export class CrossReferenceTable {
         start_ptr = Util.skipDelimiter(this.data, start_ptr)
 
         let first_header = this.extractSubSectionHeader(start_ptr)
-        console.log("section header")
-        console.log(first_header)
 
         let ref_start = Util.skipDelimiter(this.data, first_header.end_ptr + 1)
 
         // extract first reference
         this.refs = this.refs.concat(this.extractReferences(ref_start, first_header.count, first_header.id))
-        console.log(this.refs)
 
         // extract remaining references
         start_ptr = ref_start + first_header.count * 20
@@ -403,8 +409,7 @@ export class DocumentHistory {
     extractDocumentHistory() {
 
         let ptr = this.extractDocumentEntry()
-        console.log("ptr: " + ptr)
-        console.log(this.data)
+
         let xref = {
             id: -1,
             pointer: ptr,

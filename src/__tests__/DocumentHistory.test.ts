@@ -3,6 +3,7 @@ import { crossReferenceStreamObject_string, xrefTable, encode } from './Data2'
 import { crossReferenceStreamObjectWithStreamSection } from './Data3';
 import { test_9_cross_reference_stream_object } from './Data4';
 import { testDocument } from './Data';
+import { Util } from '../util';
 
 test('extractCrossReferenceStreamObjectWithStreamSection', () => {
     let crs = new CrossReferenceStreamObject(new Uint8Array(crossReferenceStreamObjectWithStreamSection))
@@ -180,6 +181,15 @@ test('extractCrossReferenceTable_2', () => {
     let hist = new DocumentHistory(new Uint8Array(xrefTable))
 
     hist.extractDocumentHistory()
+    expect(hist.updates[0].refs.map(x => x.id)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    expect(hist.updates[0].refs.map(x => x.pointer)).toEqual([0, 15, 66, 149, 798, 293, 367, 464, 828, 1125])
+    expect(hist.updates[0].refs.map(x => x.generation)).toEqual([65535, 0,0,0,0,0,0,0,0,0])
+    expect(hist.updates[0].refs.map(x => x.free)).toEqual([true, false, false, false, false, false, false, false, false, false ])
+    expect(hist.updates[0].refs.map(x => x.update)).toEqual([false, true, true, true, true, true, true, true, true, true])
+    expect(hist.updates[0].is_encrypted).toBeTruthy()
+    expect(hist.updates[0].encrypt!.obj).toBe(9)
+    expect(hist.updates[0].encrypt!.generation).toBe(0)
+    expect(hist.updates[0].id).toEqual(['59523cb0e70e03cd47937869d5490bf8', '8a6428c784714a64d55aaca7a9e08ba0'])
 })
 
 test('extractSubSectionHeader', () => {
@@ -224,16 +234,20 @@ test('extractReferences', () => {
 })
 
 test('extractReferences_2', () => {
-    let data = new Uint8Array(encode(`0000000000 65535 f
-0000000015 00000 n
-0000000066 00000 n
-0000000149 00000 n
-0000000798 00000 n
-0000000293 00000 n
-0000000367 00000 n
-0000000464 00000 n
-0000000828 00000 n
-0000001125 00000 n`))
+    /** data =
+     *  0000000000 65535 f
+     *  0000000015 00000 n
+     *  0000000066 00000 n
+     *  0000000149 00000 n
+     *  0000000798 00000 n
+     *  0000000293 00000 n
+     *  0000000367 00000 n
+     *  0000000464 00000 n
+     *  0000000828 00000 n
+     *  0000001125 00000 n
+     * */
+    let data = new Uint8Array(Util.convertHexStringToByteArray("303030303030303030302036353533352066200a30303030303030303135203030303030206e200a30303030303030303636203030303030206e200a30303030303030313439203030303030206e200a30303030303030373938203030303030206e200a30303030303030323933203030303030206e200a30303030303030333637203030303030206e200a30303030303030343634203030303030206e200a30303030303030383238203030303030206e200a30303030303031313235203030303030206e200a747261696c65720a0a3c3c0a2f4944205b3c35393532336362306537306530336364343739333738363964353439306266383e3c38613634323863373834373134613634643535616163613761396530386261303e5d0a2f456e63727970742039203020520a2f526f6f742031203020520a2f53697a652031300a3e3e0a7374617274787265660a300a2525454f460a"))
+    console.log(data.join(" "))
 
     let crt = new CrossReferenceTable(data)
     let res = crt.extractReferences(0, 10, 0)
