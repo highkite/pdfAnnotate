@@ -2,6 +2,55 @@ import { Util } from './util'
 import { Md5 } from 'ts-md5/dist/md5';
 import * as crypto from "crypto-js";
 
+class ARCFourCipher {
+    a : any
+    b : any
+    s : any
+
+    constructor(key : any) {
+        this.a = 0;
+        this.b = 0;
+        var s = new Uint8Array(256);
+        var i,
+            j = 0,
+            tmp,
+            keyLength = key.length;
+        for (i = 0; i < 256; ++i) {
+            s[i] = i;
+        }
+        for (i = 0; i < 256; ++i) {
+            tmp = s[i];
+            j = (j + tmp + key[i % keyLength]) & 0xff;
+            s[i] = s[j];
+            s[j] = tmp;
+        }
+        this.s = s;
+    }
+
+    encrypt(data : any) {
+        var i,
+            n = data.length,
+            tmp,
+            tmp2;
+        var a = this.a,
+            b = this.b,
+            s = this.s;
+        var output = new Uint8Array(n);
+        for (i = 0; i < n; ++i) {
+            a = (a + 1) & 0xff;
+            tmp = s[a];
+            b = (b + tmp) & 0xff;
+            tmp2 = s[b];
+            s[a] = tmp2;
+            s[b] = tmp;
+            output[i] = data[i] ^ s[(tmp + tmp2) & 0xff];
+        }
+        this.a = a;
+        this.b = b;
+        return output;
+    }
+}
+
 export class Encryption {
     public static PADDING_STRING : number[] = [
         0x28,
@@ -475,12 +524,88 @@ export class Encryption {
         let stuff_word_array = crypto.lib.WordArray.create(Array.from(this.convertUint8ArrayToInt32Array(stuff)), stuff.length)
 
         let h = crypto.MD5(stuff_word_array)
+        console.log(">>" + h.toString(crypto.enc.Hex).length)
 
         for (let i = 0; i < 50; ++i) {
             h = crypto.MD5(h)
+            console.log(">>" + h.toString(crypto.enc.Hex).length)
         }
 
         return this.convertInt32ArrayToUint8Array(new Int32Array(h.words))
 
+    }
+
+    decrypt(value : Uint8Array, object_number : number, generation : number, key : Uint8Array){
+        let adapted_key = new Uint8Array(key.length + 5)
+        adapted_key.set(key, 0)
+        console.log("key: " + key.join(" "))
+        let obj = this.convertInt32ArrayToUint8Array(new Int32Array([object_number])).reverse()
+        adapted_key.set(obj.slice(0, 3), key.length)
+        console.log("obj: " + obj.slice(0,3).join(" "))
+        let gen = this.convertInt32ArrayToUint8Array(new Int32Array([generation])).reverse()
+        adapted_key.set(gen.slice(0, 2), key.length + 3)
+        console.log("gen: " + gen.slice(0,2).join(" "))
+        console.log("aggregated: " + adapted_key.join(" "))
+
+        let key_word_array = crypto.lib.WordArray.create(Array.from(this.convertUint8ArrayToInt32Array(adapted_key)), adapted_key.length)
+
+        let adapted_value = crypto.lib.WordArray.create(Array.from(this.convertUint8ArrayToInt32Array(value)), value.length)
+        console.log("adapted value: " + value.join(" "))
+
+        let h = crypto.MD5(key_word_array)
+        console.log(crypto.RC4.encrypt(adapted_value, h))
+        let x = crypto.RC4.encrypt(adapted_value, h).ciphertext
+        let byte_ar = this.convertInt32ArrayToUint8Array(new Int32Array(x.words))
+
+        console.log(byte_ar.join(" "))
+        console.log("Length: " + byte_ar.length)
+        console.log(x.toString(crypto.enc.Utf16))
+        console.log(x.toString(crypto.enc.Hex))
+        console.log(Util.convertHexStringToByteArray(x.toString(crypto.enc.Hex)).join(" "))
+        console.log(Util.convertByteArrayToHexString(byte_ar.slice(0, 25)))
+        console.log(Util.convertByteArrayToHexString(byte_ar))
+
+        console.log(Util.convertUnicodeToString(byte_ar.slice(0, 25)))
+
+        console.log(Util.convertUnicodeToString(byte_ar))
+    }
+
+    decrypt_2(value : Uint8Array, object_number : number, generation : number, key : Uint8Array){
+        let adapted_key = new Uint8Array(key.length + 5)
+        adapted_key.set(key, 0)
+        let obj = this.convertInt32ArrayToUint8Array(new Int32Array([object_number])).reverse()
+        adapted_key.set(obj.slice(0, 3), key.length)
+        let gen = this.convertInt32ArrayToUint8Array(new Int32Array([generation])).reverse()
+        adapted_key.set(gen.slice(0, 2), key.length + 3)
+
+        console.log("KEY: " + adapted_key.join(","))
+        console.log("KEY: " + Util.convertByteArrayToHexString(adapted_key))
+
+        let key_word_array = crypto.lib.WordArray.create(Array.from(this.convertUint8ArrayToInt32Array(adapted_key)), adapted_key.length)
+        console.log("VALUE: " + value.join(","))
+        console.log("VALUE: " + Util.convertByteArrayToHexString(value))
+
+        // handle ESCAPING
+        let _value = value.filter(x => x !== 92) // ! NOT FAILSAFE Removes //
+
+        let adapted_value = crypto.lib.WordArray.create(Array.from(this.convertUint8ArrayToInt32Array(_value)), _value.length)
+
+        let h = crypto.MD5(key_word_array)
+        let x = crypto.RC4.encrypt(adapted_value, h).ciphertext
+        console.log(x.toString(crypto.enc.Utf16))
+        console.log(Util.convertUnicodeToString(new ARCFourCipher(this.convertInt32ArrayToUint8Array(new Int32Array(h.words))).encrypt(value)))
+    }
+
+    testEncryption(_key : string, _data : string) {
+        let key = Util.convertHexStringToByteArray(_key)
+        let data = Util.convertHexStringToByteArray(_data)
+
+        let key_word_array = crypto.lib.WordArray.create(Array.from(this.convertUint8ArrayToInt32Array(new Uint8Array(key))), key.length)
+        let data_word_array = crypto.lib.WordArray.create(Array.from(this.convertUint8ArrayToInt32Array(new Uint8Array(data))), data.length)
+
+        let x = crypto.RC4.encrypt(data_word_array, key_word_array).ciphertext
+        console.log(x.toString(crypto.enc.Hex))
+
+        return x.toString(crypto.enc.Hex)
     }
 }
