@@ -465,6 +465,13 @@ export class DocumentHistory {
     }
 
     /**
+     * Indicates whether the PDF document is encrypted
+     * */
+    isEncrypted() : boolean {
+        return this.getRecentUpdate().is_encrypted
+    }
+
+    /**
      * By running through the PDf history we can for every object id determine the pointer address to the most recent version, and
      * whether the object id is still in used.
      *

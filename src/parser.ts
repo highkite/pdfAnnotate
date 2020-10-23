@@ -259,6 +259,59 @@ export class Page {
 }
 
 /**
+ * Provides a configured interface to handle the encryption and decryption of PDFs
+ * */
+class CryptoInterface {
+    version : number | undefined // /V parameter
+    revision : number | undefined // /R revision number
+    filter : string | undefined // The selected filter
+    user_pwd_c : Uint8Array | undefined // /U The user password hash
+    owner_pwd_c : Uint8Array | undefined // /O The owner password hash
+    length : number | undefined // /Length value
+    permissions : number | undefined // /P permissions
+
+    user_pwd: string // the user password
+    owner_pwd: string // the owner password
+
+    constructor(private data: Uint8Array, private documentHistory: DocumentHistory, ptr: XRef, user_pwd: string, owner_pwd: string) {
+        this.data = data
+        this.documentHistory = documentHistory
+        this.user_pwd = user_pwd
+        this.owner_pwd = owner_pwd
+
+        this.extractEncryptionDictionary(ptr)
+
+        // setup crypto-engine
+
+        if (this.version === 1) {
+            console.log("RC4 Encryption with key length 40 bits")
+        } else if(this.version === 2) {
+            console.log("RC4 Encryption with an arbitrary key length")
+        } else if(this.version === 4) {
+            console.log("Some fancy AES encryption")
+        } else {
+            throw Error(`Unsupported Encryption ${this.version}`)
+        }
+    }
+
+    /**
+     * Extracts the enrcyption dictionary
+     * */
+    extractEncryptionDictionary(ptr : XRef) {
+        let obj_table = this.documentHistory.createObjectLookupTable()
+        let page_obj = ObjectUtil.extractObject(this.data, ptr, obj_table)
+
+        this.version = page_obj.value["/V"]
+        this.revision = page_obj.value["/R"]
+        this.filter = page_obj.value["/Filter"]
+        this.user_pwd_c = page_obj.value["/U"]
+        this.owner_pwd_c = page_obj.value["/O"]
+        this.length = page_obj.value["/Length"]
+        this.permissions = page_obj.value["/P"]
+    }
+}
+
+/**
  * Parses the relevant parts of the PDF document and provides functionality to extract the necessary information for
  * adding annotations
  * */
@@ -272,11 +325,26 @@ export class PDFDocumentParser {
 
     private pageTree: PageTree | undefined = undefined
 
-    constructor(private data: Uint8Array) {
+    constructor(private data: Uint8Array, userpwd : string = "", ownerpwd : string = "") {
         this.data = new Uint8Array(data)
 
         this.documentHistory = new DocumentHistory(this.data)
         this.documentHistory.extractDocumentHistory()
+
+        if (this.documentHistory.isEncrypted()) {
+            // extract encryption dictionary
+            let obj_table = this.documentHistory.createObjectLookupTable()
+
+            let enc_obj = this.documentHistory.getRecentUpdate().encrypt
+
+            if(!enc_obj)
+                throw Error("Invalid encryption indication")
+
+            let enc_obj_ptr = obj_table[enc_obj.obj]
+
+            let crypto_interface = new CryptoInterface(this.data, this.documentHistory, enc_obj_ptr, userpwd, ownerpwd)
+            console.log(enc_obj_ptr)
+        }
     }
 
     /**
