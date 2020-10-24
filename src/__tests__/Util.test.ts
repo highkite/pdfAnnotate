@@ -445,3 +445,26 @@ test('convertUint8ArrayToInt32Array', () => {
     val = [10, 0, 0, 0, 10]
     expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([167772160, 10]))
 })
+
+test('convertInt32ArrayToUint8Array', () => {
+    let val : number[] = [0]
+    expect(Util.convertInt32ArrayToUint8Array(val)).toEqual(new Uint8Array([0, 0, 0, 0]))
+
+    val = [10]
+    expect(Util.convertInt32ArrayToUint8Array(val)).toEqual(new Uint8Array([0, 0, 0, 10]))
+
+    val = [2560]
+    expect(Util.convertInt32ArrayToUint8Array(val)).toEqual(new Uint8Array([0, 0, 10, 0]))
+
+    val = [655360]
+    expect(Util.convertInt32ArrayToUint8Array(val)).toEqual(new Uint8Array([0, 10, 0, 0]))
+
+    val = [167772160]
+    expect(Util.convertInt32ArrayToUint8Array(val)).toEqual(new Uint8Array([10, 0, 0, 0]))
+
+    val = [336199680, 0]
+    expect(Util.convertInt32ArrayToUint8Array(val)).toEqual(new Uint8Array([20, 10, 0, 0, 0, 0, 0, 0]))
+
+    val = [336199680, 10]
+    expect(Util.convertInt32ArrayToUint8Array(val)).toEqual(new Uint8Array([20, 10, 0, 0, 0, 0, 0, 10]))
+})
