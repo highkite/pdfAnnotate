@@ -413,3 +413,35 @@ test('convertByteArrayToHexString', () => {
     val = [10]
     expect(Util.convertByteArrayToHexString(val)).toEqual("A")
 })
+
+test('convertUint8ArrayToInt32Array', () => {
+    let val : number[] = [0]
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([0]))
+
+    val = [20]
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([20]))
+
+    val = [30]
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([30]))
+
+    val = [256]
+    expect(() => {Util.convertUint8ArrayToInt32Array(val)}).toThrow(Error)
+
+    val = [0, 0]
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([0]))
+
+    val = [10, 0]
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([2560]))
+
+    val = [10, 0, 0]
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([655360]))
+
+    val = [10, 0, 0, 0]
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([167772160]))
+
+    val = [20, 10, 0, 0, 0]
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([336199680, 0]))
+
+    val = [10, 0, 0, 0, 10]
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([167772160, 10]))
+})

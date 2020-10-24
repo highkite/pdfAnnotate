@@ -506,4 +506,46 @@ export class Util {
 
         console.log(outp)
     }
+
+    /**
+     * Converts a list of 8 bit integers into a list of 32 bit integers
+     * */
+    public static convertUint8ArrayToInt32Array(a : Uint8Array | number[]) : Int32Array {
+        let ret_val : Int32Array = new Int32Array(Math.ceil(a.length / 4))
+
+        let i = 0
+        for(; i < a.length - 3; i += 4) {
+            ret_val[i/4] = (a[i] << 24) + (a[i + 1] << 16) + (a[i + 2] << 8) + a[i + 3]
+
+            if (a[i] > 255 || a[i + 1] > 255 || a[i + 2] > 255 || + a[i + 3] > 255)
+                throw Error("Invalid byte size")
+        }
+
+        ret_val[i/4] = 0
+        while(i < a.length) {
+            ret_val[Math.floor(i/4)] += (a[i] << 8 * (a.length - i - 1))
+
+            if (a[i] > 255)
+                throw Error("Invalid byte size")
+
+            ++i
+        }
+
+        return ret_val
+    }
+
+    /**
+     * Converts a list of 32 bit integers into a list of 8 bit UNSIGNED integers
+     * */
+    public static convertInt32ArrayToUint8Array(a : Int32Array | number[]) : Uint8Array {
+        let ret_val : Uint8Array = new Uint8Array(a.length * 4)
+
+        for(let i = 0; i < a.length; ++i) {
+            for(let j = 0; j < 4; ++j) {
+                ret_val[i * 4 + j] = (a[i] >> 8 * (4 - j - 1)) & 0xFF
+            }
+        }
+
+        return ret_val
+    }
 }
