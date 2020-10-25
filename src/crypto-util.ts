@@ -83,4 +83,22 @@ export class CryptoUtil {
     public static RC4Hex(data : crypto.lib.WordArray | Uint8Array, key : crypto.lib.WordArray | Uint8Array) : string {
         return CryptoUtil.RC4(data, key).toString(crypto.enc.Hex)
     }
+
+    /**
+     * Pads the provided password string
+     * */
+    public static padPasswortString(password : Uint8Array | string) : Uint8Array {
+        if (typeof password === 'string') {
+            password = new Uint8Array(Util.convertStringToAscii(password))
+        }
+
+        let ret_val = new Uint8Array(32)
+        ret_val.set(password.slice(0, 32))
+
+        if (password.length < 32) {
+            ret_val.set(CryptoUtil.PADDING_STRING.slice(0, 32 - password.length), password.length)
+        }
+
+        return ret_val
+    }
 }
