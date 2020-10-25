@@ -514,21 +514,13 @@ export class Util {
         let ret_val : Int32Array = new Int32Array(Math.ceil(a.length / 4))
 
         let i = 0
-        for(; i < a.length - 3; i += 4) {
-            ret_val[i/4] = (a[i] << 24) + (a[i + 1] << 16) + (a[i + 2] << 8) + a[i + 3]
+        let index = 0
 
-            if (a[i] > 255 || a[i + 1] > 255 || a[i + 2] > 255 || + a[i + 3] > 255)
-                throw Error("Invalid byte size")
-        }
-
-        ret_val[i/4] = 0
-        while(i < a.length) {
-            ret_val[Math.floor(i/4)] += (a[i] << 8 * (a.length - i - 1))
-
-            if (a[i] > 255)
+        while (i < a.length) {
+            if (a[i] > 255 || a[i + 1] > 255 || a[i + 2] >> 255 || a[i + 3] > 255)
                 throw Error("Invalid byte size")
 
-            ++i
+            ret_val[index++] = (a[i++] << 24) + (a[i++] << 16) + (a[i++] << 8) + (a[i++] << 0)
         }
 
         return ret_val

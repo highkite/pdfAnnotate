@@ -419,10 +419,10 @@ test('convertUint8ArrayToInt32Array', () => {
     expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([0]))
 
     val = [20]
-    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([20]))
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([335544320]))
 
     val = [30]
-    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([30]))
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([503316480]))
 
     val = [256]
     expect(() => {Util.convertUint8ArrayToInt32Array(val)}).toThrow(Error)
@@ -431,10 +431,10 @@ test('convertUint8ArrayToInt32Array', () => {
     expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([0]))
 
     val = [10, 0]
-    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([2560]))
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([167772160]))
 
     val = [10, 0, 0]
-    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([655360]))
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([167772160]))
 
     val = [10, 0, 0, 0]
     expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([167772160]))
@@ -443,7 +443,10 @@ test('convertUint8ArrayToInt32Array', () => {
     expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([336199680, 0]))
 
     val = [10, 0, 0, 0, 10]
-    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([167772160, 10]))
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([167772160, 167772160]))
+
+    val = [0, 0, 0, 10]
+    expect(Util.convertUint8ArrayToInt32Array(val)).toEqual(new Int32Array([10]))
 })
 
 test('convertInt32ArrayToUint8Array', () => {
