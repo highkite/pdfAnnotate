@@ -195,6 +195,6 @@ test('ParseRC4EncryptedRevision3V2Standard', () => {
 })
 
 test('parseDocument_test10.pdf', () => {
-    let doc = new PDFDocumentParser(new Uint8Array(loadFromFile("./test_documents/test10.pdf")))
+    let doc = new PDFDocumentParser(new Uint8Array(loadFromFile("./test_documents/pdfs/calrgb.pdf")))
     let annotations = doc.extractAnnotations()[0]
 })

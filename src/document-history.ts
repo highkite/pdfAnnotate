@@ -331,7 +331,7 @@ export class CrossReferenceTable {
         this.refs = this.refs.concat(this.extractReferences(ref_start, first_header.count, first_header.id))
 
         // extract remaining references
-        start_ptr = ref_start + first_header.count * 20
+        start_ptr = Util.skipSpaces(this.data, ref_start + first_header.count * 20)
 
         while (this.data[start_ptr] !== 116) { // 116 = 't' start of the word trailer that concludes the crosssite reference section
             let header = this.extractSubSectionHeader(start_ptr)
@@ -342,7 +342,7 @@ export class CrossReferenceTable {
 
             this.refs = this.refs.concat(references)
 
-            start_ptr = ref_start + header.count * 20
+            start_ptr = Util.skipSpaces(this.data, ref_start + header.count * 20)
         }
 
         this.trailer = this.extractTrailer(start_ptr)
