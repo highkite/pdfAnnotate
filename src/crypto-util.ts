@@ -47,6 +47,20 @@ export class CryptoUtil {
     }
 
     /**
+     * Converts a given word array into a uint8 array
+     * */
+    public static convertWordArrayToByteArray(arr : WordArray) : Uint8Array {
+        return Util.convertInt32ArrayToUint8Array(arr.words)
+    }
+
+    /**
+     * Converts a number into a little endian byte array
+     * */
+    public static convertNumberToLittleEndianByteArray(nbr : number) : Uint8Array {
+        return Util.convertInt32ArrayToUint8Array(new Int32Array([nbr])).reverse()
+    }
+
+    /**
      * Returns the MD5 hash
      * */
     public static MD5(data : WordArray | Uint8Array) : WordArray {

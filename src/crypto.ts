@@ -1,4 +1,5 @@
 import { Util } from './util';
+import {ReferencePointer} from './parser'
 import { CryptoUtil } from './crypto-util';
 
 export interface CryptoConfiguration {
@@ -15,11 +16,29 @@ export interface CryptoConfiguration {
 }
 
 export interface CryptoEngine {
-    encrypt() : void;
-    decrypt() : void;
+    encrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array;
+    decrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array;
 
     isUserPasswordCorrect() : boolean;
     isOwnerPasswordCorrect() : boolean;
+}
+
+export class IdentityEngine implements CryptoEngine {
+    encrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array {
+        return data
+    }
+
+    decrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array {
+        return data
+    }
+
+    isUserPasswordCorrect() : boolean {
+        return true
+    }
+
+    isOwnerPasswordCorrect() : boolean {
+        return true
+    }
 }
 
 export class RC4CryptoEngine implements CryptoEngine {
@@ -29,10 +48,28 @@ export class RC4CryptoEngine implements CryptoEngine {
     constructor(private cryptoConfiguration: CryptoConfiguration, private file_id : Uint8Array[] | undefined) {
     }
 
-    encrypt() : void {
+    encrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array {
+        if (!reference)
+            throw Error("Undefined reference pointer of encrypted object")
+
+        let encryptionKey = this.computeEncryptionKey()
+
+        let adapted_key = new Uint8Array(encryptionKey.length + 5)
+        adapted_key.set(encryptionKey, 0)
+        let obj = CryptoUtil.convertNumberToLittleEndianByteArray(reference.obj)
+        adapted_key.set(obj.slice(0, 3), encryptionKey.length)
+        let gen = CryptoUtil.convertNumberToLittleEndianByteArray(reference.generation)
+        adapted_key.set(gen.slice(0, 2), encryptionKey.length + 3)
+
+        let key_hash = CryptoUtil.MD5(adapted_key)
+
+        let encrypted = CryptoUtil.RC4(data, key_hash)
+
+        return CryptoUtil.convertWordArrayToByteArray(encrypted)
     }
 
-    decrypt() : void {
+    decrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array {
+        return this.encrypt(data, reference)
     }
 
     /**
@@ -52,7 +89,7 @@ export class RC4CryptoEngine implements CryptoEngine {
         if (!this.cryptoConfiguration.permissions)
             throw Error("Permissions not set")
 
-        let permissions = Util.convertInt32ArrayToUint8Array([this.cryptoConfiguration.permissions]).reverse()
+        let permissions = CryptoUtil.convertNumberToLittleEndianByteArray(this.cryptoConfiguration.permissions)
 
         if (!this.file_id || this.file_id.length === 0)
             throw Error("File ID not set")
@@ -71,7 +108,7 @@ export class RC4CryptoEngine implements CryptoEngine {
             h = CryptoUtil.MD5(h)
         }
 
-        this.encryptionKey = Util.convertInt32ArrayToUint8Array(new Int32Array(h.words))
+        this.encryptionKey = CryptoUtil.convertWordArrayToByteArray(h)
 
         return this.encryptionKey
     }
@@ -100,7 +137,7 @@ export class RC4CryptoEngine implements CryptoEngine {
             x = CryptoUtil.RC4(x, CryptoUtil.xorBytes(enc_key, i))
         }
 
-        this.computed_user_password = Util.convertInt32ArrayToUint8Array(new Int32Array(x.words))
+        this.computed_user_password = CryptoUtil.convertWordArrayToByteArray(x)
 
         return this.computed_user_password
     }

@@ -1,7 +1,7 @@
 import { Util, PDFVersion } from './util';
 import { ObjectUtil } from './object-util'
 import { DocumentHistory, ObjectLookupTable, XRef } from './document-history';
-import { CryptoEngine, CryptoConfiguration, RC4CryptoEngine } from './crypto';
+import { CryptoEngine, IdentityEngine, CryptoConfiguration, RC4CryptoEngine } from './crypto';
 
 /**
  * Note that this parser does not parses the PDF file completely. It lookups those
@@ -37,19 +37,19 @@ export interface ReferencePointer {
 export class Annotation {
     page: number = -1// the target page of the annotation
     type: string = ""// the sub type of the array (Text, Highlight, ...)
-    object_id: ReferencePointer | null = null// an unused object id
+    object_id: ReferencePointer | undefined = undefined// an unused object id
     id: string = ""// unique annation identifier
     rect: number[] = []// the location of the annotation
     author: string = ""// the author of the annotation
-    pageReference: Page | null = null// The reference to the page object to which the annotation is added
+    pageReference: Page | undefined = undefined// The reference to the page object to which the annotation is added
     updateDate: string = ""// The date when the annotation was created or updated
     contents?: string // Text that shall be displayed for the annotation
     annotation_flag?: number // See PDF spcecification 'Annotation Flag'
     appearance_dictionary?: any // control the appearance of the annotation
     appearance_state?: any // change the appearance according to states
-    border?: Border | null = null// define the border
-    color?: Color | null = null// the color set
-    fill?: Color | null = null// the fill color set
+    border?: Border | undefined = undefined// define the border
+    color?: Color | undefined = undefined// the color set
+    fill?: Color | undefined = undefined// the fill color set
     opacity?: number // the opacity value (CA called in the PDF spec)
     richtext?: string // rich text string displayed in the popup window when the annotation is opened
     initiallyOpen?: boolean // flag to describe whether the annotation shall initially be open
@@ -79,7 +79,7 @@ export class Annotation {
     is_deleted?: boolean
 
 
-    constructor(private data: Uint8Array = new Uint8Array([])) {
+    constructor(private data: Uint8Array = new Uint8Array([]), private cryptoInterface : CryptoInterface = new CryptoInterface()) {
         this.data = data
     }
 
@@ -93,15 +93,15 @@ export class Annotation {
 
         annot_obj = annot_obj.value
 
-        this.type = annot_obj["/Type"]
+        this.type = annot_obj["/Subtype"]
         this.rect = annot_obj["/Rect"]
         this.pageReference = page
-        this.updateDate = annot_obj["/M"]
+        this.updateDate = Util.convertUnicodeToString(this.cryptoInterface.decrypt(annot_obj["/M"], this.object_id))
         this.border = annot_obj["/Border"]
         this.color = annot_obj["/C"]
         this.author = annot_obj["/T"]
         this.author = annot_obj["/NM"]
-        this.contents = annot_obj["/Contents"]
+        this.contents = Util.convertUnicodeToString(this.cryptoInterface.decrypt(annot_obj["/Contents"], this.object_id))
         this.quadPoints = annot_obj["/Quadpoints"]
         this.inkList = annot_obj["/Inklist"]
     }
@@ -265,27 +265,37 @@ export class Page {
 class CryptoInterface {
     cryptoConfiguration : CryptoConfiguration = {version: undefined, revision: undefined, filter: undefined, user_pwd : "", owner_pwd : "", length: undefined, permissions: undefined, owner_pwd_c: undefined, user_pwd_c: undefined}
 
-    cryptoEngine : CryptoEngine | undefined = undefined
+    cryptoEngine : CryptoEngine = new IdentityEngine()
 
-    constructor(private data: Uint8Array, private documentHistory: DocumentHistory, ptr: XRef, user_pwd: string, owner_pwd: string) {
+    constructor(private data?: Uint8Array, private documentHistory?: DocumentHistory, ptr?: XRef, user_pwd?: string, owner_pwd?: string) {
         this.data = data
         this.documentHistory = documentHistory
-        this.cryptoConfiguration.user_pwd = user_pwd
-        this.cryptoConfiguration.owner_pwd = owner_pwd
+        this.cryptoConfiguration.user_pwd = user_pwd ? user_pwd : ""
+        this.cryptoConfiguration.owner_pwd = owner_pwd ? owner_pwd : ""
 
-        this.extractEncryptionDictionary(ptr)
+        if (ptr && this.documentHistory) {
+            this.extractEncryptionDictionary(ptr)
 
-        // setup crypto-engine
+            // setup crypto-engine
 
-        if (this.cryptoConfiguration.version === 1) {
-            console.log("RC4 Encryption with key length 40 bits")
-        } else if(this.cryptoConfiguration.version === 2) {
-            this.cryptoEngine = new RC4CryptoEngine(this.cryptoConfiguration, this.documentHistory.getRecentUpdate().id)
-        } else if(this.cryptoConfiguration.version === 4) {
-            console.log("Some fancy AES encryption")
-        } else {
-            throw Error(`Unsupported Encryption ${this.cryptoConfiguration.version}`)
+            if (this.cryptoConfiguration.version === 1) {
+                console.log("RC4 Encryption with key length 40 bits")
+            } else if(this.cryptoConfiguration.version === 2) {
+                this.cryptoEngine = new RC4CryptoEngine(this.cryptoConfiguration, this.documentHistory.getRecentUpdate().id)
+            } else if(this.cryptoConfiguration.version === 4) {
+                console.log("Some fancy AES encryption")
+            } else {
+                throw Error(`Unsupported Encryption ${this.cryptoConfiguration.version}`)
+            }
         }
+    }
+
+    encrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array {
+        return this.cryptoEngine.encrypt(data, reference)
+    }
+
+    decrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array {
+        return this.cryptoEngine.decrypt(data, reference)
     }
 
     isUserPasswordCorrect() : boolean {
@@ -308,6 +318,14 @@ class CryptoInterface {
      * Extracts the enrcyption dictionary
      * */
     extractEncryptionDictionary(ptr : XRef) {
+        if(!this.documentHistory) {
+            throw Error("Documenthistory not configured")
+        }
+
+        if(!this.data) {
+            throw Error("Data not configured")
+        }
+
         let obj_table = this.documentHistory.createObjectLookupTable()
         let page_obj = ObjectUtil.extractObject(this.data, ptr, obj_table)
 
@@ -358,12 +376,11 @@ export class PDFDocumentParser {
 
             // verify keys
             if(!this.cryptoInterface.isUserPasswordCorrect()) {
-                throw Error("Invalid user password")
+                if(!this.cryptoInterface.isOwnerPasswordCorrect()) {
+                    throw Error("No valid user credentials")
+                }
             }
 
-            if(!this.cryptoInterface.isOwnerPasswordCorrect()) {
-                throw Error("Invalid owner password")
-            }
         }
     }
 
@@ -479,7 +496,7 @@ export class PDFDocumentParser {
             let pageAnnots: Annotation[] = []
 
             for (let refPtr of annotationReferences) {
-                let a = new Annotation(this.data)
+                let a = new Annotation(this.data, this.cryptoInterface)
                 a.extract(obj_table[refPtr.obj], page, obj_table)
                 a.page = i
                 pageAnnots.push(a)
