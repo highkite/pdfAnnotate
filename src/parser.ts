@@ -96,14 +96,30 @@ export class Annotation {
         this.type = annot_obj["/Subtype"]
         this.rect = annot_obj["/Rect"]
         this.pageReference = page
-        this.updateDate = Util.convertUnicodeToString(this.cryptoInterface.decrypt(annot_obj["/M"], this.object_id))
-        this.border = annot_obj["/Border"]
-        this.color = annot_obj["/C"]
-        this.author = Util.convertUnicodeToString(this.cryptoInterface.decrypt(annot_obj["/T"], this.object_id))
-        this.id = Util.convertUnicodeToString(this.cryptoInterface.decrypt(annot_obj["/NM"], this.object_id))
-        this.contents = Util.convertUnicodeToString(this.cryptoInterface.decrypt(annot_obj["/Contents"], this.object_id))
-        this.quadPoints = annot_obj["/QuadPoints"]
-        this.inkList = annot_obj["/Inklist"]
+
+        if (annot_obj["/M"])
+            this.updateDate = Util.convertUnicodeToString(this.cryptoInterface.decrypt(annot_obj["/M"], this.object_id))
+
+        if (annot_obj["/Border"])
+            this.border = annot_obj["/Border"]
+
+        if (annot_obj["/C"])
+            this.color = annot_obj["/C"]
+
+        if (annot_obj["/T"])
+            this.author = Util.convertUnicodeToString(this.cryptoInterface.decrypt(annot_obj["/T"], this.object_id))
+
+        if (annot_obj["/NM"])
+            this.id = Util.convertUnicodeToString(this.cryptoInterface.decrypt(annot_obj["/NM"], this.object_id))
+
+        if (annot_obj["/Contents"])
+            this.contents = Util.convertUnicodeToString(this.cryptoInterface.decrypt(annot_obj["/Contents"], this.object_id))
+
+        if (annot_obj["/QuadPoints"])
+            this.quadPoints = annot_obj["/QuadPoints"]
+
+        if (annot_obj["/Inklist"])
+            this.inkList = annot_obj["/Inklist"]
     }
 }
 
