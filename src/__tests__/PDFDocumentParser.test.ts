@@ -179,8 +179,8 @@ test('ParseRC4EncryptedRevision3V2Standard', () => {
     expect(annotations[0].border).toEqual([0, 0, 1])
     expect(annotations[0].color).toEqual([1, 1, 0])
     expect(annotations[0].updateDate).toBe("D:20190101153417")
+    expect(annotations[0].quadPoints).toEqual([69.9398, 58.1418, 96.5932, 58.1418, 69.9398, 47.3526, 96.5932, 47.3526])
 
-    console.log(annotations[1])
     expect(annotations[1].object_id!.obj).toBe(8)
     expect(annotations[1].object_id!.generation).toBe(0)
     expect(annotations[1].type).toBe('/Text')
@@ -190,4 +190,6 @@ test('ParseRC4EncryptedRevision3V2Standard', () => {
     expect(annotations[1].color).toEqual([1, 1, 0])
     expect(annotations[1].updateDate).toBe("D:20190101154225")
     expect(annotations[1].contents).toBe("Pop up note")
+    expect(annotations[1].author).toBe("highway")
+    expect(Util.convertStringToAscii(annotations[1].id)).toEqual([111, 107, 117, 108, 97, 114, 45, 123, 53, 53, 49, 102, 49, 99, 49, 99, 45, 50, 50, 52, 100, 45, 52, 57, 56, 50, 45, 98, 53, 99, 101, 45, 51, 52, 83, 52, 52, 56, 51, 98, 102, 56, 100, 51, 125, 65, 127, 116])
 })

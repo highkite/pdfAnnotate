@@ -99,10 +99,10 @@ export class Annotation {
         this.updateDate = Util.convertUnicodeToString(this.cryptoInterface.decrypt(annot_obj["/M"], this.object_id))
         this.border = annot_obj["/Border"]
         this.color = annot_obj["/C"]
-        this.author = annot_obj["/T"]
-        this.author = annot_obj["/NM"]
+        this.author = Util.convertUnicodeToString(this.cryptoInterface.decrypt(annot_obj["/T"], this.object_id))
+        this.id = Util.convertUnicodeToString(this.cryptoInterface.decrypt(annot_obj["/NM"], this.object_id))
         this.contents = Util.convertUnicodeToString(this.cryptoInterface.decrypt(annot_obj["/Contents"], this.object_id))
-        this.quadPoints = annot_obj["/Quadpoints"]
+        this.quadPoints = annot_obj["/QuadPoints"]
         this.inkList = annot_obj["/Inklist"]
     }
 }
