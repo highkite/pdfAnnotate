@@ -324,3 +324,21 @@ test('extractAnnot_1', () => {
     expect(res.id.generation).toBe(0)
     expect(res.value["/A"]["/URI"]).toEqual(new Uint8Array(Util.convertHexStringToByteArray("EB345AA632781A90E90781A4A0BF42680D1F1AD67910B293798B0AFFED8407CE12684F21B7F471D96DCE4864CAB970A98E7F911C207A12C6E6900D789BC13AE87E76A9D6B8EDDADE7A53EAA521E6421295EA31305C")))
 })
+
+test('extractAnnot_2', () => {
+    /*
+     * 87 0 obj
+     * << /Type /Annot /Subtype /Link
+     * /A << /D (cite.Narayanan2017) /S /GoTo >> /BS << /S /S /W 1 >>
+     * /Border [ 0 0 1 ] /C [ 0 1 0 ] /H /I
+     * /Rect [ 288.237 385.914 295.21 394.701 ] >>
+     * */
+    let value = "38372030206f626a0a3c3c202f54797065202f416e6e6f74202f53756274797065202f4c696e6b0a2f41203c3c202f442028636974652e4e61726179616e616e3230313729202f53202f476f546f203e3e202f4253203c3c202f53202f53202f572031203e3e0a2f426f72646572205b203020302031205d202f43205b203020312030205d202f48202f490a2f52656374205b203238382e323337203338352e393134203239352e3231203339342e373031205d203e3e0a656e646f626a"
+    let res = ObjectUtil.extractObject(new Uint8Array(Util.convertHexStringToByteArray(value)), 0)
+
+    expect(res.value["/Type"]).toBe("/Annot")
+    expect(res.value["/Subtype"]).toBe("/Link")
+    expect(res.id.obj).toBe(87)
+    expect(res.id.generation).toBe(0)
+    expect(res.value["/Rect"]).toEqual([ 288.237, 385.914, 295.21, 394.701 ])
+})

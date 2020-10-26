@@ -4,8 +4,8 @@ node_modules
 *.swp
 *.swo
 
-*.pdf
 
+test_documents/pdfs/
 helper.js
 
 core

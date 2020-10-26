@@ -169,7 +169,7 @@ test('ParseRC4EncryptedRevision3V2Standard', () => {
      *
      * ==> RC4 128 bit = 16 byte key length
      * */
-    let doc = new PDFDocumentParser(new Uint8Array(loadFromFile("./test17.pdf")), "", "123")
+    let doc = new PDFDocumentParser(new Uint8Array(loadFromFile("./test_documents/test17.pdf")), "", "123")
     let annotations = doc.extractAnnotations()[0]
     expect(annotations[0].object_id!.obj).toBe(7)
     expect(annotations[0].object_id!.generation).toBe(0)
@@ -192,4 +192,9 @@ test('ParseRC4EncryptedRevision3V2Standard', () => {
     expect(annotations[1].contents).toBe("Pop up note")
     expect(annotations[1].author).toBe("highway")
     expect(Util.convertStringToAscii(annotations[1].id)).toEqual([111, 107, 117, 108, 97, 114, 45, 123, 53, 53, 49, 102, 49, 99, 49, 99, 45, 50, 50, 52, 100, 45, 52, 57, 56, 50, 45, 98, 53, 99, 101, 45, 51, 52, 83, 52, 52, 56, 51, 98, 102, 56, 100, 51, 125, 65, 127, 116])
+})
+
+test('parseDocument_test10.pdf', () => {
+    let doc = new PDFDocumentParser(new Uint8Array(loadFromFile("./test_documents/test10.pdf")))
+    let annotations = doc.extractAnnotations()[0]
 })
