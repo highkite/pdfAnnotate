@@ -1,6 +1,8 @@
 import { Util } from './util';
 import * as crypto from "crypto-js";
 
+export type WordArray = crypto.lib.WordArray
+
 export class CryptoUtil {
     public static PADDING_STRING : number[] = [
         0x28,
@@ -39,7 +41,7 @@ export class CryptoUtil {
     /**
      * Transforms a uint8array into a crypto-js word array
      * */
-    public static convertToWordArray(arr : Uint8Array) : crypto.lib.WordArray {
+    public static convertToWordArray(arr : Uint8Array) : WordArray {
         let new_val_int32 = Util.convertUint8ArrayToInt32Array(arr)
         return crypto.lib.WordArray.create(Array.from(new_val_int32), arr.length)
     }
@@ -47,7 +49,7 @@ export class CryptoUtil {
     /**
      * Returns the MD5 hash
      * */
-    public static MD5(data : crypto.lib.WordArray | Uint8Array) : crypto.lib.WordArray {
+    public static MD5(data : WordArray | Uint8Array) : WordArray {
         if (data instanceof Uint8Array) {
             data = CryptoUtil.convertToWordArray(data)
         }
@@ -58,14 +60,14 @@ export class CryptoUtil {
     /**
      * Returns the MD5 hash as hex string
      * */
-    public static MD5Hex(data : crypto.lib.WordArray | Uint8Array) : string {
+    public static MD5Hex(data : WordArray | Uint8Array) : string {
         return CryptoUtil.MD5(data).toString(crypto.enc.Hex)
     }
 
     /**
      * Returns the RC4 encrypted data
      * */
-    public static RC4(data : crypto.lib.WordArray | Uint8Array, key : crypto.lib.WordArray | Uint8Array) : crypto.lib.WordArray {
+    public static RC4(data : WordArray | Uint8Array, key : WordArray | Uint8Array) : WordArray {
         if (data instanceof Uint8Array) {
             data = CryptoUtil.convertToWordArray(data)
         }
@@ -80,7 +82,7 @@ export class CryptoUtil {
     /**
      * Returns the RC4 encrypted data as hex string
      * */
-    public static RC4Hex(data : crypto.lib.WordArray | Uint8Array, key : crypto.lib.WordArray | Uint8Array) : string {
+    public static RC4Hex(data : WordArray | Uint8Array, key : WordArray | Uint8Array) : string {
         return CryptoUtil.RC4(data, key).toString(crypto.enc.Hex)
     }
 
@@ -100,5 +102,17 @@ export class CryptoUtil {
         }
 
         return ret_val
+    }
+
+    /**
+     * Xors every byte of the provided _byte_array with the value _k
+     * */
+    public static xorBytes(_byte_array : Uint8Array, _k : number) : WordArray {
+        let _ret_val : number[] = []
+        for (let i = 0; i < _byte_array.length; ++i){
+            _ret_val.push(_byte_array[i] ^ _k)
+        }
+
+        return CryptoUtil.convertToWordArray(new Uint8Array(_ret_val))
     }
 }

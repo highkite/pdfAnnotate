@@ -1,4 +1,5 @@
 import { ArrayUtil } from '../array-util'
+import { Util } from '../util';
 import { encode } from './Data2'
 
 test('extractArray', () => {
@@ -43,8 +44,8 @@ test('extractArray_3', () => {
 test('extractArray_4', () => {
     let data = encode(`[<9BFD8283F629F168063225BF31A92429> <6A28637CD303B944B7A012622D2884DD>]`)
     expect(ArrayUtil.extractArray(data, 0).end_index).toEqual(data.length - 1)
-    expect(ArrayUtil.extractArray(data, 0).result[0]).toEqual("9BFD8283F629F168063225BF31A92429")
-    expect(ArrayUtil.extractArray(data, 0).result[1]).toEqual("6A28637CD303B944B7A012622D2884DD")
+    expect(ArrayUtil.extractArray(data, 0).result[0]).toEqual(new Uint8Array(Util.convertHexStringToByteArray("9BFD8283F629F168063225BF31A92429")))
+    expect(ArrayUtil.extractArray(data, 0).result[1]).toEqual(new Uint8Array(Util.convertHexStringToByteArray("6A28637CD303B944B7A012622D2884DD")))
 
 })
 
@@ -52,8 +53,8 @@ test('extractArray_4', () => {
 test('extractArray_5', () => {
     let data = encode(`[(String 1) (String 2)]`)
     expect(ArrayUtil.extractArray(data, 0).end_index).toEqual(data.length - 1)
-    expect(ArrayUtil.extractArray(data, 0).result[0]).toEqual("String 1")
-    expect(ArrayUtil.extractArray(data, 0).result[1]).toEqual("String 2")
+    expect(Util.convertAsciiToString(ArrayUtil.extractArray(data, 0).result[0])).toEqual("String 1")
+    expect(Util.convertAsciiToString(ArrayUtil.extractArray(data, 0).result[1])).toEqual("String 2")
 
 })
 

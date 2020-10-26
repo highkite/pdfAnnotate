@@ -160,5 +160,14 @@ test('AnnotationExtract', () => {
 })
 
 test('ParseRC4EncryptedRevision3V2Standard', () => {
-    let doc = new PDFDocumentParser(new Uint8Array(loadFromFile("./test17.pdf")))
+    /**
+     * Encrypted PDF
+     * /V 2
+     * /R 3
+     * /Length 128
+     * /Filter /Standard
+     *
+     * ==> RC4 128 bit = 16 byte key length
+     * */
+    let doc = new PDFDocumentParser(new Uint8Array(loadFromFile("./test17.pdf")), "", "123")
 })

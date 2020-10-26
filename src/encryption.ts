@@ -178,7 +178,6 @@ export class Encryption {
         let f_xorbytes = (_byte_array : Uint8Array, _k : number) =>  {
             let _ret_val : number[] = []
             for (let i = 0; i < _byte_array.length; ++i){
-                console.log("-- " + _byte_array[i] + " ^ " + _k + " = " + (_byte_array[i] ^ _k))
                 _ret_val.push(_byte_array[i] ^ _k)
             }
 
@@ -527,7 +526,6 @@ export class Encryption {
 
         for (let i = 0; i < 50; ++i) {
             h = crypto.MD5(h)
-            console.log(">>" + h.toString(crypto.enc.Hex).length)
         }
 
         return this.convertInt32ArrayToUint8Array(new Int32Array(h.words))

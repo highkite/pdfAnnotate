@@ -281,7 +281,7 @@ export class Util {
 
         data = data.slice(string_start + 1, string_end)
 
-        return { result: Util.convertUnicodeToString(data), end_index: string_end }
+        return { result: new Uint8Array(Util.convertHexStringToByteArray(data)), end_index: string_end }
     }
 
     /**
@@ -293,7 +293,7 @@ export class Util {
 
         data = data.slice(string_start + 1, string_end)
 
-        return { result: Util.convertUnicodeToString(data), end_index: string_end }
+        return { result: data, end_index: string_end }
     }
 
     /**
@@ -439,8 +439,12 @@ export class Util {
      * Converts a hex string into a byte array
      * That means two consecutive hex values are merged into one byte that is appended to the array
      * */
-    public static convertHexStringToByteArray(hex_string : string) : number[] {
+    public static convertHexStringToByteArray(hex_string : string | Uint8Array | number[]) : number[] {
         let ret_val : number[] = []
+
+        if (typeof hex_string !== "string") {
+            hex_string = Util.convertAsciiToString(hex_string)
+        }
 
         for (let i = 0; i < hex_string.length - 1; i+= 2) {
             ret_val.push((parseInt(hex_string.charAt(i), 16) << 4) + parseInt(hex_string.charAt(i + 1), 16))
@@ -448,6 +452,7 @@ export class Util {
 
         if (hex_string.length % 2 !== 0) {
             ret_val.push(parseInt(hex_string.charAt(hex_string.length - 1), 16))
+
         }
 
         return ret_val

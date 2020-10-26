@@ -1,6 +1,7 @@
 import { Util, PDFVersion } from './util';
 import { ObjectUtil } from './object-util'
 import { DocumentHistory, ObjectLookupTable, XRef } from './document-history';
+import { CryptoEngine, CryptoConfiguration, RC4CryptoEngine } from './crypto';
 
 /**
  * Note that this parser does not parses the PDF file completely. It lookups those
@@ -262,36 +263,45 @@ export class Page {
  * Provides a configured interface to handle the encryption and decryption of PDFs
  * */
 class CryptoInterface {
-    version : number | undefined // /V parameter
-    revision : number | undefined // /R revision number
-    filter : string | undefined // The selected filter
-    user_pwd_c : Uint8Array | undefined // /U The user password hash
-    owner_pwd_c : Uint8Array | undefined // /O The owner password hash
-    length : number | undefined // /Length value
-    permissions : number | undefined // /P permissions
+    cryptoConfiguration : CryptoConfiguration = {version: undefined, revision: undefined, filter: undefined, user_pwd : "", owner_pwd : "", length: undefined, permissions: undefined, owner_pwd_c: undefined, user_pwd_c: undefined}
 
-    user_pwd: string // the user password
-    owner_pwd: string // the owner password
+    cryptoEngine : CryptoEngine | undefined = undefined
 
     constructor(private data: Uint8Array, private documentHistory: DocumentHistory, ptr: XRef, user_pwd: string, owner_pwd: string) {
         this.data = data
         this.documentHistory = documentHistory
-        this.user_pwd = user_pwd
-        this.owner_pwd = owner_pwd
+        this.cryptoConfiguration.user_pwd = user_pwd
+        this.cryptoConfiguration.owner_pwd = owner_pwd
 
         this.extractEncryptionDictionary(ptr)
 
         // setup crypto-engine
 
-        if (this.version === 1) {
+        if (this.cryptoConfiguration.version === 1) {
             console.log("RC4 Encryption with key length 40 bits")
-        } else if(this.version === 2) {
-            console.log("RC4 Encryption with an arbitrary key length")
-        } else if(this.version === 4) {
+        } else if(this.cryptoConfiguration.version === 2) {
+            this.cryptoEngine = new RC4CryptoEngine(this.cryptoConfiguration, this.documentHistory.getRecentUpdate().id)
+        } else if(this.cryptoConfiguration.version === 4) {
             console.log("Some fancy AES encryption")
         } else {
-            throw Error(`Unsupported Encryption ${this.version}`)
+            throw Error(`Unsupported Encryption ${this.cryptoConfiguration.version}`)
         }
+    }
+
+    isUserPasswordCorrect() : boolean {
+        if (!this.cryptoEngine) {
+            throw Error("Crypto engine not configured")
+        }
+
+        return this.cryptoEngine.isUserPasswordCorrect()
+    }
+
+    isOwnerPasswordCorrect() : boolean {
+        if (!this.cryptoEngine) {
+            throw Error("Crypto engine not configured")
+        }
+
+        return this.cryptoEngine.isOwnerPasswordCorrect()
     }
 
     /**
@@ -301,13 +311,13 @@ class CryptoInterface {
         let obj_table = this.documentHistory.createObjectLookupTable()
         let page_obj = ObjectUtil.extractObject(this.data, ptr, obj_table)
 
-        this.version = page_obj.value["/V"]
-        this.revision = page_obj.value["/R"]
-        this.filter = page_obj.value["/Filter"]
-        this.user_pwd_c = page_obj.value["/U"]
-        this.owner_pwd_c = page_obj.value["/O"]
-        this.length = page_obj.value["/Length"]
-        this.permissions = page_obj.value["/P"]
+        this.cryptoConfiguration.version = page_obj.value["/V"]
+        this.cryptoConfiguration.revision = page_obj.value["/R"]
+        this.cryptoConfiguration.filter = page_obj.value["/Filter"]
+        this.cryptoConfiguration.user_pwd_c = page_obj.value["/U"]
+        this.cryptoConfiguration.owner_pwd_c = page_obj.value["/O"]
+        this.cryptoConfiguration.length = page_obj.value["/Length"]
+        this.cryptoConfiguration.permissions = page_obj.value["/P"]
     }
 }
 
@@ -324,6 +334,8 @@ export class PDFDocumentParser {
     private catalogObject: CatalogObject | undefined = undefined
 
     private pageTree: PageTree | undefined = undefined
+
+    private cryptoInterface: CryptoInterface | undefined = undefined
 
     constructor(private data: Uint8Array, userpwd : string = "", ownerpwd : string = "") {
         this.data = new Uint8Array(data)
@@ -342,8 +354,16 @@ export class PDFDocumentParser {
 
             let enc_obj_ptr = obj_table[enc_obj.obj]
 
-            let crypto_interface = new CryptoInterface(this.data, this.documentHistory, enc_obj_ptr, userpwd, ownerpwd)
-            console.log(enc_obj_ptr)
+            this.cryptoInterface = new CryptoInterface(this.data, this.documentHistory, enc_obj_ptr, userpwd, ownerpwd)
+
+            // verify keys
+            if(!this.cryptoInterface.isUserPasswordCorrect()) {
+                throw Error("Invalid user password")
+            }
+
+            if(!this.cryptoInterface.isOwnerPasswordCorrect()) {
+                throw Error("Invalid owner password")
+            }
         }
     }
 

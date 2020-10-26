@@ -302,25 +302,33 @@ test('extractNumber', () => {
 
 test('extractString', () => {
     let data = new Uint8Array([40, 97, 98, 99, 41])
-    expect(Util.extractString(data, 0).result).toEqual('abc')
+    expect(Util.extractString(data, 0).result).toEqual(new Uint8Array([97, 98, 99]))
     expect(Util.extractString(data, 0).end_index).toEqual(4)
 
     data = new Uint8Array([32, 10, 13, 40, 97, 98, 99, 41])
-    expect(Util.extractString(data, 0).result).toEqual('abc')
+    expect(Util.extractString(data, 0).result).toEqual(new Uint8Array([97, 98, 99]))
     expect(Util.extractString(data, 0).end_index).toEqual(7)
 
     data = new Uint8Array([32, 10, 13, 40, 97, 98, 99, 41, 32])
-    expect(Util.extractString(data, 0).result).toEqual('abc')
+    expect(Util.extractString(data, 0).result).toEqual(new Uint8Array([97, 98, 99]))
     expect(Util.extractString(data, 0).end_index).toEqual(7)
+
+    data = new Uint8Array(Util.convertHexStringToByteArray("286db3276485b36a7440877d6fa911d11a0000000000000000000000000000000029"))
+    expect(Util.extractString(data, 0).result).toEqual(new Uint8Array([109, 179, 39, 100, 133, 179, 106, 116, 64, 135, 125, 111, 169, 17, 209, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
+    expect(Util.extractString(data, 0).end_index).toEqual(33)
 })
 
 test('extractHexString', () => {
-    let data = encode(`<abc>`)
-    expect(Util.extractHexString(data, 0).result).toEqual('abc')
+    let data = encode(`<ab>`)
+    expect(Util.extractHexString(data, 0).result).toEqual(new Uint8Array([171]))
+    expect(Util.extractHexString(data, 0).end_index).toEqual(3)
+
+    data = encode(`<abc>`)
+    expect(Util.extractHexString(data, 0).result).toEqual(new Uint8Array([171, 12]))
     expect(Util.extractHexString(data, 0).end_index).toEqual(4)
 
     data = encode(` <abc> `)
-    expect(Util.extractHexString(data, 0).result).toEqual('abc')
+    expect(Util.extractHexString(data, 0).result).toEqual(new Uint8Array([171, 12]))
     expect(Util.extractHexString(data, 0).end_index).toEqual(5)
 })
 
@@ -405,6 +413,16 @@ test('convertHexStringToByteArray', () => {
     expect(Util.convertHexStringToByteArray(val)).toEqual([171])
     val = "Z"
     expect(Util.convertHexStringToByteArray(val)).toEqual([NaN])
+    val = "0a0b0c"
+    expect(Util.convertHexStringToByteArray(val)).toEqual([10, 11, 12])
+    val = "0a0b000c"
+    expect(Util.convertHexStringToByteArray(val)).toEqual([10, 11, 0, 12])
+    val = "0a0b00000c"
+    expect(Util.convertHexStringToByteArray(val)).toEqual([10, 11, 0, 0, 12])
+    let val_as_byte_array : number[] = [97, 98]
+    expect(Util.convertHexStringToByteArray(val_as_byte_array)).toEqual([171])
+    val_as_byte_array = [53, 57, 53, 50, 51, 99, 98, 48, 101, 55, 48, 101, 48, 51, 99, 100, 52, 55, 57, 51, 55, 56, 54, 57, 100, 53, 52, 57, 48, 98, 102, 56]
+    expect(Util.convertHexStringToByteArray(val_as_byte_array)).toEqual([89, 82, 60, 176, 231, 14, 3, 205, 71, 147, 120, 105, 213, 73, 11, 248])
 })
 
 test('convertByteArrayToHexString', () => {

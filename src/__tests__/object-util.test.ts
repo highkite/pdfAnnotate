@@ -227,7 +227,7 @@ test('extractObject_10', () => {
     expect(res.value["/Type"]).toBe("/Annot")
     expect(res.value["/Subtype"]).toBe("/FreeText")
     expect(res.value["/Rect"]).toEqual([523.827324, 393.722208, 597.420936, 407.233728])
-    expect(res.value["/DA"]).toBe("/Invalid_font 9 Tf")
+    expect(Util.convertAsciiToString(res.value["/DA"])).toBe("/Invalid_font 9 Tf")
 
 })
 
@@ -236,7 +236,7 @@ test('extractObject_11', () => {
     expect(res.id.obj).toBe(2)
     expect(res.id.generation).toBe(0)
 
-    expect(res.value["/Type"]).toBe("Some string value")
+    expect(Util.convertAsciiToString(res.value["/Type"])).toBe("Some string value")
 })
 
 test('extractObject_12', () => {
@@ -244,7 +244,7 @@ test('extractObject_12', () => {
     expect(res.id.obj).toBe(2)
     expect(res.id.generation).toBe(0)
 
-    expect(res.value["/Type"]).toBe("/Invalid 10 TFa ")
+    expect(Util.convertAsciiToString(res.value["/Type"])).toBe("/Invalid 10 TFa ")
 })
 
 test('extractObject_13', () => {
@@ -252,8 +252,8 @@ test('extractObject_13', () => {
     expect(res.id.obj).toBe(2)
     expect(res.id.generation).toBe(0)
 
-    expect(res.value["/Type"]).toBe("D:20180503095253")
-    expect(res.value["/A"]).toBe("something")
+    expect(Util.convertAsciiToString(res.value["/Type"])).toBe("D:20180503095253")
+    expect(Util.convertAsciiToString(res.value["/A"])).toBe("something")
     expect(res.value["/Resources"].obj).toBe(9)
     expect(res.value["/Resources"].generation).toBe(0)
 })
@@ -263,8 +263,8 @@ test('extractObject_14', () => {
     expect(res.id.obj).toBe(2)
     expect(res.id.generation).toBe(0)
 
-    expect(res.value["/Type"]).toBe("D:20180503095253")
-    expect(res.value["/A"]).toBe("something")
+    expect(Util.convertAsciiToString(res.value["/Type"])).toBe("D:20180503095253")
+    expect(Util.convertAsciiToString(res.value["/A"])).toBe("something")
     expect(res.value["/Resources"].obj).toBe(9)
     expect(res.value["/Resources"].generation).toBe(0)
 })
@@ -322,5 +322,5 @@ test('extractAnnot_1', () => {
     expect(res.value["/Type"]).toBe("/Annot")
     expect(res.id.obj).toBe(1173)
     expect(res.id.generation).toBe(0)
-    expect(res.value["/A"]["/URI"]).toBe("EB345AA632781A90E90781A4A0BF42680D1F1AD67910B293798B0AFFED8407CE12684F21B7F471D96DCE4864CAB970A98E7F911C207A12C6E6900D789BC13AE87E76A9D6B8EDDADE7A53EAA521E6421295EA31305C")
+    expect(res.value["/A"]["/URI"]).toEqual(new Uint8Array(Util.convertHexStringToByteArray("EB345AA632781A90E90781A4A0BF42680D1F1AD67910B293798B0AFFED8407CE12684F21B7F471D96DCE4864CAB970A98E7F911C207A12C6E6900D789BC13AE87E76A9D6B8EDDADE7A53EAA521E6421295EA31305C")))
 })

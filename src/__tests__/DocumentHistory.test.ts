@@ -189,7 +189,8 @@ test('extractCrossReferenceTable_2', () => {
     expect(hist.updates[0].is_encrypted).toBeTruthy()
     expect(hist.updates[0].encrypt!.obj).toBe(9)
     expect(hist.updates[0].encrypt!.generation).toBe(0)
-    expect(hist.updates[0].id).toEqual(['59523cb0e70e03cd47937869d5490bf8', '8a6428c784714a64d55aaca7a9e08ba0'])
+    expect(hist.updates[0].id![0]).toEqual(new Uint8Array([89, 82, 60, 176, 231, 14, 3, 205, 71, 147, 120, 105, 213, 73, 11, 248]))
+    expect(hist.updates[0].id![1]).toEqual(new Uint8Array([138, 100, 40, 199, 132, 113, 74, 100, 213, 90, 172, 167, 169, 224, 139, 160]))
 })
 
 test('extractSubSectionHeader', () => {

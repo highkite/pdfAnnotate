@@ -24,7 +24,7 @@ interface Trailer {
     prev?: number
     is_encrypted : boolean // true, if the document is enrypted otherwise false
     encrypt?: ReferencePointer // reference to the encryption dictionary if document is encrypted
-    id? : string[] // document id
+    id? : Uint8Array[] // document id
 }
 
 var generateDefaultTrailer = () => {
@@ -43,7 +43,7 @@ export interface UpdateSection {
     root?: ReferencePointer
     is_encrypted : boolean// true, if the document is enrypted otherwise false
     encrypt?: ReferencePointer// reference to the encryption dictionary if document is encrypted
-    id?: string[]// document id
+    id?: Uint8Array[]// document id
 }
 
 /**
