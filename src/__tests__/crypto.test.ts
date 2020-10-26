@@ -15,6 +15,9 @@ test('testRC4CryptoEngine', () => {
         owner_pwd: "123"
     }, [new Uint8Array(Util.convertHexStringToByteArray("59523cb0e70e03cd47937869d5490bf8"))])
 
+    let encryption_key = engine.computeEncryptionKey()
+    expect(encryption_key).toEqual(new Uint8Array([26, 57, 1, 140, 231, 60, 202, 50, 87, 216, 84, 158, 107, 24, 14, 149]))
+
     let user_pwd = engine.computeUserPassword()
     expect(Util.convertByteArrayToHexString(user_pwd)).toBe("6DB3276485B36A7440877D6FA911D11A")
 })

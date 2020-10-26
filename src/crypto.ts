@@ -59,7 +59,6 @@ export class RC4CryptoEngine implements CryptoEngine {
 
         let file_id : Uint8Array = this.file_id[0]
 
-
         let stuff = new Uint8Array(userpwd.length + oValue.length + permissions.length + file_id.length)
         stuff.set(userpwd, 0)
         stuff.set(oValue, userpwd.length)
@@ -93,9 +92,6 @@ export class RC4CryptoEngine implements CryptoEngine {
         new_val.set(CryptoUtil.PADDING_STRING, 0)
         new_val.set(id_str_array, CryptoUtil.PADDING_STRING.length)
 
-        console.log(new_val.join(" "))
-        console.log("id_str_array: " + id_str_array.join(" "))
-
         let x = CryptoUtil.MD5(new_val)
 
         let enc_key = this.computeEncryptionKey()
@@ -124,11 +120,7 @@ export class RC4CryptoEngine implements CryptoEngine {
         if(!this.cryptoConfiguration.user_pwd_c)
             throw Error("Invalid /U value (owner password)")
 
-        console.log("---------------------------")
-        console.log("Computed user password: " + user_pwd.join(" "))
-        console.log("/U: " + this.cryptoConfiguration.user_pwd_c.join(" "))
-
-        return Util.areArraysEqual(user_pwd, this.cryptoConfiguration.user_pwd_c)
+        return Util.areArraysEqual(user_pwd, this.cryptoConfiguration.user_pwd_c.slice(0,16))
     }
 
     /**

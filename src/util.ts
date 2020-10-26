@@ -293,7 +293,7 @@ export class Util {
 
         data = data.slice(string_start + 1, string_end)
 
-        return { result: data, end_index: string_end }
+        return { result: Util.unescapeString(data), end_index: string_end }
     }
 
     /**
