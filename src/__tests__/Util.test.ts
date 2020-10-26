@@ -489,3 +489,34 @@ test('convertInt32ArrayToUint8Array', () => {
     val = [336199680, 10]
     expect(Util.convertInt32ArrayToUint8Array(val)).toEqual(new Uint8Array([20, 10, 0, 0, 0, 0, 0, 10]))
 })
+
+test('escapeString', () => {
+    let val : number[] = [97, 98, 99, 100]
+    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 98, 99, 100]))
+
+    val = [97, 98, 99, 92, 100]
+    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 98, 99, 92, 92, 100]))
+
+    val = [97, 40, 98, 99, 92, 100]
+    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 92, 40, 98, 99, 92, 92, 100]))
+
+    val = [97, 40, 41, 98, 99, 92, 100]
+    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 92, 40, 92, 41, 98, 99, 92, 92, 100]))
+})
+
+test('unescapeString', () => {
+    let val : number[] = [97, 98, 99, 100]
+    expect(Util.unescapeString(val)).toEqual(new Uint8Array([97, 98, 99, 100]))
+
+    val = [97, 98, 99, 92, 92, 100]
+    expect(Util.unescapeString(val)).toEqual(new Uint8Array([97, 98, 99, 92, 100]))
+
+    val = [97, 98, 99, 92, 92, 92, 100]
+    expect(Util.unescapeString(val)).toEqual(new Uint8Array([97, 98, 99, 92, 100]))
+
+    val = [97, 92, 40, 98, 99, 92, 92, 100]
+    expect(Util.unescapeString(val)).toEqual(new Uint8Array([97, 40, 98, 99, 92, 100]))
+
+    val = [97, 92, 40, 92, 41, 98, 99, 92, 92, 100]
+    expect(Util.unescapeString(val)).toEqual(new Uint8Array([97, 40, 41, 98, 99, 92, 100]))
+})

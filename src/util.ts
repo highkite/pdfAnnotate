@@ -545,4 +545,42 @@ export class Util {
 
         return ret_val
     }
+
+    /**
+     * Adds escape symbols to specific elements of the provided string
+     *
+     * Symbols that needs to be escaped are: \ ) (
+     * */
+    public static escapeString(array: Uint8Array | number[]) : Uint8Array {
+        let ret_val : number[] = []
+
+        for (let i = 0; i < array.length; ++i) {
+            if (array[i] === Util.LITERAL_STRING_START[0] ||
+                array[i] === Util.LITERAL_STRING_END[0] ||
+                array[i] === 92) { // 92 = '\'
+                ret_val.push(92)
+            }
+            ret_val.push(array[i])
+        }
+
+        return new Uint8Array(ret_val)
+    }
+
+    /**
+     * Removes escape symbols from the given string
+     *
+     * Symbols that needs to be escaped are: \ ) (
+     * */
+    public static unescapeString(array: Uint8Array | number[]) : Uint8Array {
+        let ret_val : number[] = []
+
+        for (let i = 0; i < array.length; ++i) {
+            if (array[i] === 92) { // 92 = '\'
+                ++i
+            }
+            ret_val.push(array[i])
+        }
+
+        return new Uint8Array(ret_val)
+    }
 }
