@@ -124,7 +124,7 @@ export class Util {
      * Skips only spaces
      * */
     public static skipSpaces(data: Uint8Array | number[], index: number = 0): number {
-        while (index < data.length && (data[index] === 10 || data[index] === 13 || data[index] === 32))++index
+        while (index < data.length && (data[index] === 10 || data[index] === 9 || data[index] === 13 || data[index] === 32))++index
 
         return index
     }

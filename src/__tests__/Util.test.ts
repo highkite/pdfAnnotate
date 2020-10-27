@@ -574,3 +574,8 @@ test('unescapeString', () => {
     val = [97, 92, 40, 92, 41, 98, 99, 92, 92, 100]
     expect(Util.unescapeString(val)).toEqual(new Uint8Array([97, 40, 41, 98, 99, 92, 100]))
 })
+
+test('skipSpaces', () => {
+    let val : number[] = [10, 13, 9, 32, 97]
+    expect(Util.skipSpaces(val, 0)).toBe(4)
+})

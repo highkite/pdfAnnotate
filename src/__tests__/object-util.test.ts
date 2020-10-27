@@ -450,3 +450,13 @@ test('extractObject_22', () => {
     expect(obj["/Info"].generation).toBe(0)
     expect(obj["/Prev"]).toBe(15489)
 })
+
+test('extractObject_23', () => {
+    let data = new Uint8Array(Util.convertHexStringToByteArray("3c3c0d0a092f526f6f742031203020520d0a092f53697a6520350d0a3e3e"))
+    let obj: any = {}
+    ObjectUtil.extractDictKeyRec(data, 2, obj)
+
+    expect(obj["/Size"]).toBe(5)
+    expect(obj["/Root"].obj).toBe(1)
+    expect(obj["/Root"].generation).toBe(0)
+})
