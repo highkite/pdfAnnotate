@@ -105,6 +105,14 @@ test('extractArray_8', () => {
     expect(ArrayUtil.extractArray(data, 0).result[4]).toBe("null")
 })
 
+test('extractArray_9', () => {
+    let data = new Uint8Array([91,40,122,101,63,145,221,120,129,65,182,230,117,42,176,129,30,131,41,32,40,61,133,44,242,236,12,213,180,243,44,79,92,41,77,16,182,25,41,32,93])
+    expect(ArrayUtil.extractArray(data, 0).start_index).toBe(0)
+    expect(ArrayUtil.extractArray(data, 0).result[0]).toEqual(new Uint8Array([ 122, 101, 63, 145, 221, 120, 129, 65, 182, 230, 117, 42, 176, 129, 30, 131 ]))
+    expect(ArrayUtil.extractArray(data, 0).result[1]).toEqual(new Uint8Array([ 61, 133, 44, 242, 236, 12, 213, 180, 243, 44, 79, 41, 77, 16, 182, 25 ]))
+    expect(ArrayUtil.extractArray(data, 0).end_index).toBe(40)
+})
+
 test('extractArrayNested', () => {
     let data = new Uint8Array([91, 91, 49, 32, 50, 32, 51, 32, 93, 32, 91, 49, 32, 50, 32, 51, 32, 93, 93])
     expect(ArrayUtil.extractArray(data, 0).start_index).toBe(0)

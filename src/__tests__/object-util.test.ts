@@ -435,3 +435,18 @@ test('extractObject_21', () => {
     expect(res.value["/Kids"][1].obj).toBe(463)
     expect(res.value["/Kids"][1].generation).toBe(0)
 })
+
+test('extractObject_22', () => {
+    let data = new Uint8Array(Util.convertHexStringToByteArray("3c3c2f53697a65203136202f4944205b287a653f91dd788141b6e6752ab0811e832920283d852cf2ec0cd5b4f32c4f5c294d10b61929205d202f526f6f7420313220302052202f50726576203135343839202f496e666f20313320302052203e3e"))
+    let obj: any = {}
+    ObjectUtil.extractDictKeyRec(data, 2, obj)
+
+    expect(obj["/Size"]).toBe(16)
+    expect(obj["/ID"][0]).toEqual(new Uint8Array([ 122, 101, 63, 145, 221, 120, 129, 65, 182, 230, 117, 42, 176, 129, 30, 131 ]))
+    expect(obj["/ID"][1]).toEqual(new Uint8Array([ 61, 133, 44, 242, 236, 12, 213, 180, 243, 44, 79, 41, 77, 16, 182, 25 ]))
+    expect(obj["/Root"].obj).toBe(12)
+    expect(obj["/Root"].generation).toBe(0)
+    expect(obj["/Info"].obj).toBe(13)
+    expect(obj["/Info"].generation).toBe(0)
+    expect(obj["/Prev"]).toBe(15489)
+})

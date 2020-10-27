@@ -353,6 +353,13 @@ test('extractString', () => {
     expect(Util.extractString(data, 0).end_index).toEqual(33)
 })
 
+test('extractString_escaped', () => {
+    let data = new Uint8Array([40, 97, 98, 99, 92, 41, 88, 99, 41])
+    expect(Util.extractString(data, 0).start_index).toBe(0)
+    expect(Util.extractString(data, 0).result).toEqual(new Uint8Array([97, 98, 99, 41, 88, 99]))
+    expect(Util.extractString(data, 0).end_index).toEqual(8)
+})
+
 test('extractHexString', () => {
     let data = encode(`<ab>`)
     expect(Util.extractHexString(data, 0).start_index).toBe(0)
