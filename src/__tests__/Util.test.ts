@@ -78,68 +78,90 @@ test('readNextWord', () => {
 test('readNextWord_2', () => {
     let res = Util.readNextWord(encode('hello'), 0)
     expect(Util.convertAsciiToString(res.result)).toBe("hello")
+    expect(res.start_index).toBe(0)
     expect(res.end_index).toBe(4)
 
     res = Util.readNextWord(encode(' hello'), 0)
     expect(Util.convertAsciiToString(res.result)).toBe("hello")
+    expect(res.start_index).toBe(1)
     expect(res.end_index).toBe(5)
 
     res = Util.readNextWord(encode('b hello'), 0)
     expect(Util.convertAsciiToString(res.result)).toBe("b")
+    expect(res.start_index).toBe(0)
     expect(res.end_index).toBe(0)
 })
 
 test('readNextWordWithComment', () => {
     let res = Util.readNextWord(encode('hello%comment stuff'), 0)
     expect(Util.convertAsciiToString(res.result)).toBe("hello")
+    expect(res.start_index).toBe(0)
     expect(res.end_index).toBe(4)
 
     res = Util.readNextWord(encode('hello% comment stuff'), 0)
     expect(Util.convertAsciiToString(res.result)).toBe("hello")
+    expect(res.start_index).toBe(0)
     expect(res.end_index).toBe(4)
 
     res = Util.readNextWord(encode(`%some comment
 hello`), 0)
     expect(Util.convertAsciiToString(res.result)).toBe("hello")
+    expect(res.start_index).toBe(14)
     expect(res.end_index).toBe(18)
 
     res = Util.readNextWord(encode(` %some comment
 hello`), 0)
     expect(Util.convertAsciiToString(res.result)).toBe("hello")
+    expect(res.start_index).toBe(15)
     expect(res.end_index).toBe(19)
 
     res = Util.readNextWord(encode(`
 %some comment
 hello`), 0)
+    expect(res.start_index).toBe(15)
     expect(Util.convertAsciiToString(res.result)).toBe("hello")
 
     res = Util.readNextWord(encode(`hello %other comment`), 0)
+    expect(res.start_index).toBe(0)
     expect(Util.convertAsciiToString(res.result)).toBe("hello")
     expect(res.end_index).toBe(4)
 
     res = Util.readNextWord(encode('b hello%coment'), 0)
+    expect(res.start_index).toBe(0)
     expect(Util.convertAsciiToString(res.result)).toBe("b")
     expect(res.end_index).toBe(0)
 
     res = Util.readNextWord(encode(`/Type /Page% comment directly after a value
 /Contents`), 0)
+    expect(res.start_index).toBe(0)
     expect(Util.convertAsciiToString(res.result)).toBe("/Type")
     expect(res.end_index).toBe(4)
 
+    let old_res_index = res.end_index
     res = Util.readNextWord(encode(`/Type /Page% comment directly after a value
-/Contents`), res.end_index + 1)
+/Contents`), old_res_index + 1)
+    expect(res.start_index).toBe(6)
     expect(Util.convertAsciiToString(res.result)).toBe("/Page")
     expect(res.end_index).toBe(10)
 
     res = Util.readNextWord(encode(`/Type /Page% comment directly after a value
 /Contents`), res.end_index + 1)
+    expect(res.start_index).toBe(44)
     expect(Util.convertAsciiToString(res.result)).toBe("/Contents")
     expect(res.end_index).toBe(52)
 
     res = Util.readNextWord(encode(`/Type /Page% comment directly after a value
 /Contents`), res.end_index + 1)
+    expect(res.start_index).toBe(53)
     expect(res.result).toBeUndefined()
     expect(res.end_index).toBe(52)
+
+    res = Util.readNextWord(encode(`% comment directly after a value
+    %
+/Contents`), 0)
+    expect(Util.convertAsciiToString(res.result)).toBe("/Contents")
+    expect(res.start_index).toBe(39)
+    expect(res.end_index).toBe(47)
 })
 
 test('locateSequence', () => {
@@ -259,40 +281,49 @@ test('convertStringToAscii', () => {
 
 test('extractNumber', () => {
     let data = new Uint8Array([49])
+    expect(Util.extractNumber(data, 0, data.length - 1).start_index).toBe(0)
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(1)
     expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(0)
 
     data = new Uint8Array([50, 51])
+    expect(Util.extractNumber(data, 0, data.length - 1).start_index).toBe(0)
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(23)
     expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(1)
 
     data = new Uint8Array([53, 51, 49, 55])
+    expect(Util.extractNumber(data, 0, data.length - 1).start_index).toBe(0)
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(5317)
     expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(3)
 
     // check with preceding delimiters
     data = new Uint8Array([32, 49])
+    expect(Util.extractNumber(data, 0, data.length - 1).start_index).toBe(1)
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(1)
     expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(1)
 
     data = new Uint8Array([32, 13, 10, 49])
+    expect(Util.extractNumber(data, 0, data.length - 1).start_index).toBe(3)
     expect(Util.extractNumber(data, 0, data.length - 1).result).toBe(1)
     expect(Util.extractNumber(data, 0, data.length - 1).end_index).toBe(3)
 
     data = new Uint8Array([32, 13, 10, 49])
+    expect(Util.extractNumber(data, 0, data.length - 1).start_index).toBe(3)
     expect(Util.extractNumber(data, 0).result).toBe(1)
     expect(Util.extractNumber(data, 0).end_index).toBe(3)
 
     data = new Uint8Array([32, 13, 10, 49, 32])
+    expect(Util.extractNumber(data, 0, data.length - 1).start_index).toBe(3)
     expect(Util.extractNumber(data, 0).result).toBe(1)
     expect(Util.extractNumber(data, 0).end_index).toBe(3)
 
     // test float values
     data = new Uint8Array([50, 46, 53])
+    expect(Util.extractNumber(data, 0, data.length - 1).start_index).toBe(0)
     expect(Util.extractNumber(data, 0).result).toBe(2.5)
     expect(Util.extractNumber(data, 0).end_index).toBe(2)
 
     data = new Uint8Array([50, 48, 46, 53, 56, 54, 54])
+    expect(Util.extractNumber(data, 0, data.length - 1).start_index).toBe(0)
     expect(Util.extractNumber(data, 0).result).toBe(20.5866)
     expect(Util.extractNumber(data, 0).end_index).toBe(6)
 
@@ -302,38 +333,51 @@ test('extractNumber', () => {
 
 test('extractString', () => {
     let data = new Uint8Array([40, 97, 98, 99, 41])
+    expect(Util.extractString(data, 0).start_index).toBe(0)
     expect(Util.extractString(data, 0).result).toEqual(new Uint8Array([97, 98, 99]))
     expect(Util.extractString(data, 0).end_index).toEqual(4)
 
     data = new Uint8Array([32, 10, 13, 40, 97, 98, 99, 41])
+    expect(Util.extractString(data, 0).start_index).toBe(3)
     expect(Util.extractString(data, 0).result).toEqual(new Uint8Array([97, 98, 99]))
     expect(Util.extractString(data, 0).end_index).toEqual(7)
 
     data = new Uint8Array([32, 10, 13, 40, 97, 98, 99, 41, 32])
+    expect(Util.extractString(data, 0).start_index).toBe(3)
     expect(Util.extractString(data, 0).result).toEqual(new Uint8Array([97, 98, 99]))
     expect(Util.extractString(data, 0).end_index).toEqual(7)
 
     data = new Uint8Array(Util.convertHexStringToByteArray("286db3276485b36a7440877d6fa911d11a0000000000000000000000000000000029"))
+    expect(Util.extractString(data, 0).start_index).toBe(0)
     expect(Util.extractString(data, 0).result).toEqual(new Uint8Array([109, 179, 39, 100, 133, 179, 106, 116, 64, 135, 125, 111, 169, 17, 209, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
     expect(Util.extractString(data, 0).end_index).toEqual(33)
 })
 
 test('extractHexString', () => {
     let data = encode(`<ab>`)
+    expect(Util.extractHexString(data, 0).start_index).toBe(0)
     expect(Util.extractHexString(data, 0).result).toEqual(new Uint8Array([171]))
     expect(Util.extractHexString(data, 0).end_index).toEqual(3)
 
     data = encode(`<abc>`)
+    expect(Util.extractHexString(data, 0).start_index).toBe(0)
     expect(Util.extractHexString(data, 0).result).toEqual(new Uint8Array([171, 12]))
     expect(Util.extractHexString(data, 0).end_index).toEqual(4)
 
     data = encode(` <abc> `)
+    expect(Util.extractHexString(data, 0).start_index).toBe(1)
     expect(Util.extractHexString(data, 0).result).toEqual(new Uint8Array([171, 12]))
     expect(Util.extractHexString(data, 0).end_index).toEqual(5)
 })
 
 test('extractOptionValue', () => {
     let data = new Uint8Array([47, 72, 105, 103, 104, 108, 105, 103, 104, 116])
+    expect(Util.extractOptionValue(data, 0).start_index).toBe(0)
+    expect(Util.extractOptionValue(data, 0).result).toEqual('Highlight')
+    expect(Util.extractOptionValue(data, 0).end_index).toEqual(9)
+
+    data = encode(`/Highlight % bla bla`)
+    expect(Util.extractOptionValue(data, 0).start_index).toBe(0)
     expect(Util.extractOptionValue(data, 0).result).toEqual('Highlight')
     expect(Util.extractOptionValue(data, 0).end_index).toEqual(9)
 })
@@ -362,15 +406,18 @@ test('extractReference', () => {
 
 test('extractReferenceTyped', () => {
     let data = new Uint8Array([50, 32, 51, 32, 82])
+    expect(Util.extractReferenceTyped(data, 0).start_index).toBe(0)
     expect(Util.extractReferenceTyped(data, 0).result.obj).toEqual(2)
     expect(Util.extractReferenceTyped(data, 0).result.generation).toEqual(3)
     expect(Util.extractReferenceTyped(data, 0).end_index).toEqual(4)
 
     data = new Uint8Array([50, 32, 51, 32, 82, 32, 52, 48, 32, 53, 32, 82])
+    expect(Util.extractReferenceTyped(data, 0).start_index).toBe(0)
     expect(Util.extractReferenceTyped(data, 0).result.obj).toEqual(2)
     expect(Util.extractReferenceTyped(data, 0).result.generation).toEqual(3)
     expect(Util.extractReferenceTyped(data, 0).end_index).toEqual(4)
 
+    expect(Util.extractReferenceTyped(data, 6).start_index).toBe(6)
     expect(Util.extractReferenceTyped(data, 6).result.obj).toEqual(40)
     expect(Util.extractReferenceTyped(data, 6).result.generation).toEqual(5)
     expect(Util.extractReferenceTyped(data, 6).end_index).toEqual(11)

@@ -11,6 +11,7 @@ export class ArrayUtil {
      * */
     public static extractArray(data: Uint8Array, ptr: number): ExtractionResult {
         ptr = Util.skipSpaces(data, ptr)
+        let start_index = ptr
 
         if (data[ptr] !== Util.ARRAY_START[0])
             throw Error("Invalid array sequence -- does not start with '['")
@@ -19,6 +20,7 @@ export class ArrayUtil {
 
         let next = Util.readNextWord(data, ptr)
         let next_string: Uint8Array | undefined = next.result
+        ptr = next.start_index
 
         let ret_list: any[] = []
 
@@ -31,7 +33,7 @@ export class ArrayUtil {
                 ret_list.push("null")
                 ptr += next_string.length - 1
             } else if (next_string[0] === Util.LITERAL_STRING_END[0]) {
-                return { result: ret_list, end_index: next.end_index }
+                return { result: ret_list, start_index: start_index, end_index: next.end_index }
             } else if (next_string[0] === Util.LITERAL_STRING_START[0]) {
                 let extracted_string = Util.extractString(data, ptr)
                 ret_list.push(extracted_string.result)
@@ -69,9 +71,10 @@ export class ArrayUtil {
             ptr = Util.skipSpaces(data, ptr)
             next = Util.readNextWord(data, ptr)
             next_string = next.result
+            ptr = next.start_index
 
         }
 
-        return { result: ret_list, end_index: next.end_index }
+        return { result: ret_list, start_index: start_index, end_index: next.end_index }
     }
 }
