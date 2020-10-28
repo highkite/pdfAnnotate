@@ -97,6 +97,47 @@ export class ObjectUtil {
     }
 
     /**
+     * Locates the object start in case the ptr does not point correctly
+     * */
+    public static locateObjectStart(data : Uint8Array, ptr : number) : number {
+        let obj_ptr : number = Util.locateSequence(Util.OBJ, data, ptr)
+        let endobj_ptr : number = Util.locateSequence(Util.ENDOBJ, data, ptr)
+
+        let consumeGenerationAndNumberRevere = (ptr : number) => {
+            // <id> <generation> obj ... endobj
+            //                   ^
+            // being somewhere here
+            let new_ptr = Util.skipSpacesReverse(data, ptr - 1)
+            // <id> <generation> obj ... endobj
+            //                 ^
+            // being somewhere here
+            while(new_ptr > 0 && !Util.isDelimiter(data[new_ptr]))--new_ptr
+            // <id> <generation> obj ... endobj
+            //      ^
+            // being somewhere here
+            new_ptr = Util.skipSpacesReverse(data, new_ptr - 1)
+            // <id> <generation> obj ... endobj
+            // ^
+            // being somewhere here
+            while(new_ptr > 0 && !Util.isDelimiter(data[new_ptr]))--new_ptr
+
+            return new_ptr
+        }
+
+        if (obj_ptr !== -1 && obj_ptr < endobj_ptr) {
+            return consumeGenerationAndNumberRevere(obj_ptr)
+        } else if (obj_ptr > endobj_ptr || (obj_ptr === -1 && endobj_ptr > -1)) {
+            // <id> <generation> obj ... endobj
+            //                        ^
+            // being somewhere here
+            let new_ptr = Util.locateSequenceReversed(Util.OBJ, data, ptr)
+            return consumeGenerationAndNumberRevere(new_ptr)
+        } else {
+            throw Error("Could not correct object start")
+        }
+    }
+
+    /**
      * Parses a PDF object and returns a dictionary containing its fields
      * */
     public static extractObject(data: Uint8Array, xref: XRef | number, objectLookupTable: ObjectLookupTable | undefined = undefined): any {
@@ -111,6 +152,10 @@ export class ObjectUtil {
         let ptr = typeof xref === 'number' ? xref : xref.pointer
 
         let object_id = Util.extractObjectId(data, ptr)
+
+        if(isNaN(object_id.obj) || isNaN(object_id.generation)) {
+            return ObjectUtil.extractObject(data, ObjectUtil.locateObjectStart(data, ptr), objectLookupTable)
+        }
 
         ret_obj.id = object_id
 

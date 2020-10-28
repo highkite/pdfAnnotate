@@ -130,6 +130,15 @@ export class Util {
     }
 
     /**
+     * Skips only spaces
+     * */
+    public static skipSpacesReverse(data: Uint8Array | number[], index: number = 0): number {
+        while (index > 0 && (data[index] === 10 || data[index] === 9 || data[index] === 13 || data[index] === 32))--index
+
+        return index
+    }
+
+    /**
      * Assumes that at position index is a delimiter and than runs as long backwards until it finds
      * another delimiter or reaches the end of the document
      * */
@@ -265,30 +274,30 @@ export class Util {
         return { obj: obj, generation: gen }
     }
 
-    /**
-     * Extract the reference starting at position 'index'
-     * */
-    public static extractReference(data: Uint8Array, index: number): Uint8Array {
-        index = Util.skipDelimiter(data, index)
-        let r_index = this.locateSequence(this.convertStringToAscii(" R"), data, index, true)
+        /**
+         * Extract the reference starting at position 'index'
+         * */
+        public static extractReference(data: Uint8Array, index: number): Uint8Array {
+            index = Util.skipDelimiter(data, index)
+            let r_index = this.locateSequence(this.convertStringToAscii(" R"), data, index, true)
 
-        return data.slice(index, r_index)
-    }
+            return data.slice(index, r_index)
+        }
 
-    /**
-     * Returns a reference as typed object
-     * */
-    public static extractReferenceTyped(data: Uint8Array, index: number): ExtractionResult {
+        /**
+         * Returns a reference as typed object
+         * */
+        public static extractReferenceTyped(data: Uint8Array, index: number): ExtractionResult {
 
-        let ref_data = this.extractReference(data, index)
+            let ref_data = this.extractReference(data, index)
 
-        let del_index = this.locateDelimiter(ref_data, 0)
+            let del_index = this.locateDelimiter(ref_data, 0)
 
-        let id = this.extractNumber(ref_data, 0, del_index).result
-        let gen = this.extractNumber(ref_data, del_index + 2).result
+            let id = this.extractNumber(ref_data, 0, del_index).result
+            let gen = this.extractNumber(ref_data, del_index + 2).result
 
-        return { result: { obj: id, generation: gen }, start_index: index, end_index: index + ref_data.length + 1 } // + _R
-    }
+            return { result: { obj: id, generation: gen }, start_index: index, end_index: index + ref_data.length + 1 } // + _R
+        }
 
     /**
      * Extracts a string in Hex notation <...>
@@ -363,112 +372,112 @@ export class Util {
         return { result: +str_id, start_index: start, end_index: end }
     }
 
-    /**
-     * Converts the given date into PDF formatting
-     * */
-    public static convertDateToPDFDate(date: Date): string {
-        let date_str = "(D:"
-        date_str += date.getFullYear()
-        let month: string = String(date.getMonth() + 1)
-        date_str += (month.length == 1 ? "0" : "") + month
-        let day: string = String(date.getDate())
-        date_str += (day.length == 1 ? "0" : "") + day
-        let hours: string = String(date.getHours())
-        date_str += (hours.length == 1 ? "0" : "") + hours
-        let minutes: string = String(date.getMinutes())
-        date_str += (minutes.length == 1 ? "0" : "") + minutes
-        let seconds: string = String(date.getSeconds())
-        date_str += (seconds.length == 1 ? "0" : "") + seconds
-        return date_str + ")"
-    }
+        /**
+         * Converts the given date into PDF formatting
+         * */
+        public static convertDateToPDFDate(date: Date): string {
+            let date_str = "(D:"
+            date_str += date.getFullYear()
+            let month: string = String(date.getMonth() + 1)
+            date_str += (month.length == 1 ? "0" : "") + month
+            let day: string = String(date.getDate())
+            date_str += (day.length == 1 ? "0" : "") + day
+            let hours: string = String(date.getHours())
+            date_str += (hours.length == 1 ? "0" : "") + hours
+            let minutes: string = String(date.getMinutes())
+            date_str += (minutes.length == 1 ? "0" : "") + minutes
+            let seconds: string = String(date.getSeconds())
+            date_str += (seconds.length == 1 ? "0" : "") + seconds
+            return date_str + ")"
+        }
 
-    /**
-     * Converts a unicode sequence into a string
-     * */
-    public static convertUnicodeToString(val: Uint8Array): string {
-        if (val instanceof Uint8Array)
-            val = new Uint8Array(val)
+        /**
+         * Converts a unicode sequence into a string
+         * */
+        public static convertUnicodeToString(val: Uint8Array): string {
+            if (val instanceof Uint8Array)
+                val = new Uint8Array(val)
 
-        if (val[0] === 254 && val[1] === 255) {
-            val = val.slice(2, val.length)
+            if (val[0] === 254 && val[1] === 255) {
+                val = val.slice(2, val.length)
 
-            let uintToString = (uintArray: any) => {
+                let uintToString = (uintArray: any) => {
+                    let ret = ""
+                    for (let i = 0; i < uintArray.length - 1; i += 2) {
+                        ret += String.fromCharCode((uintArray[i] << 8) | uintArray[i + 1] & 0xFF)
+                    }
+
+                    return ret
+                }
+
+                let ret = uintToString(val)
+                return ret
+            }
+
+            // handle utf-8 compression
+            let Utf8ArrayToStr = (array: number[]) => {
                 let ret = ""
-                for (let i = 0; i < uintArray.length - 1; i += 2) {
-                    ret += String.fromCharCode((uintArray[i] << 8) | uintArray[i + 1] & 0xFF)
+                let i = 0
+                while (i < array.length) {
+                    let char1 = array[i++]
+                    let char2
+                    switch (char1 >> 4) {
+                        case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
+                            // one byte
+                            ret += String.fromCharCode(char1)
+                            break
+                        case 12: case 13:
+                            // two byte sequence
+                            char2 = array[i++]
+                            ret += String.fromCharCode(((char1 & 0x1F) << 6) | (char2 & 0x3F))
+                            break
+                        case 14:
+                            // three byte sequence
+                            char2 = array[i++]
+                            let char3 = array[i++]
+                            ret += String.fromCharCode(((char1 & 0x0F) << 12) |
+                                ((char2 & 0x3F) << 6) |
+                                ((char3 & 0x3F) << 0))
+                            break
+                    }
                 }
 
                 return ret
             }
 
-            let ret = uintToString(val)
+            let ret = Utf8ArrayToStr(Array.from(val))
             return ret
         }
 
-        // handle utf-8 compression
-        let Utf8ArrayToStr = (array: number[]) => {
-            let ret = ""
-            let i = 0
-            while (i < array.length) {
-                let char1 = array[i++]
-                let char2
-                switch (char1 >> 4) {
-                    case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
-                        // one byte
-                        ret += String.fromCharCode(char1)
-                        break
-                    case 12: case 13:
-                        // two byte sequence
-                        char2 = array[i++]
-                        ret += String.fromCharCode(((char1 & 0x1F) << 6) | (char2 & 0x3F))
-                        break
-                    case 14:
-                        // three byte sequence
-                        char2 = array[i++]
-                        let char3 = array[i++]
-                        ret += String.fromCharCode(((char1 & 0x0F) << 12) |
-                            ((char2 & 0x3F) << 6) |
-                            ((char3 & 0x3F) << 0))
-                        break
-                }
+        public static convertAsciiToString(val: number[] | Uint8Array): string {
+            let ret: string = ""
+
+            for (let i = 0; i < val.length; ++i) {
+                ret += String.fromCharCode(val[i])
             }
 
             return ret
         }
 
-        let ret = Utf8ArrayToStr(Array.from(val))
-        return ret
-    }
-
-    public static convertAsciiToString(val: number[] | Uint8Array): string {
-        let ret: string = ""
-
-        for (let i = 0; i < val.length; ++i) {
-            ret += String.fromCharCode(val[i])
+        /**
+         * takes a number and returns an array of its char representations
+         * */
+        public static convertNumberToCharArray(nbr: number | string): number[] {
+            return Util.convertStringToAscii(String(nbr))
         }
 
-        return ret
-    }
+        /**
+         * Converts a hex string into a byte array
+         * That means two consecutive hex values are merged into one byte that is appended to the array
+         * */
+        public static convertHexStringToByteArray(hex_string : string | Uint8Array | number[]) : number[] {
+            let ret_val : number[] = []
 
-    /**
-     * takes a number and returns an array of its char representations
-     * */
-    public static convertNumberToCharArray(nbr: number | string): number[] {
-        return Util.convertStringToAscii(String(nbr))
-    }
+            if (typeof hex_string !== "string") {
+                hex_string = Util.convertAsciiToString(hex_string)
+            }
 
-    /**
-     * Converts a hex string into a byte array
-     * That means two consecutive hex values are merged into one byte that is appended to the array
-     * */
-    public static convertHexStringToByteArray(hex_string : string | Uint8Array | number[]) : number[] {
-        let ret_val : number[] = []
-
-        if (typeof hex_string !== "string") {
-            hex_string = Util.convertAsciiToString(hex_string)
-        }
-
-        for (let i = 0; i < hex_string.length - 1; i+= 2) {
+            for (let i = 0; i < hex_string.length - 1; i+= 2) {
             ret_val.push((parseInt(hex_string.charAt(i), 16) << 4) + parseInt(hex_string.charAt(i + 1), 16))
         }
 
@@ -480,70 +489,70 @@ export class Util {
         return ret_val
     }
 
-    /**
-     * Converts an array of byte values into a hex string
-     * */
-    public static convertByteArrayToHexString(values : Uint8Array | number[]) : string {
-        let ret_val : string = ""
+        /**
+         * Converts an array of byte values into a hex string
+         * */
+        public static convertByteArrayToHexString(values : Uint8Array | number[]) : string {
+            let ret_val : string = ""
 
-        let HEX_VALUES = "0123456789ABCDEF"
+            let HEX_VALUES = "0123456789ABCDEF"
 
-        for (let i = 0; i < values.length; ++i) {
-            ret_val += HEX_VALUES.charAt(values[i] >> 4)
-            ret_val += HEX_VALUES.charAt(values[i] & 15)
-        }
-
-        // remove leading zeros
-        let i : number = 0
-        while('0' === ret_val.charAt(i) && i < ret_val.length) ++i
-
-        return ret_val.slice(i, ret_val.length)
-    }
-
-    /**
-     * takes two arrays and checks their equality
-     * */
-    public static areArraysEqual(array_one: Uint8Array | number[], array_two: Uint8Array | number[]): boolean {
-        if (array_one.length !== array_two.length) return false
-
-        for (let i = 0; i < array_one.length; ++i) {
-            if (array_one[i] !== array_two[i])
-                return false
-        }
-
-        return true
-    }
-
-    /**
-     * Prints the array with leading indexes 10 bytes in a row
-     * Delimiter are substituted by '.'
-     * */
-    public static debug_printIndexed(array: Uint8Array | number[]) {
-        let outp = ""
-        for (let i = 0; i < array.length; ++i) {
-            if (i % 10 === 0) {
-                outp += "\n" + i + ":"
+            for (let i = 0; i < values.length; ++i) {
+                ret_val += HEX_VALUES.charAt(values[i] >> 4)
+                ret_val += HEX_VALUES.charAt(values[i] & 15)
             }
+
+            // remove leading zeros
+            let i : number = 0
+            while('0' === ret_val.charAt(i) && i < ret_val.length) ++i
+
+            return ret_val.slice(i, ret_val.length)
+        }
+
+            /**
+             * takes two arrays and checks their equality
+             * */
+            public static areArraysEqual(array_one: Uint8Array | number[], array_two: Uint8Array | number[]): boolean {
+                if (array_one.length !== array_two.length) return false
+
+                for (let i = 0; i < array_one.length; ++i) {
+                    if (array_one[i] !== array_two[i])
+                        return false
+                }
+
+                return true
+            }
+
+            /**
+             * Prints the array with leading indexes 10 bytes in a row
+             * Delimiter are substituted by '.'
+             * */
+            public static debug_printIndexed(array: Uint8Array | number[]) {
+                let outp = ""
+                for (let i = 0; i < array.length; ++i) {
+                    if (i % 10 === 0) {
+                        outp += "\n" + i + ":"
+                    }
 
             if (Util.isSpace(array[i]))
                 outp += " ."
             else
                 outp += " " + String.fromCharCode(array[i])
-        }
+                }
 
-        console.log(outp)
-    }
+                console.log(outp)
+            }
 
-    /**
-     * Converts a list of 8 bit integers into a list of 32 bit integers
-     * */
-    public static convertUint8ArrayToInt32Array(a : Uint8Array | number[]) : Int32Array {
-        let ret_val : Int32Array = new Int32Array(Math.ceil(a.length / 4))
+            /**
+             * Converts a list of 8 bit integers into a list of 32 bit integers
+             * */
+            public static convertUint8ArrayToInt32Array(a : Uint8Array | number[]) : Int32Array {
+                let ret_val : Int32Array = new Int32Array(Math.ceil(a.length / 4))
 
-        let i = 0
-        let index = 0
+                let i = 0
+                let index = 0
 
-        while (i < a.length) {
+                while (i < a.length) {
             if (a[i] > 255 || a[i + 1] > 255 || a[i + 2] >> 255 || a[i + 3] > 255)
                 throw Error("Invalid byte size")
 
@@ -553,56 +562,56 @@ export class Util {
         return ret_val
     }
 
-    /**
-     * Converts a list of 32 bit integers into a list of 8 bit UNSIGNED integers
-     * */
-    public static convertInt32ArrayToUint8Array(a : Int32Array | number[]) : Uint8Array {
-        let ret_val : Uint8Array = new Uint8Array(a.length * 4)
+            /**
+             * Converts a list of 32 bit integers into a list of 8 bit UNSIGNED integers
+             * */
+            public static convertInt32ArrayToUint8Array(a : Int32Array | number[]) : Uint8Array {
+                let ret_val : Uint8Array = new Uint8Array(a.length * 4)
 
-        for(let i = 0; i < a.length; ++i) {
-            for(let j = 0; j < 4; ++j) {
-                ret_val[i * 4 + j] = (a[i] >> 8 * (4 - j - 1)) & 0xFF
+                for(let i = 0; i < a.length; ++i) {
+                    for(let j = 0; j < 4; ++j) {
+                        ret_val[i * 4 + j] = (a[i] >> 8 * (4 - j - 1)) & 0xFF
+                    }
+                }
+
+                return ret_val
             }
-        }
 
-        return ret_val
-    }
+                    /**
+                     * Adds escape symbols to specific elements of the provided string
+                     *
+                     * Symbols that needs to be escaped are: \ ) (
+                     * */
+                    public static escapeString(array: Uint8Array | number[]) : Uint8Array {
+                        let ret_val : number[] = []
 
-    /**
-     * Adds escape symbols to specific elements of the provided string
-     *
-     * Symbols that needs to be escaped are: \ ) (
-     * */
-    public static escapeString(array: Uint8Array | number[]) : Uint8Array {
-        let ret_val : number[] = []
-
-        for (let i = 0; i < array.length; ++i) {
-            if (array[i] === Util.LITERAL_STRING_START[0] ||
-                array[i] === Util.LITERAL_STRING_END[0] ||
+                        for (let i = 0; i < array.length; ++i) {
+                            if (array[i] === Util.LITERAL_STRING_START[0] ||
+                                array[i] === Util.LITERAL_STRING_END[0] ||
                 array[i] === 92) { // 92 = '\'
                 ret_val.push(92)
             }
             ret_val.push(array[i])
         }
 
-        return new Uint8Array(ret_val)
-    }
+                         return new Uint8Array(ret_val)
+                     }
 
-    /**
-     * Removes escape symbols from the given string
-     *
-     * Symbols that needs to be escaped are: \ ) (
-     * */
-    public static unescapeString(array: Uint8Array | number[]) : Uint8Array {
-        let ret_val : number[] = []
+                /**
+                 * Removes escape symbols from the given string
+                 *
+                 * Symbols that needs to be escaped are: \ ) (
+                 * */
+                public static unescapeString(array: Uint8Array | number[]) : Uint8Array {
+                    let ret_val : number[] = []
 
-        for (let i = 0; i < array.length; ++i) {
-            if (array[i] === 92) { // 92 = '\'
-                ++i
+                    for (let i = 0; i < array.length; ++i) {
+                        if (array[i] === 92) { // 92 = '\'
+                            ++i
             }
             ret_val.push(array[i])
         }
 
         return new Uint8Array(ret_val)
-    }
-}
+                }
+            }

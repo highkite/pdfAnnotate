@@ -460,3 +460,33 @@ test('extractObject_23', () => {
     expect(obj["/Root"].obj).toBe(1)
     expect(obj["/Root"].generation).toBe(0)
 })
+
+test('extractObject_23_robustness', () => {
+    let data = encode(`461 0 obj<</Count 119/Type/Pages/Kids[462 0 R 463 0 R]>>endobj`)
+    let res = ObjectUtil.extractObject(data, 4)
+
+    expect(res.id.obj).toBe(461)
+    expect(res.id.generation).toBe(0)
+
+    expect(res.value["/Count"]).toBe(119)
+    expect(res.value["/Type"]).toBe("/Pages")
+    expect(res.value["/Kids"][0].obj).toBe(462)
+    expect(res.value["/Kids"][0].generation).toBe(0)
+    expect(res.value["/Kids"][1].obj).toBe(463)
+    expect(res.value["/Kids"][1].generation).toBe(0)
+})
+
+test('extractObject_23_robustness_2', () => {
+    let data = encode(`461 0 obj<</Count 119/Type/Pages/Kids[462 0 R 463 0 R]>>endobj`)
+    let res = ObjectUtil.extractObject(data, 17)
+
+    expect(res.id.obj).toBe(461)
+    expect(res.id.generation).toBe(0)
+
+    expect(res.value["/Count"]).toBe(119)
+    expect(res.value["/Type"]).toBe("/Pages")
+    expect(res.value["/Kids"][0].obj).toBe(462)
+    expect(res.value["/Kids"][0].generation).toBe(0)
+    expect(res.value["/Kids"][1].obj).toBe(463)
+    expect(res.value["/Kids"][1].generation).toBe(0)
+})
