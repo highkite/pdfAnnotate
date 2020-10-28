@@ -114,7 +114,13 @@ export class ObjectUtil {
 
         ret_obj.id = object_id
 
-        ptr = Util.locateSequence(Util.OBJ, data, ptr) + Util.OBJ.length
+        ptr = Util.locateSequence(Util.OBJ, data, ptr)
+
+        if (ptr === -1)
+            throw { message: "Object missing 'obj' sequence", name: "MissingObjSequenceError"}
+
+        ptr += Util.OBJ.length
+
         let ptr_obj_end = Util.locateSequence(Util.ENDOBJ, data, ptr)
 
         data = data.slice(ptr, ptr_obj_end)

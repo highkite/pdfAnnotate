@@ -418,6 +418,14 @@ export class DocumentHistory {
             update: true
         }
 
+        this.extractCrossReferenceTables(ptr, xref)
+    }
+
+
+    /**
+     * Extracts the cross reference tables of the entire document
+     * */
+    extractCrossReferenceTables(ptr : number, xref : XRef) {
         // Handle cross reference table
         if (Util.areArraysEqual(this.data.slice(ptr, ptr + Util.XREF.length), Util.XREF)) {
 
@@ -434,23 +442,44 @@ export class DocumentHistory {
             }
 
         } else { // handle cross reference stream object
-            let crs = this.extractCrossReferenceStreamObject(xref)
+            try {
+                let crs = this.extractCrossReferenceStreamObject(xref)
 
-            this.updates.push(crs.getUpdateSection())
-
-            let us = this.updates[0]
-
-            while (us.prev) {
-                let _xref = {
-                    id: -1,
-                    pointer: us.prev,
-                    generation: 0,
-                    free: false,
-                    update: true
-                }
-                crs = this.extractCrossReferenceStreamObject(_xref)
                 this.updates.push(crs.getUpdateSection())
-                us = this.updates[this.updates.length - 1]
+
+                let us = this.updates[0]
+
+                while (us.prev) {
+                    let _xref = {
+                        id: -1,
+                        pointer: us.prev,
+                        generation: 0,
+                        free: false,
+                        update: true
+                    }
+                    crs = this.extractCrossReferenceStreamObject(_xref)
+                    this.updates.push(crs.getUpdateSection())
+                    us = this.updates[this.updates.length - 1]
+                }
+            } catch(err) {
+                if (err.name = "MissingObjSequenceError") {
+                    // try to locate Cross reference table start manually
+                    // forward search for the word 'xref'
+                    let xref_ptr = Util.locateSequence(Util.XREF, this.data, ptr, true)
+
+                    if (xref_ptr !== -1 &&
+                        this.data[xref_ptr - 1] !== 116) { // the 't' as end of start in startxref
+                        this.extractCrossReferenceTables(xref_ptr, xref)
+                    }
+
+                    // backward search for the word 'xref'
+                    xref_ptr = Util.locateSequenceReversed(Util.XREF, this.data, ptr, true)
+                    if (xref_ptr !== -1) {
+                        this.extractCrossReferenceTables(xref_ptr, xref)
+                    }
+                } else {
+                    throw err
+                }
             }
         }
 
@@ -474,10 +503,10 @@ export class DocumentHistory {
     /**
      * By running through the PDf history we can for every object id determine the pointer address to the most recent version, and
      * whether the object id is still in used.
-     *
-     * So the object lookup table has an entry for every existing object id, a pointer to the the most recent object definition, as long
-     * as the object exists, or an according indication otherwise.
-     * */
+        *
+        * So the object lookup table has an entry for every existing object id, a pointer to the the most recent object definition, as long
+        * as the object exists, or an according indication otherwise.
+        * */
     createObjectLookupTable(): ObjectLookupTable {
         let objTable: { [id: number]: XRef } = {}
 
