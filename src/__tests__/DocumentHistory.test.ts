@@ -216,7 +216,7 @@ trailer
 >>
 startxref
 0
-%%EOF`)
+        %%EOF`)
     let hist = new DocumentHistory(new Uint8Array(data))
 
     hist.extractDocumentHistory()
@@ -256,20 +256,20 @@ trailer
 >>
 startxref
 0
-%%EOF`)
+    %%EOF`)
     let hist = new DocumentHistory(new Uint8Array(data))
 
     hist.extractDocumentHistory()
-    expect(hist.updates[0].refs.map(x => x.id)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-    expect(hist.updates[0].refs.map(x => x.pointer)).toEqual([0, 15, 66, 149, 798, 293, 367, 464, 828, 1125])
-    expect(hist.updates[0].refs.map(x => x.generation)).toEqual([65535, 0,0,0,0,0,0,0,0,0])
-    expect(hist.updates[0].refs.map(x => x.free)).toEqual([true, false, false, false, false, false, false, false, false, false ])
-    expect(hist.updates[0].refs.map(x => x.update)).toEqual([false, true, true, true, true, true, true, true, true, true])
-    expect(hist.updates[0].is_encrypted).toBeTruthy()
-    expect(hist.updates[0].encrypt!.obj).toBe(9)
-    expect(hist.updates[0].encrypt!.generation).toBe(0)
-    expect(hist.updates[0].id![0]).toEqual(new Uint8Array([89, 82, 60, 176, 231, 14, 3, 205, 71, 147, 120, 105, 213, 73, 11, 248]))
-    expect(hist.updates[0].id![1]).toEqual(new Uint8Array([138, 100, 40, 199, 132, 113, 74, 100, 213, 90, 172, 167, 169, 224, 139, 160]))
+expect(hist.updates[0].refs.map(x => x.id)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+expect(hist.updates[0].refs.map(x => x.pointer)).toEqual([0, 15, 66, 149, 798, 293, 367, 464, 828, 1125])
+expect(hist.updates[0].refs.map(x => x.generation)).toEqual([65535, 0,0,0,0,0,0,0,0,0])
+expect(hist.updates[0].refs.map(x => x.free)).toEqual([true, false, false, false, false, false, false, false, false, false ])
+expect(hist.updates[0].refs.map(x => x.update)).toEqual([false, true, true, true, true, true, true, true, true, true])
+expect(hist.updates[0].is_encrypted).toBeTruthy()
+expect(hist.updates[0].encrypt!.obj).toBe(9)
+expect(hist.updates[0].encrypt!.generation).toBe(0)
+expect(hist.updates[0].id![0]).toEqual(new Uint8Array([89, 82, 60, 176, 231, 14, 3, 205, 71, 147, 120, 105, 213, 73, 11, 248]))
+expect(hist.updates[0].id![1]).toEqual(new Uint8Array([138, 100, 40, 199, 132, 113, 74, 100, 213, 90, 172, 167, 169, 224, 139, 160]))
 })
 
 test('extractCrossReferenceTable_5', () => {
@@ -284,14 +284,14 @@ trailer\r
 startxref
 0
 %%EOF`)
-    let hist = new DocumentHistory(new Uint8Array(data))
+let hist = new DocumentHistory(new Uint8Array(data))
 
-    hist.extractDocumentHistory()
-    expect(hist.updates[0].refs.map(x => x.id)).toEqual([0, 7, 8])
-    expect(hist.updates[0].refs.map(x => x.pointer)).toEqual([1, 1321, 1352])
-    expect(hist.updates[0].refs.map(x => x.generation)).toEqual([65535, 0,0])
-    expect(hist.updates[0].refs.map(x => x.free)).toEqual([true, false, false])
-    expect(hist.updates[0].refs.map(x => x.update)).toEqual([false, true, true])
+hist.extractDocumentHistory()
+expect(hist.updates[0].refs.map(x => x.id)).toEqual([0, 7, 8])
+expect(hist.updates[0].refs.map(x => x.pointer)).toEqual([1, 1321, 1352])
+expect(hist.updates[0].refs.map(x => x.generation)).toEqual([65535, 0,0])
+expect(hist.updates[0].refs.map(x => x.free)).toEqual([true, false, false])
+expect(hist.updates[0].refs.map(x => x.update)).toEqual([false, true, true])
 })
 
 test('extractSubSectionHeader', () => {

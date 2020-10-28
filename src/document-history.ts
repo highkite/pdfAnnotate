@@ -399,7 +399,26 @@ export class DocumentHistory {
 
         let ptr_startxref = Util.locateSequenceReversed(Util.STARTXREF, this.data, ptr, true) + 9
 
-        ptr = Util.extractNumber(this.data, ptr_startxref).result
+        // try to locate cross reference table manually
+        let locateXREFStartManually = () => {
+            let new_ptr = Util.locateSequenceReversed(Util.XREF, this.data, this.data.length)
+
+            while (new_ptr > 0 && this.data[new_ptr - 1] === 116) {// 116 = 't' -> we are looking for 'xref' not 'startxref'
+                new_ptr = Util.locateSequenceReversed(Util.XREF, this.data, new_ptr - 1)
+            }
+
+            return new_ptr
+        }
+
+        try {
+            ptr = Util.extractNumber(this.data, ptr_startxref).result
+        } catch (err) {
+            return locateXREFStartManually()
+        }
+
+        if (ptr > this.data.length) {
+            return locateXREFStartManually()
+        }
 
         return ptr
     }
@@ -413,17 +432,6 @@ export class DocumentHistory {
 
         let ptr = this.extractDocumentEntry()
 
-        if (ptr > this.data.length) {
-            // try to locate cross reference table manually
-            let new_ptr = Util.locateSequenceReversed(Util.XREF, this.data, this.data.length)
-
-            while (new_ptr > 0 && this.data[new_ptr - 1] === 116) {// 116 = 't' -> we are looking for 'xref' not 'startxref'
-                new_ptr = Util.locateSequenceReversed(Util.XREF, this.data, new_ptr - 1)
-            }
-
-            ptr = new_ptr
-        }
-
         let xref = {
             id: -1,
             pointer: ptr,
@@ -433,6 +441,17 @@ export class DocumentHistory {
         }
 
         this.extractCrossReferenceTables(ptr, xref)
+
+        // adapt pointer in case there is junk before the header
+        let pdf_header_start = Util.locateSequence(Util.VERSION, this.data, 0)
+
+        if (pdf_header_start !== 0 && pdf_header_start !== -1) {
+            for (let updateSection of this.updates) {
+                for(let ref of updateSection.refs) {
+                    ref.pointer += pdf_header_start
+                }
+            }
+        }
     }
 
 
