@@ -261,12 +261,13 @@ export class CrossReferenceTable {
      *
      * The first_object_id is the id provided in the sub section header
      *
-     * By definition of the PDF standard one entry is 20 bytes long
+     * By definition of the PDF standard one entry is 20 bytes long, but since the standard is rarely respected we better make it failsafe
      * */
-    extractReferences(index: number, count: number, first_object_id: number): XRef[] {
+    extractReferences(index: number, count: number, first_object_id: number): {refs: XRef[], end_index: number} {
         let _refs: XRef[] = []
 
-        for (let i = 0; i < count; ++i, index += 20) {
+        let ptr_flag = -1
+        for (let i = 0; i < count; ++i, index = Util.skipSpaces(this.data, ptr_flag + 1)) {
             let ptr_end_pointer = Util.locateDelimiter(this.data, index)
 
             let pointer = Util.extractNumber(this.data, index, ptr_end_pointer).result
@@ -277,7 +278,7 @@ export class CrossReferenceTable {
 
             let generation = Util.extractNumber(this.data, ptr_gen_start, ptr_gen_end).result
 
-            let ptr_flag = Util.skipDelimiter(this.data, ptr_gen_end + 1)
+            ptr_flag = Util.skipDelimiter(this.data, ptr_gen_end + 1)
 
             let isFree = this.data[ptr_flag] === 102 // 102 = f
 
@@ -290,7 +291,7 @@ export class CrossReferenceTable {
             })
         }
 
-        return _refs
+        return {refs: _refs, end_index: index}
     }
 
     /**
@@ -328,10 +329,11 @@ export class CrossReferenceTable {
         let ref_start = Util.skipDelimiter(this.data, first_header.end_ptr + 1)
 
         // extract first reference
-        this.refs = this.refs.concat(this.extractReferences(ref_start, first_header.count, first_header.id))
+        let reference_result = this.extractReferences(ref_start, first_header.count, first_header.id)
+        this.refs = this.refs.concat(reference_result.refs)
 
         // extract remaining references
-        start_ptr = Util.skipSpaces(this.data, ref_start + first_header.count * 20)
+        start_ptr = Util.skipSpaces(this.data, reference_result.end_index)
 
         while (this.data[start_ptr] !== 116) { // 116 = 't' start of the word trailer that concludes the crosssite reference section
             let header = this.extractSubSectionHeader(start_ptr)
@@ -340,9 +342,9 @@ export class CrossReferenceTable {
 
             let references = this.extractReferences(ref_start, header.count, header.id)
 
-            this.refs = this.refs.concat(references)
+            this.refs = this.refs.concat(references.refs)
 
-            start_ptr = Util.skipSpaces(this.data, ref_start + header.count * 20)
+            start_ptr = Util.skipSpaces(this.data, references.end_index)
         }
 
         this.trailer = this.extractTrailer(start_ptr)
@@ -409,6 +411,17 @@ export class DocumentHistory {
     extractDocumentHistory() {
 
         let ptr = this.extractDocumentEntry()
+
+        if (ptr > this.data.length) {
+            // try to locate cross reference table manually
+            let new_ptr = Util.locateSequenceReversed(Util.XREF, this.data, this.data.length)
+
+            while (new_ptr > 0 && this.data[new_ptr - 1] === 116) {// 116 = 't' -> we are looking for 'xref' not 'startxref'
+                new_ptr = Util.locateSequenceReversed(Util.XREF, this.data, new_ptr - 1)
+            }
+
+            ptr = new_ptr
+        }
 
         let xref = {
             id: -1,
@@ -503,10 +516,10 @@ export class DocumentHistory {
     /**
      * By running through the PDf history we can for every object id determine the pointer address to the most recent version, and
      * whether the object id is still in used.
-        *
-        * So the object lookup table has an entry for every existing object id, a pointer to the the most recent object definition, as long
-        * as the object exists, or an according indication otherwise.
-        * */
+     *
+     * So the object lookup table has an entry for every existing object id, a pointer to the the most recent object definition, as long
+     * as the object exists, or an according indication otherwise.
+     * */
     createObjectLookupTable(): ObjectLookupTable {
         let objTable: { [id: number]: XRef } = {}
 

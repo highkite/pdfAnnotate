@@ -44,17 +44,17 @@ test('extractReferences', () => {
 
     let references = us.extractReferences(0, 2, 7)
 
-    expect(references[0].free).toBeFalsy()
-    expect(references[0].update).toBeTruthy()
-    expect(references[0].id).toBe(7)
-    expect(references[0].pointer).toBe(1321)
-    expect(references[0].generation).toBe(0)
+    expect(references.refs[0].free).toBeFalsy()
+    expect(references.refs[0].update).toBeTruthy()
+    expect(references.refs[0].id).toBe(7)
+    expect(references.refs[0].pointer).toBe(1321)
+    expect(references.refs[0].generation).toBe(0)
 
-    expect(references[1].free).toBeFalsy()
-    expect(references[1].update).toBeTruthy()
-    expect(references[1].id).toBe(8)
-    expect(references[1].pointer).toBe(1352)
-    expect(references[1].generation).toBe(0)
+    expect(references.refs[1].free).toBeFalsy()
+    expect(references.refs[1].update).toBeTruthy()
+    expect(references.refs[1].id).toBe(8)
+    expect(references.refs[1].pointer).toBe(1352)
+    expect(references.refs[1].generation).toBe(0)
 })
 
 
@@ -68,17 +68,17 @@ test('extractReferences', () => {
 
     let references = us.extractReferences(0, 2, 7)
 
-    expect(references[0].free).toBeFalsy()
-    expect(references[0].update).toBeTruthy()
-    expect(references[0].id).toBe(7)
-    expect(references[0].pointer).toBe(1321)
-    expect(references[0].generation).toBe(0)
+    expect(references.refs[0].free).toBeFalsy()
+    expect(references.refs[0].update).toBeTruthy()
+    expect(references.refs[0].id).toBe(7)
+    expect(references.refs[0].pointer).toBe(1321)
+    expect(references.refs[0].generation).toBe(0)
 
-    expect(references[1].free).toBeFalsy()
-    expect(references[1].update).toBeTruthy()
-    expect(references[1].id).toBe(8)
-    expect(references[1].pointer).toBe(1352)
-    expect(references[1].generation).toBe(0)
+    expect(references.refs[1].free).toBeFalsy()
+    expect(references.refs[1].update).toBeTruthy()
+    expect(references.refs[1].id).toBe(8)
+    expect(references.refs[1].pointer).toBe(1352)
+    expect(references.refs[1].generation).toBe(0)
 })
 
 test('extractTrailer', () => {

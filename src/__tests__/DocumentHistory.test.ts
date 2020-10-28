@@ -193,6 +193,45 @@ test('extractCrossReferenceTable_2', () => {
     expect(hist.updates[0].id![1]).toEqual(new Uint8Array([138, 100, 40, 199, 132, 113, 74, 100, 213, 90, 172, 167, 169, 224, 139, 160]))
 })
 
+test('extractCrossReferenceTable_3', () => {
+    let data = encode(`xref\r
+0 10\r
+0000000000 65535 f
+0000000015 00000 n
+0000000066 00000 n
+0000000149 00000 n
+0000000798 00000 n
+0000000293 00000 n
+0000000367 00000 n
+0000000464 00000 n
+0000000828 00000 n
+0000001125 00000 n
+trailer
+
+<<
+/ID [<59523cb0e70e03cd47937869d5490bf8><8a6428c784714a64d55aaca7a9e08ba0>]
+/Encrypt 9 0 R
+/Root 1 0 R
+/Size 10
+>>
+startxref
+0
+%%EOF`)
+    let hist = new DocumentHistory(new Uint8Array(data))
+
+    hist.extractDocumentHistory()
+    expect(hist.updates[0].refs.map(x => x.id)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    expect(hist.updates[0].refs.map(x => x.pointer)).toEqual([0, 15, 66, 149, 798, 293, 367, 464, 828, 1125])
+    expect(hist.updates[0].refs.map(x => x.generation)).toEqual([65535, 0,0,0,0,0,0,0,0,0])
+    expect(hist.updates[0].refs.map(x => x.free)).toEqual([true, false, false, false, false, false, false, false, false, false ])
+    expect(hist.updates[0].refs.map(x => x.update)).toEqual([false, true, true, true, true, true, true, true, true, true])
+    expect(hist.updates[0].is_encrypted).toBeTruthy()
+    expect(hist.updates[0].encrypt!.obj).toBe(9)
+    expect(hist.updates[0].encrypt!.generation).toBe(0)
+    expect(hist.updates[0].id![0]).toEqual(new Uint8Array([89, 82, 60, 176, 231, 14, 3, 205, 71, 147, 120, 105, 213, 73, 11, 248]))
+    expect(hist.updates[0].id![1]).toEqual(new Uint8Array([138, 100, 40, 199, 132, 113, 74, 100, 213, 90, 172, 167, 169, 224, 139, 160]))
+})
+
 test('extractSubSectionHeader', () => {
     let crt = new CrossReferenceTable(new Uint8Array(encode("0 10")))
     let res = crt.extractSubSectionHeader(0)
@@ -205,33 +244,36 @@ test('extractSubSectionHeader', () => {
 test('extractReferences', () => {
     let crt = new CrossReferenceTable(new Uint8Array(encode("0000000001 65535 f")))
     let res = crt.extractReferences(0, 1, 0)
-    expect(res[0].id).toBe(0)
-    expect(res[0].pointer).toBe(1)
-    expect(res[0].generation).toBe(65535)
-    expect(res[0].free).toBeTruthy()
-    expect(res[0].update).toBeFalsy()
+    expect(res.end_index).toBe(18)
+    expect(res.refs[0].id).toBe(0)
+    expect(res.refs[0].pointer).toBe(1)
+    expect(res.refs[0].generation).toBe(65535)
+    expect(res.refs[0].free).toBeTruthy()
+    expect(res.refs[0].update).toBeFalsy()
 
 
     crt = new CrossReferenceTable(new Uint8Array(encode("0000001321 00000 n")))
     res = crt.extractReferences(0, 1, 7)
-    expect(res[0].id).toBe(7)
-    expect(res[0].pointer).toBe(1321)
-    expect(res[0].generation).toBe(0)
-    expect(res[0].free).toBeFalsy()
-    expect(res[0].update).toBeTruthy()
+    expect(res.end_index).toBe(18)
+    expect(res.refs[0].id).toBe(7)
+    expect(res.refs[0].pointer).toBe(1321)
+    expect(res.refs[0].generation).toBe(0)
+    expect(res.refs[0].free).toBeFalsy()
+    expect(res.refs[0].update).toBeTruthy()
 
     crt = new CrossReferenceTable(new Uint8Array(encode("0000001321 00000 n\n0000001352 00000 n")))
     res = crt.extractReferences(0, 2, 7)
-    expect(res[0].id).toBe(7)
-    expect(res[0].pointer).toBe(1321)
-    expect(res[0].generation).toBe(0)
-    expect(res[0].free).toBeFalsy()
-    expect(res[0].update).toBeTruthy()
-    expect(res[1].id).toBe(8)
-    expect(res[1].pointer).toBe(1352)
-    expect(res[1].generation).toBe(0)
-    expect(res[1].free).toBeFalsy()
-    expect(res[1].update).toBeTruthy()
+    expect(res.end_index).toBe(37)
+    expect(res.refs[0].id).toBe(7)
+    expect(res.refs[0].pointer).toBe(1321)
+    expect(res.refs[0].generation).toBe(0)
+    expect(res.refs[0].free).toBeFalsy()
+    expect(res.refs[0].update).toBeTruthy()
+    expect(res.refs[1].id).toBe(8)
+    expect(res.refs[1].pointer).toBe(1352)
+    expect(res.refs[1].generation).toBe(0)
+    expect(res.refs[1].free).toBeFalsy()
+    expect(res.refs[1].update).toBeTruthy()
 })
 
 test('extractReferences_2', () => {
@@ -251,11 +293,11 @@ test('extractReferences_2', () => {
 
     let crt = new CrossReferenceTable(data)
     let res = crt.extractReferences(0, 10, 0)
-    expect(res.map(x => x.id)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-    expect(res.map(x => x.pointer)).toEqual([0, 15, 66, 149, 798, 293, 367, 464, 828, 1125])
-    expect(res.map(x => x.generation)).toEqual([65535, 0,0,0,0,0,0,0,0,0])
-    expect(res.map(x => x.free)).toEqual([true, false, false, false, false, false, false, false, false, false ])
-    expect(res.map(x => x.update)).toEqual([false, true, true, true, true, true, true, true, true, true])
+    expect(res.refs.map(x => x.id)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    expect(res.refs.map(x => x.pointer)).toEqual([0, 15, 66, 149, 798, 293, 367, 464, 828, 1125])
+    expect(res.refs.map(x => x.generation)).toEqual([65535, 0,0,0,0,0,0,0,0,0])
+    expect(res.refs.map(x => x.free)).toEqual([true, false, false, false, false, false, false, false, false, false ])
+    expect(res.refs.map(x => x.update)).toEqual([false, true, true, true, true, true, true, true, true, true])
 })
 
 test('extractReferences_3', () => {
