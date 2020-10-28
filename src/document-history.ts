@@ -266,7 +266,7 @@ export class CrossReferenceTable {
     extractReferences(index: number, count: number, first_object_id: number): {refs: XRef[], end_index: number} {
         let _refs: XRef[] = []
 
-        let res : ExtractionResult = { result: null, start_index: -1, end_index: index - 1}
+        let res : ExtractionResult = { result: null, start_index: -1, end_index: index}
 
         for (let i = 0; i < count; ++i) {
             res = Util.readNextWord(this.data, res.end_index + 1)
@@ -319,10 +319,14 @@ export class CrossReferenceTable {
     /**
      * Parses the Cross Reference Table at the given index
      * */
-    extract(index: number) {
+    extract(index: number, skipXREFString : boolean = false) {
         this.start_pointer = index
 
-        let start_ptr = index + 5 // + length(xref) + blank
+        let start_ptr = index
+
+        if (!skipXREFString)
+            start_ptr += 5 // + length(xref) + blank
+
         start_ptr = Util.skipDelimiter(this.data, start_ptr)
 
         let first_header = this.extractSubSectionHeader(start_ptr)
@@ -373,9 +377,9 @@ export class DocumentHistory {
     /**
      * Extracts the cross reference table starting at the given index
      * */
-    extractCrossReferenceTable(index: number): CrossReferenceTable {
+    extractCrossReferenceTable(index: number, skipXREFString : boolean = false): CrossReferenceTable {
         let crt = new CrossReferenceTable(this.data)
-        crt.extract(index)
+        crt.extract(index, skipXREFString)
 
         return crt
     }
@@ -393,21 +397,49 @@ export class DocumentHistory {
     /**
      * Extracts the last update section of a document (that means
      * the most recent update locating at the end of the file)
+     *
+     * Handles missing or wrong pointers
+     * and also decides, whether the cross reference table is provided as stream object or regular
      * */
-    extractDocumentEntry(): number {
+    extractDocumentEntry(): {pointer: number, sectionType: string} {
         let ptr = this.data.length - 1
 
+
         let ptr_startxref = Util.locateSequenceReversed(Util.STARTXREF, this.data, ptr, true) + 9
+
+        // identify cross reference section type
+        let section_type : string = "UNKNOWN"
+        let preceding_word_index = Util.skipSpacesReverse(this.data, ptr_startxref - 10)
+
+        if (Util.areArraysEqual(this.data.slice(preceding_word_index - 5, preceding_word_index + 1), Util.ENDOBJ)) {
+            section_type = "stream"
+        } else {
+            section_type = "trailer"
+        }
 
         // try to locate cross reference table manually
         let locateXREFStartManually = () => {
             let new_ptr = Util.locateSequenceReversed(Util.XREF, this.data, this.data.length)
+            section_type = "trailer"
 
             while (new_ptr > 0 && this.data[new_ptr - 1] === 116) {// 116 = 't' -> we are looking for 'xref' not 'startxref'
                 new_ptr = Util.locateSequenceReversed(Util.XREF, this.data, new_ptr - 1)
             }
 
-            return new_ptr
+            if (new_ptr === -1) { // than we try to identify the word 'trailer' and run backwards as long as we find a symbol that is not a number or 'f' or 'n' - what could possibly go wrong
+                section_type = "trailer_without_xref_start"
+                new_ptr = Util.locateSequenceReversed(Util.TRAILER, this.data, this.data.length)
+
+                if (new_ptr > 0) {
+                    new_ptr--
+                    while (new_ptr > 0 && (Util.isSpace(this.data[new_ptr]) || Util.isNumber(this.data[new_ptr]) || this.data[new_ptr] === 110 || //110 = 'n' 102 = 'f'
+                        this.data[new_ptr] === 102)) --new_ptr
+
+                    new_ptr = Util.skipSpaces(this.data, new_ptr + 1)
+                }
+            }
+
+            return {pointer: new_ptr, sectionType: section_type}
         }
 
         try {
@@ -420,7 +452,7 @@ export class DocumentHistory {
             return locateXREFStartManually()
         }
 
-        return ptr
+        return {pointer: ptr, sectionType: section_type}
     }
 
     /**
@@ -430,7 +462,12 @@ export class DocumentHistory {
      * */
     extractDocumentHistory() {
 
-        let ptr = this.extractDocumentEntry()
+        let document_entry = this.extractDocumentEntry()
+        let ptr = document_entry.pointer
+
+        if (ptr === -1) {
+            throw Error("Could not locate document entry")
+        }
 
         let xref = {
             id: -1,
@@ -440,7 +477,7 @@ export class DocumentHistory {
             update: true
         }
 
-        this.extractCrossReferenceTables(ptr, xref)
+        this.extractCrossReferenceTables(document_entry, xref)
 
         // adapt pointer in case there is junk before the header
         let pdf_header_start = Util.locateSequence(Util.VERSION, this.data, 0)
@@ -458,9 +495,11 @@ export class DocumentHistory {
     /**
      * Extracts the cross reference tables of the entire document
      * */
-    extractCrossReferenceTables(ptr : number, xref : XRef) {
+    extractCrossReferenceTables(document_entry : {pointer: number, sectionType: string}, xref : XRef) {
+        let ptr = document_entry.pointer
+
         // Handle cross reference table
-        if (Util.areArraysEqual(this.data.slice(ptr, ptr + Util.XREF.length), Util.XREF)) {
+        if (document_entry.sectionType === "trailer") {
 
             let crt = this.extractCrossReferenceTable(ptr)
 
@@ -474,49 +513,60 @@ export class DocumentHistory {
                 us = this.updates[this.updates.length - 1]
             }
 
-        } else { // handle cross reference stream object
-            try {
-                let crs = this.extractCrossReferenceStreamObject(xref)
+        } else if (document_entry.sectionType === "stream") { // handle cross reference stream object
+            let crs = this.extractCrossReferenceStreamObject(xref)
 
-                this.updates.push(crs.getUpdateSection())
+            this.updates.push(crs.getUpdateSection())
 
-                let us = this.updates[0]
+            let us = this.updates[0]
 
-                while (us.prev) {
-                    let _xref = {
-                        id: -1,
-                        pointer: us.prev,
-                        generation: 0,
-                        free: false,
-                        update: true
-                    }
-                    crs = this.extractCrossReferenceStreamObject(_xref)
-                    this.updates.push(crs.getUpdateSection())
-                    us = this.updates[this.updates.length - 1]
+            while (us.prev) {
+                let _xref = {
+                    id: -1,
+                    pointer: us.prev,
+                    generation: 0,
+                    free: false,
+                    update: true
                 }
-            } catch(err) {
-                if (err.name = "MissingObjSequenceError") {
-                    // try to locate Cross reference table start manually
-                    // forward search for the word 'xref'
-                    let xref_ptr = Util.locateSequence(Util.XREF, this.data, ptr, true)
+                crs = this.extractCrossReferenceStreamObject(_xref)
+                this.updates.push(crs.getUpdateSection())
+                us = this.updates[this.updates.length - 1]
+            }
+        } else if (document_entry.sectionType === "trailer_without_xref_start") {
+            let crt = this.extractCrossReferenceTable(ptr, true)
 
-                    if (xref_ptr !== -1 &&
-                        this.data[xref_ptr - 1] !== 116) { // the 't' as end of start in startxref
-                        this.extractCrossReferenceTables(xref_ptr, xref)
-                    }
+            this.updates.push(crt.getUpdateSection())
 
-                    // backward search for the word 'xref'
-                    xref_ptr = Util.locateSequenceReversed(Util.XREF, this.data, ptr, true)
-                    if (xref_ptr !== -1) {
-                        this.extractCrossReferenceTables(xref_ptr, xref)
-                    }
-                } else {
-                    throw err
+            let us = this.updates[0]
+
+            while (us.prev) {
+                crt = this.extractCrossReferenceTable(us.prev)
+                this.updates.push(crt.getUpdateSection())
+                us = this.updates[this.updates.length - 1]
+            }
+        } else {
+            throw Error("Could not part cross reference table")
+        }
+
+        this.trailerSize = this.extractReferenceNumberCount()
+    }
+
+    /**
+     * Counts the number of specified objects
+     * */
+    extractReferenceNumberCount() : number {
+        let visited : number[] = []
+        let count = 0
+        for(let update of this.updates) {
+            for(let ref of update.refs) {
+                if (!visited.includes(ref.id)) {
+                    count++
+                    visited.push(ref.id)
                 }
             }
         }
 
-        this.trailerSize = this.getRecentUpdate().size
+        return count
     }
 
     /**
@@ -544,10 +594,9 @@ export class DocumentHistory {
         let objTable: { [id: number]: XRef } = {}
 
         let update: UpdateSection = this.getRecentUpdate()
-        let obj_count = update.size
 
         let i = 1
-        while (Object.keys(objTable).length < obj_count) {
+        while (Object.keys(objTable).length < this.extractReferenceNumberCount()) {
             let refs = update.refs
 
             for (let ref of refs) {
