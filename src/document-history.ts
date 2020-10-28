@@ -1,5 +1,5 @@
 import { ReferencePointer } from './parser';
-import { Util } from './util';
+import { Util, ExtractionResult } from './util';
 import { ObjectUtil } from './object-util'
 import { Stream } from './stream';
 
@@ -266,21 +266,22 @@ export class CrossReferenceTable {
     extractReferences(index: number, count: number, first_object_id: number): {refs: XRef[], end_index: number} {
         let _refs: XRef[] = []
 
-        let ptr_flag = -1
-        for (let i = 0; i < count; ++i, index = Util.skipSpaces(this.data, ptr_flag + 1)) {
-            let ptr_end_pointer = Util.locateDelimiter(this.data, index)
+        let res : ExtractionResult = { result: null, start_index: -1, end_index: index - 1}
 
-            let pointer = Util.extractNumber(this.data, index, ptr_end_pointer).result
+        for (let i = 0; i < count; ++i) {
+            res = Util.readNextWord(this.data, res.end_index + 1)
 
-            let ptr_gen_start = Util.skipDelimiter(this.data, ptr_end_pointer + 1)
+            let pointer = Util.extractNumber(res.result, 0).result
 
-            let ptr_gen_end = Util.locateDelimiter(this.data, ptr_gen_start)
+            res = Util.readNextWord(this.data, res.end_index + 1)
 
-            let generation = Util.extractNumber(this.data, ptr_gen_start, ptr_gen_end).result
+            let generation = Util.extractNumber(res.result, 0).result
 
-            ptr_flag = Util.skipDelimiter(this.data, ptr_gen_end + 1)
+            res = Util.readNextWord(this.data, res.end_index + 1)
 
-            let isFree = this.data[ptr_flag] === 102 // 102 = f
+            let ptr_flag = res.result
+
+            let isFree = ptr_flag[0] === 102 // 102 = f
 
             _refs.push({
                 id: first_object_id + i,
@@ -291,7 +292,7 @@ export class CrossReferenceTable {
             })
         }
 
-        return {refs: _refs, end_index: index}
+        return {refs: _refs, end_index: res.end_index}
     }
 
     /**
@@ -333,7 +334,7 @@ export class CrossReferenceTable {
         this.refs = this.refs.concat(reference_result.refs)
 
         // extract remaining references
-        start_ptr = Util.skipSpaces(this.data, reference_result.end_index)
+        start_ptr = Util.skipSpaces(this.data, reference_result.end_index + 1)
 
         while (this.data[start_ptr] !== 116) { // 116 = 't' start of the word trailer that concludes the crosssite reference section
             let header = this.extractSubSectionHeader(start_ptr)
@@ -344,7 +345,7 @@ export class CrossReferenceTable {
 
             this.refs = this.refs.concat(references.refs)
 
-            start_ptr = Util.skipSpaces(this.data, references.end_index)
+            start_ptr = Util.skipSpaces(this.data, references.end_index + 1)
         }
 
         this.trailer = this.extractTrailer(start_ptr)
