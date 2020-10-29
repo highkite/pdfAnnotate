@@ -336,11 +336,11 @@ export class CrossReferenceTable {
         // check if there actually is a subsection header
         // if the line finishes with an 'f' we know that it starts with the first cross reference entry
         let tmp_ptr = start_ptr
-        while(tmp_ptr < this.data.length && this.data[tmp_ptr] !== 102 && this.data[tmp_ptr] !== 10) tmp_ptr++
+        while(tmp_ptr < this.data.length && this.data[tmp_ptr] !== 102 && this.data[tmp_ptr] !== 13 && this.data[tmp_ptr] !== 10) tmp_ptr++
 
         let first_header = {id: 0, count: -1, end_ptr: start_ptr - 1}
 
-        if (this.data[tmp_ptr] === 10)
+        if (this.data[tmp_ptr] === 10 || this.data[tmp_ptr] === 13)
             first_header = this.extractSubSectionHeader(start_ptr)
 
         let ref_start = Util.skipDelimiter(this.data, first_header.end_ptr + 1)
