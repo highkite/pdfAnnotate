@@ -268,7 +268,7 @@ export class CrossReferenceTable {
 
         let res : ExtractionResult = { result: null, start_index: -1, end_index: index}
 
-        for (let i = 0; i < count; ++i) {
+        for (let i = 0; count === -1 || i < count; ++i) {
             res = Util.readNextWord(this.data, res.end_index + 1)
 
             let pointer = Util.extractNumber(res.result, 0).result
@@ -282,7 +282,6 @@ export class CrossReferenceTable {
             let ptr_flag = res.result
 
             let isFree = ptr_flag[0] === 102 // 102 = f
-
             _refs.push({
                 id: first_object_id + i,
                 pointer: pointer,
@@ -290,6 +289,11 @@ export class CrossReferenceTable {
                 free: isFree,
                 update: !isFree
             })
+
+            // if the word trailer occurs stop since we reached the end
+            if (this.data[Util.skipSpaces(this.data, res.end_index + 1)] === 116) {
+                break
+            }
         }
 
         return {refs: _refs, end_index: res.end_index}
@@ -329,7 +333,15 @@ export class CrossReferenceTable {
 
         start_ptr = Util.skipDelimiter(this.data, start_ptr)
 
-        let first_header = this.extractSubSectionHeader(start_ptr)
+        // check if there actually is a subsection header
+        // if the line finishes with an 'f' we know that it starts with the first cross reference entry
+        let tmp_ptr = start_ptr
+        while(tmp_ptr < this.data.length && this.data[tmp_ptr] !== 102 && this.data[tmp_ptr] !== 10) tmp_ptr++
+
+        let first_header = {id: 0, count: -1, end_ptr: start_ptr - 1}
+
+        if (this.data[tmp_ptr] === 10)
+            first_header = this.extractSubSectionHeader(start_ptr)
 
         let ref_start = Util.skipDelimiter(this.data, first_header.end_ptr + 1)
 
