@@ -340,7 +340,7 @@ export class CrossReferenceTable {
         // extract remaining references
         start_ptr = Util.skipSpaces(this.data, reference_result.end_index + 1)
 
-        while (this.data[start_ptr] !== 116) { // 116 = 't' start of the word trailer that concludes the crosssite reference section
+        while (first_header.count > 0 && this.data[start_ptr] !== 116) { // 116 = 't' start of the word trailer that concludes the crosssite reference section
             let header = this.extractSubSectionHeader(start_ptr)
 
             ref_start = Util.skipDelimiter(this.data, header.end_ptr + 1)
