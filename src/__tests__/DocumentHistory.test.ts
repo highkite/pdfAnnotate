@@ -307,6 +307,28 @@ startxref
     hist.extractDocumentHistory()
 })
 
+test('extractCrossReferenceTable_7', () => {
+    let data = encode(`xref\r
+0 1\r
+0000000001 65535 f\r
+7 2\r
+0000001321 00000 n\r
+0000001352 00000 n\r
+trailer\r
+<</Size 9 /Root 1 0 R>>
+startxref
+11
+%%EOF`)
+    let hist = new DocumentHistory(new Uint8Array(data))
+
+    hist.extractDocumentHistory()
+    expect(hist.updates[0].refs.map(x => x.id)).toEqual([0, 7, 8])
+    expect(hist.updates[0].refs.map(x => x.pointer)).toEqual([1, 1321, 1352])
+    expect(hist.updates[0].refs.map(x => x.generation)).toEqual([65535, 0,0])
+    expect(hist.updates[0].refs.map(x => x.free)).toEqual([true, false, false])
+    expect(hist.updates[0].refs.map(x => x.update)).toEqual([false, true, true])
+})
+
 test('extractSubSectionHeader', () => {
     let crt = new CrossReferenceTable(new Uint8Array(encode("0 10")))
     let res = crt.extractSubSectionHeader(0)

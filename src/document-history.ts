@@ -452,6 +452,11 @@ export class DocumentHistory {
             return locateXREFStartManually()
         }
 
+        // start section with XREF?
+        if (section_type !== "stream" && !(this.data[ptr] === Util.XREF[0] && this.data[ptr + 1] === Util.XREF[1] && this.data[ptr + 2] === Util.XREF[2] && this.data[ptr + 3] === Util.XREF[3])) {
+            return locateXREFStartManually()
+        }
+
         return {pointer: ptr, sectionType: section_type}
     }
 
