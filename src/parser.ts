@@ -159,6 +159,8 @@ export class PageTree {
 
     private pageReferences: ReferencePointer[] = []
 
+    private visitedPages: ReferencePointer[] = []
+
     constructor(private data: Uint8Array, private objectLookupTable: ObjectLookupTable) {
         this.data = data
     }
@@ -170,8 +172,13 @@ export class PageTree {
      * - a /Page object then it adds the references
      * */
     extractPageReferences(references: ReferencePointer[]) {
-
         for (let reference of references) {
+
+            if(this.visitedPages.some(el => el.obj === reference.obj &&
+                el.generation === reference.generation)) {
+                continue
+            }
+
             let xref = this.objectLookupTable[reference.obj]
 
             let kid_page_obj = ObjectUtil.extractObject(this.data, xref, this.objectLookupTable).value
@@ -179,10 +186,12 @@ export class PageTree {
             if (kid_page_obj["/Type"] === "/Page") {
                 this.pageReferences.push(reference)
             } else if (kid_page_obj["/Type"] === "/Pages") {
+                this.visitedPages.push(reference)
                 this.extractPageReferences(kid_page_obj["/Kids"])
             } else {
                 throw Error(`Invalid object type ${kid_page_obj["/Type"]}`)
             }
+
         }
     }
 
@@ -191,7 +200,6 @@ export class PageTree {
      * */
     extract(xref: XRef, objectLookupTable: ObjectLookupTable) {
         let page_tree_obj = ObjectUtil.extractObject(this.data, xref, objectLookupTable).value
-        this.pageCount = page_tree_obj["/Count"]
 
         if (!page_tree_obj["/Kids"])
             throw Error(`Could not find index of /Kids in /Pages object`)
@@ -201,6 +209,8 @@ export class PageTree {
         this.pageReferences = []
 
         this.extractPageReferences(refs)
+
+        this.pageCount = this.pageReferences.length
     }
 
     /**
