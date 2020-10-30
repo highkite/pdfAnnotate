@@ -223,6 +223,9 @@ export class ObjectUtil {
         ObjectUtil.extractDictValueRec(data, 0, result_dict)
         ret_obj.value = result_dict
 
+        if (result_dict["/Filter"] && Array.isArray(result_dict["/Filter"]) &&  result_dict["/Filter"].length > 0)
+            result_dict["/Filter"] = result_dict["/Filter"][0]
+
         // check if filter is supported
         if (!result_dict["/Filter"] || result_dict["/Filter"] !== "/FlateDecode")
             throw Error(`Unsupported stream filter: ${result_dict["/Filter"]} - Only supported filter is FlateDecode`)
