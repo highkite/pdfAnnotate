@@ -538,7 +538,7 @@ endstream
 endobj
 ```
 
-The reason for providing a `/First` attribute is that the stream consist of two parts. The firs part can be considered as a cross reference table for the objetcs within the stream object, while the second part contains the actual
+The reason for providing a `/First` attribute is that the stream consist of two parts. The firs part can be considered as a cross reference table for the objects within the stream object, while the second part contains the actual
 object data.
 
 Two important remarks about the structure of the stream:
