@@ -264,7 +264,6 @@ export class Page {
      * Extracts the page object starting at position ptr
      * */
     extract(xref: XRef, objectLookupTable: ObjectLookupTable) {
-
         let page_obj = ObjectUtil.extractObject(this.data, xref, objectLookupTable)
 
         this.object_id = page_obj.id
@@ -272,14 +271,10 @@ export class Page {
         let annots = page_obj.value["/Annots"]
 
         if (annots) {
-            if(Array.isArray(annots)) {
-                annots = annots.filter((x : any) => x !== 'null')
-            }
-
             this.hasAnnotsField = true
 
             if (Array.isArray(annots)) {
-                this.annots = annots
+                this.annots = annots.filter((x : any) => x !== 'null')
             } else {
                 this.annotsPointer = annots
 

@@ -241,7 +241,6 @@ export class ObjectUtil {
 
         let stream = ObjectUtil.extractStreamData(data.slice(ptr_stream_data_start, ptr_stream_data_end), result_dict["/Filter"], ObjectUtil.translateDecodeParams(result_dict))
 
-
         if (!result_dict["/N"])
             throw Error("Invalid stream object -- no number of objects specified")
 
@@ -255,11 +254,24 @@ export class ObjectUtil {
 
         let result_obj: any = { id: { obj: object_id_to_extract, generation: 0 } }
 
-        let value = {}
-        result_obj.pointer_stream_end = ObjectUtil.extractDictValueRec(stream.getData(), streamReferences[object_id_to_extract], value)
-        result_obj.value = value
-        result_obj.stream = stream
-        result_obj.pointer_stream_start = streamReferences[object_id_to_extract]
+        let stream_data : Uint8Array = stream.getData()
+
+        next = Util.readNextWord(stream_data, streamReferences[object_id_to_extract])
+
+        if (next.result && next.result[0] === Util.DICT_START[0]) { // object contains a dict
+            let value = {}
+            result_obj.pointer_stream_end = ObjectUtil.extractDictValueRec(stream_data, streamReferences[object_id_to_extract], value)
+            result_obj.value = value
+            result_obj.stream = stream
+            result_obj.pointer_stream_start = streamReferences[object_id_to_extract]
+        } else if (next.result && next.result[0] === Util.ARRAY_START[0]) { // object contains an array
+            let lst = ArrayUtil.extractArray(stream_data, streamReferences[object_id_to_extract])
+            result_obj.value = lst.result
+            result_obj.stream = stream
+            result_obj.pointer_stream_start = streamReferences[object_id_to_extract]
+        } else {
+            throw Error(`Invalid stream object type - starting with: ${next.result}`)
+        }
 
         return result_obj
     }
