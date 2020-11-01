@@ -2,6 +2,8 @@ import { Util } from './util';
 import {ReferencePointer} from './parser'
 import { CryptoUtil } from './crypto-util';
 
+export const RC4_40_BIT : boolean = true;
+
 export interface CryptoConfiguration {
     version : number | undefined // /V parameter
     revision : number | undefined // /R revision number
@@ -45,7 +47,7 @@ export class RC4CryptoEngine implements CryptoEngine {
     private encryptionKey : Uint8Array | undefined = undefined
     private computed_user_password : Uint8Array | undefined = undefined
 
-    constructor(private cryptoConfiguration: CryptoConfiguration, private file_id : Uint8Array[] | undefined) {
+    constructor(private cryptoConfiguration: CryptoConfiguration, private file_id : Uint8Array[] | undefined, private rc4_40_bit : boolean = false) {
     }
 
     encrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array {
@@ -86,6 +88,9 @@ export class RC4CryptoEngine implements CryptoEngine {
 
         let oValue : Uint8Array = this.cryptoConfiguration.owner_pwd_c
 
+        if (oValue.length > 32)
+            throw Error(`Invalid length of owner value. Is ${oValue.length} but must be 32.`)
+
         if (!this.cryptoConfiguration.permissions)
             throw Error("Permissions not set")
 
@@ -104,11 +109,17 @@ export class RC4CryptoEngine implements CryptoEngine {
 
         let h = CryptoUtil.MD5(stuff)
 
-        for (let i = 0; i < 50; ++i) {
-            h = CryptoUtil.MD5(h)
+        if (this.cryptoConfiguration.revision && this.cryptoConfiguration.revision >= 3) {
+            for (let i = 0; i < 50; ++i) {
+                h = CryptoUtil.MD5(h)
+            }
         }
 
-        this.encryptionKey = CryptoUtil.convertWordArrayToByteArray(h)
+        if (this.rc4_40_bit) {
+            this.encryptionKey = CryptoUtil.convertWordArrayToByteArray(h).slice(0, 5)
+        } else {
+            this.encryptionKey = CryptoUtil.convertWordArrayToByteArray(h)
+        }
 
         return this.encryptionKey
     }
@@ -120,6 +131,32 @@ export class RC4CryptoEngine implements CryptoEngine {
         if (this.computed_user_password)
             return this.computed_user_password
 
+        if (this.cryptoConfiguration.revision && this.cryptoConfiguration.revision >= 3)
+            return this.computeUserPasswordRevision3OrGreater()
+        else if (this.cryptoConfiguration.revision === 2)
+            return this.computeUserPasswordRevision2()
+
+        return new Uint8Array([])
+    }
+
+    /**
+     * Computes the user password for security handlers of revision 2
+     * */
+    computeUserPasswordRevision2() : Uint8Array {
+        let padding_str : Uint8Array = new Uint8Array(CryptoUtil.PADDING_STRING)
+        let enc_key = this.computeEncryptionKey()
+
+        let x = CryptoUtil.RC4(padding_str, enc_key)
+
+        this.computed_user_password = CryptoUtil.convertWordArrayToByteArray(x)
+
+        return this.computed_user_password
+    }
+
+    /**
+     * Computes the user password for security handlers of revision 3 or higher
+     * */
+    computeUserPasswordRevision3OrGreater() : Uint8Array {
         if (!this.file_id)
             throw Error("No file id")
 
@@ -157,7 +194,11 @@ export class RC4CryptoEngine implements CryptoEngine {
         if(!this.cryptoConfiguration.user_pwd_c)
             throw Error("Invalid /U value (owner password)")
 
-        return Util.areArraysEqual(user_pwd, this.cryptoConfiguration.user_pwd_c.slice(0,16))
+        if (this.cryptoConfiguration.revision && this.cryptoConfiguration.revision >= 3) {
+            return Util.areArraysEqual(user_pwd, this.cryptoConfiguration.user_pwd_c.slice(0,16))
+        } else {
+            return Util.areArraysEqual(user_pwd, this.cryptoConfiguration.user_pwd_c)
+        }
     }
 
     /**

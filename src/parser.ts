@@ -1,7 +1,7 @@
 import { Util, PDFVersion } from './util';
 import { ObjectUtil } from './object-util'
 import { DocumentHistory, ObjectLookupTable, XRef } from './document-history';
-import { CryptoEngine, IdentityEngine, CryptoConfiguration, RC4CryptoEngine } from './crypto';
+import { CryptoEngine, IdentityEngine, CryptoConfiguration, RC4CryptoEngine, RC4_40_BIT} from './crypto';
 
 /**
  * Note that this parser does not parses the PDF file completely. It lookups those
@@ -304,7 +304,7 @@ class CryptoInterface {
             // setup crypto-engine
 
             if (this.cryptoConfiguration.version === 1) {
-                console.log("RC4 Encryption with key length 40 bits")
+                this.cryptoEngine = new RC4CryptoEngine(this.cryptoConfiguration, this.documentHistory.getRecentUpdate().id, RC4_40_BIT)
             } else if(this.cryptoConfiguration.version === 2) {
                 this.cryptoEngine = new RC4CryptoEngine(this.cryptoConfiguration, this.documentHistory.getRecentUpdate().id)
             } else if(this.cryptoConfiguration.version === 4) {
