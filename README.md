@@ -129,9 +129,11 @@ In the following we introduce the API.
 It is possible to create an annotation factory and initialize it directly with the data of a PDF document given as *Int8Array*. This is for instance useful, when using the pdfAnnotate library with *PDFjs*.
 
 #### Parameters:
-| Paramater   |     Type      |  Description |
-|----------|-------------|------|
-| data |  Int8Array | The PDF document data |
+| Paramater     | Type      | Description                                    |
+|---------------|-----------|------------------------------------------------|
+| data          | Int8Array | The PDF document data                          |
+| userPassword  | string    | An user password if the document is encrypted  |
+| ownerPassword | string    | An owner password if the document is encrypted |
 
 ### <a name="loadfile"></a>loadFile(...)
 
@@ -140,9 +142,11 @@ It is possible to create an annotation factory and initialize it directly with t
 It returns a promise with the instantiated factory as argument.
 
 #### Parameters:
-| Paramater   |     Type      |  Description |
-|----------|-------------|------|
-| path | string | Path to the PDF file |
+| Paramater     | Type   | Description                                    |
+|---------------|--------|------------------------------------------------|
+| path          | string | Path to the PDF file                           |
+| userPassword  | string | An user password if the document is encrypted  |
+| ownerPassword | string | An owner password if the document is encrypted |
 
 ### <a name="createtext"></a>createTextAnnotation(...)
 
