@@ -14,9 +14,9 @@ export class AnnotationFactory {
 
     private parser: PDFDocumentParser
 
-    constructor(private data: Uint8Array) {
+    constructor(private data: Uint8Array, private userPassword: string = "", private ownerPassword : string = "") {
         this.data = data
-        this.parser = new PDFDocumentParser(this.data)
+        this.parser = new PDFDocumentParser(this.data, this.userPassword, this.ownerPassword)
     }
 
     /**
@@ -29,14 +29,14 @@ export class AnnotationFactory {
     /**
      * Load a PDF file referenced by the given 'path'
      * */
-    public static loadFile(path: string): Promise<AnnotationFactory> {
+    public static loadFile(path: string, userPassword: string = "", ownerPassword : string = ""): Promise<AnnotationFactory> {
         return new Promise<AnnotationFactory>((resolve) => {
             if (typeof window !== 'undefined') { // browser environment
                 fetch(path).then((r) => r.blob()).then((data) => {
                     let reader: any = new FileReader()
 
                     reader.onload = () => {
-                        resolve(new AnnotationFactory(reader.result))
+                        resolve(new AnnotationFactory(reader.result, userPassword, ownerPassword))
                     }
 
                     reader.readAsArrayBuffer(data)
@@ -45,7 +45,7 @@ export class AnnotationFactory {
                 let fs = require('fs')
                 let data = fs.readFileSync(path)
 
-                resolve(new AnnotationFactory(data))
+                resolve(new AnnotationFactory(data, userPassword, ownerPassword))
             } else {
                 throw Error("Unsupported environment")
             }
@@ -279,86 +279,86 @@ export class AnnotationFactory {
         this.annotations.push(annot)
     }
 
-        /**
-         * Creates a free text annotation
-         * page : the number of the PDF document page, where the annotation must be attached
-         * rect : the position of the annotation on the page
-         * contents : the content of the annotation
-         * author : the author of the annotation
-         * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
-         * */
-        createFreeTextAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }) {
-            this.checkRect(4, rect)
-            let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
-                textAlignment: "right-justified",
-                defaultAppearance: "/Invalid_font 9 Tf"
-            })
+    /**
+     * Creates a free text annotation
+     * page : the number of the PDF document page, where the annotation must be attached
+     * rect : the position of the annotation on the page
+     * contents : the content of the annotation
+     * author : the author of the annotation
+     * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * */
+    createFreeTextAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }) {
+        this.checkRect(4, rect)
+        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
+            textAlignment: "right-justified",
+            defaultAppearance: "/Invalid_font 9 Tf"
+        })
 
-            annot.type = "/FreeText"
+        annot.type = "/FreeText"
 
-            this.annotations.push(annot)
-        }
-
-        createLineAnnotation() {
-            throw Error("No yet implemented")
-        }
-
-        /**
-         * Creates the base annotation object of a circle and square annotation
-         * page : the number of the PDF document page, where the annotation must be attached
-         * rect : the position of the annotation on the page
-         * contents : the content of the annotation
-         * author : the author of the annotation
-         * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
-         * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
-         * */
-        createSquareCircleAnnotation(page: number, rect: number[], contents: string, author: string, subtype: string, color: Color = { r: 1, g: 1, b: 0 }, fill: Color = { r: 1, g: 1, b: 0 }): Annotation {
-
-            let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
-                opacity: 1,
-                initiallyOpen: false,
-                annotation_flag: 4,
-                color: color,
-                fill: fill
-            })
-
-            annot.type = subtype
-
-            return annot
-        }
-
-
-        /**
-         * Creates a square annotation
-         * page : the number of the PDF document page, where the annotation must be attached
-         * rect : the position of the annotation on the page
-         * contents : the content of the annotation
-         * author : the author of the annotation
-         * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
-         * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
-         * */
-        createSquareAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, fill: Color = { r: 1, g: 1, b: 0 }) {
-            this.checkRect(4, rect)
-            let annot: Annotation = this.createSquareCircleAnnotation(page, rect, contents, author, "/Square", color, fill)
-
-            this.annotations.push(annot)
+        this.annotations.push(annot)
     }
 
-        /**
-         * Creates a circle annotation
-         * page : the number of the PDF document page, where the annotation must be attached
-         * rect : the position of the annotation on the page
-         * contents : the content of the annotation
-         * author : the author of the annotation
-         * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
-         * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
-         * */
-        createCircleAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, fill: Color = { r: 1, g: 1, b: 0 }) {
-            this.checkRect(4, rect)
-            let annot: Annotation = this.createSquareCircleAnnotation(page, rect, contents, author, "/Circle", color, fill)
+    createLineAnnotation() {
+        throw Error("No yet implemented")
+    }
 
-            this.annotations.push(annot)
-        }
+    /**
+     * Creates the base annotation object of a circle and square annotation
+     * page : the number of the PDF document page, where the annotation must be attached
+     * rect : the position of the annotation on the page
+     * contents : the content of the annotation
+     * author : the author of the annotation
+     * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * */
+    createSquareCircleAnnotation(page: number, rect: number[], contents: string, author: string, subtype: string, color: Color = { r: 1, g: 1, b: 0 }, fill: Color = { r: 1, g: 1, b: 0 }): Annotation {
+
+        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
+            opacity: 1,
+            initiallyOpen: false,
+            annotation_flag: 4,
+            color: color,
+            fill: fill
+        })
+
+        annot.type = subtype
+
+        return annot
+    }
+
+
+    /**
+     * Creates a square annotation
+     * page : the number of the PDF document page, where the annotation must be attached
+     * rect : the position of the annotation on the page
+     * contents : the content of the annotation
+     * author : the author of the annotation
+     * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * */
+    createSquareAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, fill: Color = { r: 1, g: 1, b: 0 }) {
+        this.checkRect(4, rect)
+        let annot: Annotation = this.createSquareCircleAnnotation(page, rect, contents, author, "/Square", color, fill)
+
+        this.annotations.push(annot)
+    }
+
+    /**
+     * Creates a circle annotation
+     * page : the number of the PDF document page, where the annotation must be attached
+     * rect : the position of the annotation on the page
+     * contents : the content of the annotation
+     * author : the author of the annotation
+     * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * */
+    createCircleAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, fill: Color = { r: 1, g: 1, b: 0 }) {
+        this.checkRect(4, rect)
+        let annot: Annotation = this.createSquareCircleAnnotation(page, rect, contents, author, "/Circle", color, fill)
+
+        this.annotations.push(annot)
+    }
 
     /**
      * Creates the base object of a polygon or polyline annotation
@@ -548,49 +548,49 @@ export class AnnotationFactory {
         })
     }
 
-        createPopupAnnotation() {
-            throw Error("No yet implemented")
-        }
+    createPopupAnnotation() {
+        throw Error("No yet implemented")
+    }
 
-        /**
-         * Downloads the adapted PDF document
-         * */
-        download(fileName: string = "output.pdf") {
-            let a: any = document.createElement("a");
-            document.body.appendChild(a);
-            a.style = "display: none";
+    /**
+     * Downloads the adapted PDF document
+     * */
+    download(fileName: string = "output.pdf") {
+        let a: any = document.createElement("a");
+        document.body.appendChild(a);
+        a.style = "display: none";
 
-            let extended_pdf = this.write()
-            let blob = new Blob([extended_pdf], { type: "application/pdf" })
-            let url = window.URL.createObjectURL(blob)
-            a.href = url
-            a.download = fileName
-            a.click()
-            a.remove()
-            window.URL.revokeObjectURL(url);
-        }
+        let extended_pdf = this.write()
+        let blob = new Blob([extended_pdf], { type: "application/pdf" })
+        let url = window.URL.createObjectURL(blob)
+        a.href = url
+        a.download = fileName
+        a.click()
+        a.remove()
+        window.URL.revokeObjectURL(url);
+    }
 
-        /**
-         * Saves the adapted PDF document in a nodejs environment
-         * */
-        // see https://github.com/angular/angular-cli/issues/9827
-        // why is it so reprehensible to create libraries for both environments (browser and nodejs)?
-        //
-        // uncomment it if you want to use it.
-        save(fileName: string = "output.pdf") {
-            //     if (typeof process === 'undefined' && (<any>process).release.name !== 'node') {
-            //         console.error('Use download() in a browser environment')
-            //         return
-            //     }
+    /**
+     * Saves the adapted PDF document in a nodejs environment
+     * */
+    // see https://github.com/angular/angular-cli/issues/9827
+    // why is it so reprehensible to create libraries for both environments (browser and nodejs)?
+    //
+    // uncomment it if you want to use it.
+    save(fileName: string = "output.pdf") {
+        //     if (typeof process === 'undefined' && (<any>process).release.name !== 'node') {
+        //         console.error('Use download() in a browser environment')
+        //         return
+        //     }
 
-            //     const fs = require('fs')
-            //     let data = this.write()
-            //     fs.writeFile(fileName, Buffer.from(new Uint8Array(data)), (err: any) => {
-            //         if (err) {
-            //             return console.log(err);
-            //         }
+        //     const fs = require('fs')
+        //     let data = this.write()
+        //     fs.writeFile(fileName, Buffer.from(new Uint8Array(data)), (err: any) => {
+        //         if (err) {
+        //             return console.log(err);
+        //         }
 
-            //         console.log(`The file was written to: ${fileName}`);
-            //     })
-        }
+        //         console.log(`The file was written to: ${fileName}`);
+        //     })
+    }
 }

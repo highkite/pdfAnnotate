@@ -46,6 +46,7 @@ export class IdentityEngine implements CryptoEngine {
 export class RC4CryptoEngine implements CryptoEngine {
     private encryptionKey : Uint8Array | undefined = undefined
     private computed_user_password : Uint8Array | undefined = undefined
+    private computed_owner_password : Uint8Array | undefined = undefined
 
     constructor(private cryptoConfiguration: CryptoConfiguration, private file_id : Uint8Array[] | undefined, private rc4_40_bit : boolean = false) {
     }
@@ -88,7 +89,7 @@ export class RC4CryptoEngine implements CryptoEngine {
 
         let oValue : Uint8Array = this.cryptoConfiguration.owner_pwd_c
 
-        if (oValue.length > 32)
+        if (oValue.length !== 32)
             throw Error(`Invalid length of owner value. Is ${oValue.length} but must be 32.`)
 
         if (!this.cryptoConfiguration.permissions)
@@ -131,10 +132,11 @@ export class RC4CryptoEngine implements CryptoEngine {
         if (this.computed_user_password)
             return this.computed_user_password
 
-        if (this.cryptoConfiguration.revision && this.cryptoConfiguration.revision >= 3)
+        if (this.cryptoConfiguration.revision && this.cryptoConfiguration.revision >= 3) {
             return this.computeUserPasswordRevision3OrGreater()
-        else if (this.cryptoConfiguration.revision === 2)
+        } else if (this.cryptoConfiguration.revision === 2) {
             return this.computeUserPasswordRevision2()
+        }
 
         return new Uint8Array([])
     }
@@ -182,7 +184,48 @@ export class RC4CryptoEngine implements CryptoEngine {
     /**
      * Derives the owner password (/O) value
      **/
-    computeOwnerPassword() : void {
+    computeOwnerPassword() : Uint8Array {
+        if (this.computed_owner_password)
+            return this.computed_owner_password
+
+        let pwd_string = this.cryptoConfiguration.owner_pwd
+
+        // if no owner password is set, but a user password use this
+        if (!this.cryptoConfiguration.owner_pwd || this.cryptoConfiguration.owner_pwd === "")
+            pwd_string = this.cryptoConfiguration.user_pwd
+
+        let ownerpwd = CryptoUtil.padPasswortString(pwd_string)
+
+        let h = CryptoUtil.MD5(ownerpwd)
+
+        let count : number = 1
+        if (this.cryptoConfiguration.revision && this.cryptoConfiguration.revision >= 3) {
+            count = 20
+
+            for (let i = 0; i < 50; ++i) {
+                h = CryptoUtil.MD5(h)
+            }
+        }
+
+        let length = 128
+
+        if (this.cryptoConfiguration.length)
+            length = this.cryptoConfiguration.length
+
+        let enc_key = CryptoUtil.convertWordArrayToByteArray(h).slice(0, length / 8)
+
+        let userpwd = CryptoUtil.padPasswortString(this.cryptoConfiguration.user_pwd)
+
+
+        let x  = CryptoUtil.convertToWordArray(userpwd)
+
+        for(let i = 0; i < count; ++i) {
+            x = CryptoUtil.RC4(x, CryptoUtil.xorBytes(enc_key, i))
+        }
+
+        this.computed_owner_password = CryptoUtil.convertWordArrayToByteArray(x)
+
+        return this.computed_owner_password
     }
 
     /**
@@ -192,7 +235,7 @@ export class RC4CryptoEngine implements CryptoEngine {
         let user_pwd = this.computeUserPassword()
 
         if(!this.cryptoConfiguration.user_pwd_c)
-            throw Error("Invalid /U value (owner password)")
+            throw Error("Invalid /U value (user password)")
 
         if (this.cryptoConfiguration.revision && this.cryptoConfiguration.revision >= 3) {
             return Util.areArraysEqual(user_pwd, this.cryptoConfiguration.user_pwd_c.slice(0,16))
@@ -205,6 +248,11 @@ export class RC4CryptoEngine implements CryptoEngine {
      * Returns true if the provided password corresponds to the defined /O value
      * */
     isOwnerPasswordCorrect() : boolean {
-        return false
+        let owner_pwd = this.computeOwnerPassword()
+
+        if(!this.cryptoConfiguration.owner_pwd_c)
+            throw Error("Invalid /O value (owner password)")
+
+        return Util.areArraysEqual(owner_pwd, this.cryptoConfiguration.owner_pwd_c)
     }
 }
