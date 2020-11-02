@@ -614,7 +614,9 @@ export class Util {
                     ret_val.push(92)
                     ret_val.push(98) // \b
                     break
-                case 255: // 255 = FORM FEED
+                case 12: // 255 = FORM FEED
+                    ret_val.push(92)
+                    ret_val.push(102) // \f
                     break
                 default:
                     ret_val.push(array[i])
@@ -661,6 +663,7 @@ export class Util {
                         ret_val.push(8)
                         break
                     case 102: // \f
+                        ret_val.push(12)
                         break
                     default:
                         ret_val.push(array[i])

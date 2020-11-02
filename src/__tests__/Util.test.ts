@@ -569,8 +569,8 @@ test('escapeString', () => {
     val = [97, 40, 98, 9, 10, 13, 8, 99, 92, 100] //a(\t\n\r\bbc\d -- escape TAB & LINE FEED & CARRIAGE RETURN & BACKSPACE
     expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 92, 40, 98, 92, 116, 92, 110, 92, 114, 92, 98, 99, 92, 92, 100])) //a\(\t\n\r\bbc\\d
 
-    val = [97, 40, 98, 9, 10, 13, 8, 99, 92, 100] //a(\t\n\r\b\fbc\d -- escape TAB & LINE FEED & CARRIAGE RETURN & BACKSPACE & FORM FEED
-    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 92, 40, 98, 92, 116, 92, 110, 92, 114, 92, 98, 99, 92, 92, 100])) //a\(\t\n\r\bbc\\d
+    val = [97, 40, 98, 9, 10, 13, 8, 12, 99, 92, 100] //a(\t\n\r\b\fbc\d -- escape TAB & LINE FEED & CARRIAGE RETURN & BACKSPACE & FORM FEED
+    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 92, 40, 98, 92, 116, 92, 110, 92, 114, 92, 98, 92, 102, 99, 92, 92, 100])) //a\(\t\n\r\bbc\\d
 })
 
 test('unescapeString', () => {
@@ -605,7 +605,7 @@ test('unescapeString', () => {
     val = [97, 92, 40, 98, 92, 116, 92, 110, 92, 114, 92, 98, 99, 92, 92, 100] //a(\t\n\r\bbc\d -- escape TAB & LINE FEED & CARRIAGE RETURN & BACKSPACE
     expect(Util.unescapeString(val)).toEqual(new Uint8Array(res)) //a\(\t\n\r\bbc\\d
 
-    res = [97, 40, 98, 9, 10, 13, 8, 99, 92, 100] //a(\t\n\r\bbc\d -- escape TAB & LINE FEED & CARRIAGE RETURN & BACKSPACE
+    res = [97, 40, 98, 9, 10, 13, 12, 8, 99, 92, 100] //a(\t\n\r\bbc\d -- escape TAB & LINE FEED & CARRIAGE RETURN & BACKSPACE
     val = [97, 92, 40, 98, 92, 116, 92, 110, 92, 114, 92, 102, 92, 98, 99, 92, 92, 100] //a(\t\n\r\bbc\d -- escape TAB & LINE FEED & CARRIAGE RETURN & BACKSPACE
     expect(Util.unescapeString(val)).toEqual(new Uint8Array(res)) //a\(\t\n\r\bbc\\d
 })
