@@ -591,12 +591,34 @@ export class Util {
         let ret_val : number[] = []
 
         for (let i = 0; i < array.length; ++i) {
-            if (array[i] === Util.LITERAL_STRING_START[0] ||
-                array[i] === Util.LITERAL_STRING_END[0] ||
-                array[i] === 92) { // 92 = '\'
-                ret_val.push(92)
+            switch (array[i]) {
+                case Util.LITERAL_STRING_START[0]:
+                case Util.LITERAL_STRING_END[0]:
+                case 92: // 92 = '\'
+                    ret_val.push(92)
+                    ret_val.push(array[i])
+                    break
+                case 9: // 9 = TAB
+                    ret_val.push(92)
+                    ret_val.push(116) // \t
+                    break
+                case 10: // 10 = LINE FEED
+                    ret_val.push(92)
+                    ret_val.push(110) // \n
+                    break
+                case 13: // 13 = CARRIAGE RETURN
+                    ret_val.push(92)
+                    ret_val.push(114) // \r
+                    break
+                case 8: // 8 = BACKSPACE
+                    ret_val.push(92)
+                    ret_val.push(98) // \b
+                    break
+                case 255: // 255 = FORM FEED
+                    break
+                default:
+                    ret_val.push(array[i])
             }
-            ret_val.push(array[i])
         }
 
         return new Uint8Array(ret_val)
@@ -610,11 +632,47 @@ export class Util {
     public static unescapeString(array: Uint8Array | number[]) : Uint8Array {
         let ret_val : number[] = []
 
+        let in_escape = false
         for (let i = 0; i < array.length; ++i) {
-            if (array[i] === 92) { // 92 = '\'
-                ++i
+
+            if (in_escape) {
+                in_escape = false
+
+                switch (array[i]) {
+                    case 92: // \
+                        ret_val.push(92)
+                        break
+                    case Util.LITERAL_STRING_START[0]:
+                        ret_val.push(Util.LITERAL_STRING_START[0])
+                        break
+                    case Util.LITERAL_STRING_END[0]:
+                        ret_val.push(Util.LITERAL_STRING_END[0])
+                        break
+                    case 116: // \t
+                        ret_val.push(9)
+                        break
+                    case 110: // \n
+                        ret_val.push(10)
+                        break
+                    case 114: // \r
+                        ret_val.push(13)
+                        break
+                    case 98: // \b
+                        ret_val.push(8)
+                        break
+                    case 102: // \f
+                        break
+                    default:
+                        ret_val.push(array[i])
+                }
+
+            } else {
+                if (array[i] === 92) {
+                    in_escape = true
+                } else {
+                    ret_val.push(array[i])
+                }
             }
-            ret_val.push(array[i])
         }
 
         return new Uint8Array(ret_val)

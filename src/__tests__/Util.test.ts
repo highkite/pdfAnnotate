@@ -545,17 +545,32 @@ test('convertInt32ArrayToUint8Array', () => {
 })
 
 test('escapeString', () => {
-    let val : number[] = [97, 98, 99, 100]
+    let val : number[] = [97, 98, 99, 100] //abcd
     expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 98, 99, 100]))
 
-    val = [97, 98, 99, 92, 100]
-    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 98, 99, 92, 92, 100]))
+    val = [97, 98, 99, 92, 100] // abc\d
+    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 98, 99, 92, 92, 100])) //abc\\d
 
-    val = [97, 40, 98, 99, 92, 100]
-    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 92, 40, 98, 99, 92, 92, 100]))
+    val = [97, 40, 98, 99, 92, 100] //a(bc\d
+    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 92, 40, 98, 99, 92, 92, 100])) //a\(bc\\d
 
-    val = [97, 40, 41, 98, 99, 92, 100]
-    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 92, 40, 92, 41, 98, 99, 92, 92, 100]))
+    val = [97, 40, 41, 98, 99, 92, 100] //a()bc\d
+    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 92, 40, 92, 41, 98, 99, 92, 92, 100]))//b\(\)bc\\d
+
+    val = [97, 40, 98, 9, 99, 92, 100] //a(b\tc\d -- escape TAB
+    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 92, 40, 98, 92, 116, 99, 92, 92, 100])) //a\(b\tc\\d
+
+    val = [97, 40, 98, 9, 10, 99, 92, 100] //a(b\t\nc\d -- escape TAB & LINE FEED
+    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 92, 40, 98, 92, 116, 92, 110, 99, 92, 92, 100])) //a\(b\t\nc\\d
+
+    val = [97, 40, 98, 9, 10, 13, 99, 92, 100] //a(b\t\n\rc\d -- escape TAB & LINE FEED & CARRIAGE RETURN
+    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 92, 40, 98, 92, 116, 92, 110, 92, 114, 99, 92, 92, 100])) //a\(b\t\n\rc\\d
+
+    val = [97, 40, 98, 9, 10, 13, 8, 99, 92, 100] //a(\t\n\r\bbc\d -- escape TAB & LINE FEED & CARRIAGE RETURN & BACKSPACE
+    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 92, 40, 98, 92, 116, 92, 110, 92, 114, 92, 98, 99, 92, 92, 100])) //a\(\t\n\r\bbc\\d
+
+    val = [97, 40, 98, 9, 10, 13, 8, 99, 92, 100] //a(\t\n\r\b\fbc\d -- escape TAB & LINE FEED & CARRIAGE RETURN & BACKSPACE & FORM FEED
+    expect(Util.escapeString(val)).toEqual(new Uint8Array([97, 92, 40, 98, 92, 116, 92, 110, 92, 114, 92, 98, 99, 92, 92, 100])) //a\(\t\n\r\bbc\\d
 })
 
 test('unescapeString', () => {
@@ -573,6 +588,26 @@ test('unescapeString', () => {
 
     val = [97, 92, 40, 92, 41, 98, 99, 92, 92, 100]
     expect(Util.unescapeString(val)).toEqual(new Uint8Array([97, 40, 41, 98, 99, 92, 100]))
+
+    let res = [97, 40, 98, 9, 99, 92, 100] //a(b\tc\d -- escape TAB
+    val = [97, 92, 40, 98, 92, 116, 99, 92, 92, 100] //a(b\tc\d -- escape TAB
+    expect(Util.unescapeString(val)).toEqual(new Uint8Array(res)) //a\(b\tc\\d
+
+    res = [97, 40, 98, 9, 10, 99, 92, 100] //a(b\t\nc\d -- escape TAB & LINE FEED
+    val = [97, 92, 40, 98, 92, 116, 92, 110, 99, 92, 92, 100] //a(b\t\nc\d -- escape TAB & LINE FEED
+    expect(Util.unescapeString(val)).toEqual(new Uint8Array(res)) //a\(b\t\nc\\d
+
+    res = [97, 40, 98, 9, 10, 13, 99, 92, 100] //a(b\t\n\rc\d -- escape TAB & LINE FEED & CARRIAGE RETURN
+    val = [97, 92, 40, 98, 92, 116, 92, 110, 92, 114, 99, 92, 92, 100] //a(b\t\n\rc\d -- escape TAB & LINE FEED & CARRIAGE RETURN
+    expect(Util.unescapeString(val)).toEqual(new Uint8Array(res)) //a\(b\t\n\rc\\d
+
+    res = [97, 40, 98, 9, 10, 13, 8, 99, 92, 100] //a(\t\n\r\bbc\d -- escape TAB & LINE FEED & CARRIAGE RETURN & BACKSPACE
+    val = [97, 92, 40, 98, 92, 116, 92, 110, 92, 114, 92, 98, 99, 92, 92, 100] //a(\t\n\r\bbc\d -- escape TAB & LINE FEED & CARRIAGE RETURN & BACKSPACE
+    expect(Util.unescapeString(val)).toEqual(new Uint8Array(res)) //a\(\t\n\r\bbc\\d
+
+    res = [97, 40, 98, 9, 10, 13, 8, 99, 92, 100] //a(\t\n\r\bbc\d -- escape TAB & LINE FEED & CARRIAGE RETURN & BACKSPACE
+    val = [97, 92, 40, 98, 92, 116, 92, 110, 92, 114, 92, 102, 92, 98, 99, 92, 92, 100] //a(\t\n\r\bbc\d -- escape TAB & LINE FEED & CARRIAGE RETURN & BACKSPACE
+    expect(Util.unescapeString(val)).toEqual(new Uint8Array(res)) //a\(\t\n\r\bbc\\d
 })
 
 test('skipSpaces', () => {
