@@ -287,19 +287,19 @@ export class Page {
 /**
  * Provides a configured interface to handle the encryption and decryption of PDFs
  * */
-class CryptoInterface {
+export class CryptoInterface {
     cryptoConfiguration : CryptoConfiguration = {version: undefined, revision: undefined, filter: undefined, user_pwd : "", owner_pwd : "", length: undefined, permissions: undefined, owner_pwd_c: undefined, user_pwd_c: undefined}
 
     cryptoEngine : CryptoEngine = new IdentityEngine()
 
-    constructor(private data?: Uint8Array, private documentHistory?: DocumentHistory, ptr?: XRef, user_pwd?: string, owner_pwd?: string) {
+    constructor(private data?: Uint8Array, private documentHistory?: DocumentHistory, private ref_ptr?: XRef, user_pwd?: string, owner_pwd?: string) {
         this.data = data
         this.documentHistory = documentHistory
         this.cryptoConfiguration.user_pwd = user_pwd ? user_pwd : ""
         this.cryptoConfiguration.owner_pwd = owner_pwd ? owner_pwd : ""
 
-        if (ptr && this.documentHistory) {
-            this.extractEncryptionDictionary(ptr)
+        if (this.ref_ptr && this.documentHistory) {
+            this.extractEncryptionDictionary(this.ref_ptr)
 
             // setup crypto-engine
 
@@ -313,6 +313,16 @@ class CryptoInterface {
                 throw Error(`Unsupported Encryption ${this.cryptoConfiguration.version}`)
             }
         }
+    }
+
+    /**
+     * Returns the reference pointer
+     * */
+    getEncryptionDictReference() : ReferencePointer | undefined {
+        if(!this.ref_ptr)
+            return undefined
+
+        return {obj : this.ref_ptr.id, generation : this.ref_ptr.generation}
     }
 
     encrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array {
@@ -378,7 +388,7 @@ export class PDFDocumentParser {
 
     private pageTree: PageTree | undefined = undefined
 
-    private cryptoInterface: CryptoInterface | undefined = undefined
+    private cryptoInterface: CryptoInterface = new CryptoInterface()
 
     constructor(private data: Uint8Array, userpwd : string = "", ownerpwd : string = "") {
         this.data = new Uint8Array(data)
@@ -407,6 +417,13 @@ export class PDFDocumentParser {
             }
 
         }
+    }
+
+    /**
+     * Returns the crypto interface
+     * */
+    getCryptoInterface(): CryptoInterface {
+        return this.cryptoInterface
     }
 
     /**
@@ -532,4 +549,4 @@ export class PDFDocumentParser {
         return annots
     }
 
-}
+    }

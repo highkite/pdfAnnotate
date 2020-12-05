@@ -48,8 +48,7 @@ export class RC4CryptoEngine implements CryptoEngine {
     private computed_user_password : Uint8Array | undefined = undefined
     private computed_owner_password : Uint8Array | undefined = undefined
 
-    constructor(private cryptoConfiguration: CryptoConfiguration, private file_id : Uint8Array[] | undefined, private rc4_40_bit : boolean = false) {
-    }
+    constructor(private cryptoConfiguration: CryptoConfiguration, private file_id : Uint8Array[] | undefined, private rc4_40_bit : boolean = false) { }
 
     encrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array {
         if (!reference)
@@ -64,9 +63,9 @@ export class RC4CryptoEngine implements CryptoEngine {
         let gen = CryptoUtil.convertNumberToLittleEndianByteArray(reference.generation)
         adapted_key.set(gen.slice(0, 2), encryptionKey.length + 3)
 
-        let key_hash = CryptoUtil.MD5(adapted_key)
+        let key_hash = CryptoUtil.MD5AsByteArray(adapted_key)
 
-        let encrypted = CryptoUtil.RC4(data, key_hash)
+        let encrypted = CryptoUtil.RC4(data, key_hash.slice(0, Math.min(encryptionKey.length + 5, 16)))
 
         return CryptoUtil.convertWordArrayToByteArray(encrypted)
     }
@@ -100,6 +99,10 @@ export class RC4CryptoEngine implements CryptoEngine {
         if (!this.file_id || this.file_id.length === 0)
             throw Error("File ID not set")
 
+        let keylength = 40
+        if (this.cryptoConfiguration.length)
+            keylength = this.cryptoConfiguration.length
+
         let file_id : Uint8Array = this.file_id[0]
 
         let stuff = new Uint8Array(userpwd.length + oValue.length + permissions.length + file_id.length)
@@ -108,18 +111,19 @@ export class RC4CryptoEngine implements CryptoEngine {
         stuff.set(permissions, userpwd.length + oValue.length)
         stuff.set(file_id, userpwd.length + oValue.length + permissions.length)
 
-        let h = CryptoUtil.MD5(stuff)
+        let h = CryptoUtil.MD5AsByteArray(stuff)
+        keylength = keylength >> 3
 
         if (this.cryptoConfiguration.revision && this.cryptoConfiguration.revision >= 3) {
             for (let i = 0; i < 50; ++i) {
-                h = CryptoUtil.MD5(h)
+                h = CryptoUtil.MD5AsByteArray(h.slice(0, keylength))
             }
         }
 
         if (this.rc4_40_bit) {
-            this.encryptionKey = CryptoUtil.convertWordArrayToByteArray(h).slice(0, 5)
+            this.encryptionKey = h.slice(0, 5)
         } else {
-            this.encryptionKey = CryptoUtil.convertWordArrayToByteArray(h)
+            this.encryptionKey = h
         }
 
         return this.encryptionKey

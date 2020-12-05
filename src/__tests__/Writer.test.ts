@@ -23,6 +23,23 @@ test('write testDocument2', () => {
     fac.write()
 })
 
+test('writeTestDocument3', () => {
+    let data = loadFromFile('./test_documents/test18.pdf')
+    let fac: AnnotationFactory = new AnnotationFactory(data, "123")
+
+    fac.createTextAnnotation(0, [50, 50, 80, 80], "Test123", "Max")
+    fac.createHighlightAnnotation(0, [50, 50, 100, 100], "Test1234", "Max")
+
+    fac.write()
+    let output_data = fac.write()
+
+    let fac2: AnnotationFactory = new AnnotationFactory(output_data, "123")
+
+    fac2.getAnnotations().then((annots) => {
+        console.log(annots)
+    })
+})
+
 test('getAnnotations', () => {
     let data = new Uint8Array(testDocument)
     let fac: AnnotationFactory = new AnnotationFactory(data)

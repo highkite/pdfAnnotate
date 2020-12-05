@@ -83,3 +83,30 @@ test('testRC4_40BitCryptoEngine', () => {
 
     expect(engine.isUserPasswordCorrect()).toBeTruthy()
 })
+
+test('testRC4_40BitCryptoEngine_2', () => {
+    let engine = new RC4CryptoEngine({
+        version : 1,
+        revision : 3,
+        filter : "/Standard",
+        user_pwd_c : new Uint8Array(Util.convertHexStringToByteArray("D64AB15C7434FFE1732E6388274F64C428BF4E5E4E758A4164004E56FFFA0108")),
+        owner_pwd_c : new Uint8Array(Util.convertHexStringToByteArray("63981688733872DEC7983D3C6EB1F412CC535EA2DAA2AB171E2BBC4E36B21887")),
+        length : 40,
+        permissions : -28,
+
+        user_pwd: "",
+        owner_pwd: ""
+    }, [new Uint8Array(Util.convertHexStringToByteArray("9597C618BC90AFA4A078CA72B2DD061C")), new Uint8Array(Util.convertHexStringToByteArray("48726007F483D547A8BEFF6E9CDA072F"))], RC4_40_BIT)
+
+    let encryption_key = engine.computeEncryptionKey()
+    expect(encryption_key).toEqual(new Uint8Array([169,5, 224, 185, 156]))
+
+    let user_pwd = engine.computeUserPassword()
+    expect(Util.convertByteArrayToHexString(user_pwd)).toBe("D64AB15C7434FFE1732E6388274F64C4")
+
+    expect(engine.isUserPasswordCorrect()).toBeTruthy()
+
+    let data = new Uint8Array(Util.convertHexStringToByteArray("F240D629CD72348F"))
+    let res = engine.encrypt(data, {obj: 9, generation: 0})
+    expect(Util.convertAsciiToString(res)).toBe("Jim King")
+})

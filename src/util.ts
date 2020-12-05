@@ -381,7 +381,7 @@ export class Util {
      * Converts the given date into PDF formatting
      * */
     public static convertDateToPDFDate(date: Date): string {
-        let date_str = "(D:"
+        let date_str = "D:"
         date_str += date.getFullYear()
         let month: string = String(date.getMonth() + 1)
         date_str += (month.length == 1 ? "0" : "") + month
@@ -393,7 +393,7 @@ export class Util {
         date_str += (minutes.length == 1 ? "0" : "") + minutes
         let seconds: string = String(date.getSeconds())
         date_str += (seconds.length == 1 ? "0" : "") + seconds
-        return date_str + ")"
+        return date_str
     }
 
     /**

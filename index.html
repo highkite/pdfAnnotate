@@ -64,7 +64,8 @@
                                 once = true
                                 console.log("Load " + filepath)
 
-                                pdfAnnotate.AnnotationFactory.loadFile(filepath).then((factory) => {
+                                pdfAnnotate.AnnotationFactory.loadFile(filepath, "123", "123").then((factory) => {
+                                        //pdfAnnotate.AnnotationFactory.loadFile(filepath).then((factory) => {
                                         pdfFactory = factory
                                         console.log(factory)
                                 })
@@ -154,7 +155,7 @@
                         })
 
                         window.onload =  function(){
-                                fileLoad("./test_documents/test.pdf")
+                                fileLoad("./test_documents/test18.pdf")
                         }
                 </script>
         </body>

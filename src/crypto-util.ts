@@ -72,6 +72,17 @@ export class CryptoUtil {
     }
 
     /**
+     * Returns the MD5 hash as byte array
+     * */
+    public static MD5AsByteArray(data : WordArray | Uint8Array) : Uint8Array {
+        if (data instanceof Uint8Array) {
+            data = CryptoUtil.convertToWordArray(data)
+        }
+
+        return CryptoUtil.convertWordArrayToByteArray(crypto.MD5(data))
+    }
+
+    /**
      * Returns the MD5 hash as hex string
      * */
     public static MD5Hex(data : WordArray | Uint8Array) : string {

@@ -56,7 +56,7 @@ export class AnnotationFactory {
      * Generates a unique identifier necessary for creating the annotation
      * */
     private generateUniqueIdentifier() {
-        return "(pdfAnnotate-" + Util.convertDateToPDFDate(new Date()).slice(3, 17) + "-" + this.annotations.length + ")"
+        return "pdfAnnotate-" + Util.convertDateToPDFDate(new Date()).slice(3, 17) + "-" + this.annotations.length
     }
 
     /**
