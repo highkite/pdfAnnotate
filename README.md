@@ -292,6 +292,7 @@ Adds a polygon as depicted in the following figure.
 | author | string |    The author name.  |
 | vertices | number array |    \[x_1, y_1, ... , x_n, y_n\] the points building the polygon. |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
+| fill      | object       | Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the background color of the annotation. |
 
 ### <a name="createpolyline"></a>createPolyLineAnnotation(...)
 

@@ -369,15 +369,17 @@ export class AnnotationFactory {
      * vertices : the vertices defining the arrangement of the object
      * subtyp: Polygon or PolyLine
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * fill : the filling color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1 (works only for polygon)
      * */
-    createPolygonPolyLineAnnotation(page: number, rect: number[], contents: string, author: string, vertices: number[], subtype: string, color: Color = { r: 1, g: 1, b: 0 }): Annotation {
+    createPolygonPolyLineAnnotation(page: number, rect: number[], contents: string, author: string, vertices: number[], subtype: string, color: Color = { r: 1, g: 1, b: 0 }, fill: Color = { r: 1, g: 1, b: 0 }): Annotation {
 
         let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
             opacity: 1,
             initiallyOpen: false,
             annotation_flag: 4,
             color: color,
-            vertices: vertices
+            vertices: vertices,
+            fill: subtype === "/Polygon" ? fill: undefined
         })
 
         annot.type = subtype
@@ -393,10 +395,11 @@ export class AnnotationFactory {
      * author : the author of the annotation
      * vertices : the vertices defining the arrangement of the object
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * fill : the filling color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createPolygonAnnotation(page: number, rect: number[], contents: string, author: string, vertices: number[], color: Color = { r: 1, g: 1, b: 0 }) {
+    createPolygonAnnotation(page: number, rect: number[], contents: string, author: string, vertices: number[], color: Color = { r: 1, g: 1, b: 0 }, fill: Color = { r: 1, g: 1, b: 0 }) {
         this.checkRect(4, rect)
-        let annot: Annotation = this.createPolygonPolyLineAnnotation(page, rect, contents, author, vertices, "/Polygon", color)
+        let annot: Annotation = this.createPolygonPolyLineAnnotation(page, rect, contents, author, vertices, "/Polygon", color, fill)
 
         this.annotations.push(annot)
     }
