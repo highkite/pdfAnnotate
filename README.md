@@ -70,8 +70,8 @@ Annotations can be easily created by calling `creator` methods (see [API Documen
 
 ```
 AnnotationFactory.loadFile(path).then((factory) => {
-                        pdfFactory.createTextAnnotation(0, [50, 50], "Pop up note", "Max")
-                        pdfFactory.download()
+                        factory.createTextAnnotation(0, [50, 50], "Pop up note", "Max")
+                        factory.download()
                         })
 ```
 When using a PDF viewer, as for instance *PDF.js* the factory can be initialized as follows:
