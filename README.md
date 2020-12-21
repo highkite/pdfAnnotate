@@ -70,8 +70,8 @@ Annotations can be easily created by calling `creator` methods (see [API Documen
 
 ```
 AnnotationFactory.loadFile(path).then((factory) => {
-                        pdfFactory.createTextAnnotation(0, [50, 50], "Pop up note", "Max")
-                        pdfFactory.download()
+                        factory.createTextAnnotation(0, [50, 50, 80, 80], "Pop up note", "Max")
+                        factory.download()
                         })
 ```
 When using a PDF viewer, as for instance *PDF.js* the factory can be initialized as follows:
@@ -82,6 +82,21 @@ pdfDocument.getData().then( (data) => {
 ```
 
 Thereby *pdfDocument* is the PDF document representation of the PDFjs library as provided by `pdfjsLib.getDocument(...)`. See the [examples](#Examples) for more information.
+
+### <a name="UseInAngular"></a> Using the Library in Angular
+
+If you use the library in Angular (9) just import the `AnnotationFactory` class as described above.
+
+Then add the following to the `package.json` file of your angular project:
+```
+{
+...
+        "browser": {
+                "fs": false
+        }
+...
+}
+```
 
 ## <a name="Examples"></a>Demo / Examples
 
