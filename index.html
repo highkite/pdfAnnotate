@@ -12,7 +12,32 @@
         </head>
         <body>
                 <div id="app"></div>
+                <div> <button id="textAnnotColorPicker">Choose Color</button>
+                        <input type="checkbox" id="textAnnotOpen" name="textAnnotOpen"><label for="textAnnotOpen">Open?</label>
+                        <p>
+                        Opacity:<input type="number" id="textAnnotOpacity" value="0.5">
+                        </p>
+                        <p>
+                        <fieldset>
+                                <input type="radio" id="comment" name="icon">
+                                <label for="comment">Comment</label>
+                                <input type="radio" id="Key" name="icon">
+                                <label for="Key">Key</label>
+                                <input type="radio" id="Note" name="icon" checked>
+                                <label for="comment">Note</label>
+                                <input type="radio" id="help" name="icon">
+                                <label for="help">Help</label>
+                                <input type="radio" id="newpar" name="icon">
+                                <label for="newpar">New Paragraph</label>
+                                <input type="radio" id="par" name="icon">
+                                <label for="par">Paragraph</label>
+                                <input type="radio" id="insert" name="icon">
+                                <label for="insert">Insert</label>
+                        </fieldset>
+                        </p>
+                </div>
                 <div class="buttonClass"><button id="addTextAnnotation" type="button">Create Text Annotation</button></div>
+                <hr>
                 <div class="buttonClass"><button id="addHighlightAnnotation" type="button">Create Highlight Annotation</button></div>
                 <div class="buttonClass"><button id="addHighlightAnnotationQuadPoint" type="button">Create Highlight Annotation QuadPoint</button></div>
                 <div class="buttonClass"><button id="addHighlightAnnotationQuadPointWithoutRect" type="button">Create Highlight Annotation QuadPoint without Rect Definition</button></div>
@@ -35,8 +60,18 @@
                 <div class="buttonClass"><button id="deleteAnnotation" type="button">Delete Annotation</button></div>
                 <script>
 
+                        var textAnnotColor = {r : 0, g : 0, b : 0}
                         var lineColor = {r : 0, g : 0, b : 0}
                         var fillColor = {r : 0, g : 0, b : 0}
+
+                        var textAnnotColorPicker = document.querySelector('#textAnnotColorPicker');
+                        var _textAnnotColorPicker = new Picker(textAnnotColorPicker);
+
+                        _textAnnotColorPicker.onChange = function(color) {
+                                textAnnotColorPicker.style.background = color.rgbaString;
+                                textAnnotColor = {r: color._rgba[0], g: color._rgba[1], b: color._rgba[2]}
+                        };
+
 
                         var lineColorPicker = document.querySelector('#lineColorPicker');
                         var _lineColorPicker = new Picker(lineColorPicker);
@@ -84,6 +119,39 @@
                                                 document.querySelector('#toDelete').appendChild(btn)
                                         }
                                         console.log(data)
+                                })
+                        })
+
+                        function getRadioButtonIcon() {
+                                let radios = document.getElementsByName("icon")
+
+                                if (radios[0].checked) {
+                                        return pdfAnnotate.AnnotationIcon.Comment
+                                } else if (radios[1].checked){
+                                        return pdfAnnotate.AnnotationIcon.Key
+                                } else if (radios[2].checked){
+                                        return pdfAnnotate.AnnotationIcon.Note
+                                } else if (radios[3].checked){
+                                        return pdfAnnotate.AnnotationIcon.Help
+                                } else if (radios[4].checked){
+                                        return pdfAnnotate.AnnotationIcon.NewParagraph
+                                } else if (radios[5].checked){
+                                        return pdfAnnotate.AnnotationIcon.Paragraph
+                                } else if (radios[6].checked){
+                                        return pdfAnnotate.AnnotationIcon.Insert
+                                }
+                        }
+
+                        document.querySelector('#addTextAnnotation').addEventListener('click', (evt) => {
+                                pdfFactory.createTextAnnotation({
+                                        page: 0,
+                                        rect: [50, 50, 80, 80],
+                                        contents: "Test123",
+                                        author: "John",
+                                        color: textAnnotColor,
+                                        open: document.getElementById("textAnnotOpen").checked,
+                                        icon: getRadioButtonIcon(),
+                                        opacity: document.getElementById("textAnnotOpacity").value
                                 })
                         })
 
@@ -143,10 +211,6 @@
                                 pdfFactory.download()
                         })
 
-                        document.querySelector('#addTextAnnotation').addEventListener('click', (evt) => {
-                                pdfFactory.createTextAnnotation(0, [50, 50, 80, 80], "Test123", "John")
-                        })
-
                         document.querySelector('#showAnnotations').addEventListener('click', (evt) => {
                                 pdfFactory.getAnnotations().then( (data) => {
                                         console.log(data)
@@ -155,7 +219,7 @@
                         })
 
                         window.onload =  function(){
-                                fileLoad("./test_documents/test18.pdf")
+                                fileLoad("./test_documents/test.pdf")
                         }
                 </script>
         </body>
