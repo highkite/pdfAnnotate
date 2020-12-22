@@ -22,6 +22,7 @@
                         Opacity:<input style="margin-left: 10px;" type="number" id="textAnnotOpacity" value="0.5">
                         </p>
                         <p>
+                        Icon:
                         <fieldset>
                                 <input type="radio" id="comment" name="icon">
                                 <label for="comment">Comment</label>
@@ -37,6 +38,33 @@
                                 <label for="par">Paragraph</label>
                                 <input type="radio" id="insert" name="icon">
                                 <label for="insert">Insert</label>
+                        </fieldset>
+                        </p>
+                        StateModel:
+                        <fieldset>
+                                <input type="radio" id="marked" name="stateModel">
+                                <label for="marked">Marked</label>
+                                <input type="radio" id="review" name="stateModel">
+                                <label for="review">Review</label>
+                        </fieldset>
+                        </p>
+                        </p>
+                        State:
+                        <fieldset>
+                                <input type="radio" id="_marked" name="state">
+                                <label for="_marked">Marked</label>
+                                <input type="radio" id="unmarked" name="state">
+                                <label for="unmarked">Unmarked</label>
+                                <input type="radio" id="accepted" name="state">
+                                <label for="accepted">Accepted</label>
+                                <input type="radio" id="rejected" name="state">
+                                <label for="rejected">Rejected</label>
+                                <input type="radio" id="cancelled" name="state">
+                                <label for="cancelled">Cancelled</label>
+                                <input type="radio" id="completed" name="state">
+                                <label for="completed">Completed</label>
+                                <input type="radio" id="none" name="state">
+                                <label for="none">None</label>
                         </fieldset>
                         </p>
                 </div>
@@ -141,8 +169,41 @@
                                 }
                         }
 
+                        function getStateModel() {
+                                let radios = document.getElementsByName("stateModel")
+                                if (radios[0].checked) {
+                                        return pdfAnnotate.AnnotationStateModel.Marked
+                                } else if (radios[1].checked){
+                                        return pdfAnnotate.AnnotationStateModel.Review
+                                }
+
+                                return undefined
+                        }
+
+                        function getState() {
+                                let radios = document.getElementsByName("state")
+
+                                if (radios[0].checked) {
+                                        return pdfAnnotate.AnnotationState.Marked
+                                } else if (radios[1].checked){
+                                        return pdfAnnotate.AnnotationState.Unmarked
+                                } else if (radios[2].checked){
+                                        return pdfAnnotate.AnnotationState.Accepted
+                                } else if (radios[3].checked){
+                                        return pdfAnnotate.AnnotationState.Rejected
+                                } else if (radios[4].checked){
+                                        return pdfAnnotate.AnnotationState.Cancelled
+                                } else if (radios[5].checked){
+                                        return pdfAnnotate.AnnotationState.Completed
+                                } else if (radios[6].checked){
+                                        return pdfAnnotate.AnnotationState.None
+                                }
+
+                                return undefined
+                        }
+
                         document.querySelector('#addTextAnnotation').addEventListener('click', (evt) => {
-                                pdfFactory.createTextAnnotation({
+                                let val = {
                                         page: 0,
                                         rect: [50, 50, 80, 80],
                                         contents: "Test123",
@@ -150,8 +211,23 @@
                                         color: textAnnotColor,
                                         open: document.getElementById("textAnnotOpen").checked,
                                         icon: getRadioButtonIcon(),
-                                        opacity: document.getElementById("textAnnotOpacity").value
-                                })
+                                        opacity: document.getElementById("textAnnotOpacity").value,
+                                        creationDate: new Date(),
+                                        subject: "A subject",
+                                        richtextString: "A very rich text string"
+                                }
+                                let state = getState()
+
+                                if (state) {
+                                        val.state = state
+                                }
+
+                                let statemodel = getStateModel()
+
+                                if (statemodel) {
+                                        val.stateModel = statemodel
+                                }
+                                pdfFactory.createTextAnnotation(val)
                         })
 
                         document.querySelector('#addHighlightAnnotation').addEventListener('click', (evt) => {

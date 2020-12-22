@@ -1,4 +1,4 @@
-import { ReferencePointer, PDFDocumentParser, Page, Annotation, Border, Color } from './parser'
+import { ReferencePointer, PDFDocumentParser, Page, Annotation, Border, Color, TextAnnotationObj, BaseAnnotation } from './parser'
 import { Util } from './util'
 import { Writer } from './writer'
 
@@ -85,6 +85,10 @@ export class AnnotationFactory {
      * Checks the 'rect' parameter, whether all the entries are of type number and if the the number of entries is correct
      * */
     private checkRect(nr: number, rect: number[]) {
+        if (!Array.isArray(rect)) {
+            throw Error("invalid rect parameter")
+        }
+
         if (rect.length !== nr)
             throw Error("Rect has invalid number of entries: " + rect + " has " + rect.length + " entries, but should have " + nr + " entries")
 
@@ -121,20 +125,91 @@ export class AnnotationFactory {
      * Creates a base annotation that means the raw object of annotation or those parts that exist
      * in equal form in all types of annotations
      * */
-    createBaseAnnotation(page: number, rect: number[], contents: string, author: string): Annotation {
-        let annot: Annotation = new Annotation()
-        annot.type = "/Annot",
-            annot.page = page,
-            annot.object_id = this.parser.getFreeObjectId(),
-            annot.id = this.generateUniqueIdentifier(),
-            annot.rect = rect,
-            annot.author = author,
-            annot.pageReference = this.parser.getPage(page),
-            annot.updateDate = Util.convertDateToPDFDate(new Date()),
-            annot.contents = contents,
-            annot.border = this.createDefaultBorder()
+    createBaseAnnotation(page : number): BaseAnnotation {
+        if (page < 0) {
+            throw Error(`Invalid page number: ${page}`)
+        }
+
+        let annot: BaseAnnotation = {
+            object_id: this.parser.getFreeObjectId(),
+            id: this.generateUniqueIdentifier(),
+            pageReference: this.parser.getPage(page),
+            updateDate: Util.convertDateToPDFDate(new Date()),
+            border: this.createDefaultBorder(),
+            page: page, rect: []
+        }
 
         return annot
+    }
+
+    /**
+     * Parses and checks the parameter. This is for backward compatibility and to support arbitrary annotation parameters
+     * */
+    parseParameters(values : any[]) {
+        if (values.length === 0) {
+            throw Error("No parameters provided")
+        }
+
+        let i = 0
+        if (typeof values[i] === 'number') {
+            let ret_val : any = {}
+            ret_val.page = values[i++]
+            ret_val.rect = values[i++]
+            this.checkRect(4, ret_val.rect)
+
+            ret_val.contents = values[i++]
+            if(typeof ret_val.contents !== 'string') {
+                throw Error("Invalid contents parameter")
+            }
+
+            ret_val.author = values[i++]
+            if(typeof ret_val.author !== 'string') {
+                throw Error("Invalid author parameter")
+            }
+
+            if (i >= values.length) return ret_val
+
+            if (values[i].r && values[i].g && values[i].b) {
+                ret_val.color = values[i++]
+            } else if (Array.isArray(values[i]) && values[i].length > 0 && typeof values[i][0] === 'number') {
+                ret_val.vertices = values[i++]
+            } else if (Array.isArray(values[i]) && values[i].length > 0 && Array.isArray(values[i][0])) {
+                ret_val.inkList = values[i++]
+            } else {
+                throw Error("Invalid parameter provided")
+            }
+
+            if (i >= values.length) return ret_val
+
+            if (values[i].r && values[i].g && values[i].b) {
+                if (ret_val.color) {
+                    ret_val.fill = values[i++]
+                } else {
+                    ret_val.color = values[i++]
+                }
+            } else if (Array.isArray(values[i]) && values[i].length > 0 && typeof values[i][0] === 'number') {
+                ret_val.quadPoints = values[i++]
+            } else if (typeof values[i] === 'object'){
+                ret_val.config = true
+                ret_val = (<any>Object).assign(ret_val, values[i++])
+            } else {
+                throw Error("Invalid parameter provided")
+            }
+
+            if (i >= values.length) return ret_val
+
+            if (!ret_val.config && typeof values[i] === 'object') {
+                ret_val = (<any>Object).assign(ret_val, values[i++])
+            } else {
+                throw Error("Invalid configuration provided")
+            }
+
+            return ret_val
+        } else if (typeof values[i] === 'object') {
+            return values[0]
+        } else {
+            throw Error("Invalid configuration object")
+        }
     }
 
     /**
@@ -144,25 +219,16 @@ export class AnnotationFactory {
      * contents : the content of the annotation
      * author : the author of the annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * options : dictionary containing additional configuration values, see documentation
      * */
-    createTextAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }) {
-        if (!contents)
-            contents = ""
+    createTextAnnotation(...values : any[]) {
+        let params = this.parseParameters(values)
 
-        if (!author)
-            author = ""
+        let annot : TextAnnotationObj = new TextAnnotationObj()
+        annot = (<any>Object).assign(annot, this.createBaseAnnotation(params.page))
+        annot = (<any>Object).assign(annot, params)
 
-        this.checkRect(4, rect)
-
-        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
-            opacity: 1,
-            initiallyOpen: false,
-            annotation_flag: 4,
-            color: color
-
-        })
-
-        annot.type = "/Text"
+        annot.validate()
 
         this.annotations.push(annot)
     }
@@ -175,8 +241,9 @@ export class AnnotationFactory {
      * author : the author of the annotation
      * subtype : the subtype of the Textmarkup annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * quadPoints : regions to mark with the highlight
      * */
-    createTextMarkupAnnotation(page: number, rect: number[], contents: string, author: string, subtype: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []): Annotation {
+    createTextMarkupAnnotation(page: number, rect: number[], contents: string = "", author: string = "", subtype: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []): Annotation {
 
         if (0 === quadPoints.length)
             quadPoints = [rect[0], rect[3], rect[2], rect[3], rect[0], rect[1], rect[2], rect[1]]
@@ -184,7 +251,7 @@ export class AnnotationFactory {
             this.checkQuadPoints(quadPoints)
         }
 
-        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
+        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page), {
             opacity: 1,
             initiallyOpen: false,
             annotation_flag: 4,
@@ -204,16 +271,18 @@ export class AnnotationFactory {
      * contents : the content of the annotation
      * author : the author of the annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * quadPoints : regions to mark with the highlight
      * */
-    createHighlightAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []) {
-        this.checkQuadPoints(quadPoints)
+    createHighlightAnnotation(...values : any[]) {
+        let params = this.parseParameters(values)
+        this.checkQuadPoints(params.quadPoints)
 
-        if (rect.length === 0 && quadPoints.length > 0) {
-            rect = this.extractRectFromQuadPoints(quadPoints)
+        if (params.rect.length === 0 && params.quadPoints.length > 0) {
+            params.rect = this.extractRectFromQuadPoints(params.quadPoints)
         }
+        this.checkRect(4, params.rect)
 
-        this.checkRect(4, rect)
-        let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/Highlight", color, quadPoints)
+        let annot = this.createTextMarkupAnnotation(params.page, params.rect, params.contents, params.author, "/Highlight", params.color, params.quadPoints)
 
         this.annotations.push(annot)
     }
@@ -225,15 +294,17 @@ export class AnnotationFactory {
      * contents : the content of the annotation
      * author : the author of the annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * quadPoints : regions to mark with the highlight
      * */
-    createUnderlineAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []) {
-        this.checkQuadPoints(quadPoints)
+    createUnderlineAnnotation(...values : any[]) {
+        let params = this.parseParameters(values)
+        this.checkQuadPoints(params.quadPoints)
 
-        if (rect.length === 0 && quadPoints.length > 0) {
-            rect = this.extractRectFromQuadPoints(quadPoints)
+        if (params.rect.length === 0 && params.quadPoints.length > 0) {
+            params.rect = this.extractRectFromQuadPoints(params.quadPoints)
         }
-        this.checkRect(4, rect)
-        let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/Underline", color, quadPoints)
+        this.checkRect(4, params.rect)
+        let annot = this.createTextMarkupAnnotation(params.page, params.rect, params.contents, params.author, "/Underline", params.color, params.quadPoints)
 
         this.annotations.push(annot)
     }
@@ -245,15 +316,17 @@ export class AnnotationFactory {
      * contents : the content of the annotation
      * author : the author of the annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * quadPoints : regions to mark with the highlight
      * */
-    createSquigglyAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []) {
-        this.checkQuadPoints(quadPoints)
+    createSquigglyAnnotation(...values : any[]) {
+        let params = this.parseParameters(values)
+        this.checkQuadPoints(params.quadPoints)
 
-        if (rect.length === 0 && quadPoints.length > 0) {
-            rect = this.extractRectFromQuadPoints(quadPoints)
+        if (params.rect.length === 0 && params.quadPoints.length > 0) {
+            params.rect = this.extractRectFromQuadPoints(params.quadPoints)
         }
-        this.checkRect(4, rect)
-        let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/Squiggly", color, quadPoints)
+        this.checkRect(4, params.rect)
+        let annot = this.createTextMarkupAnnotation(params.page, params.rect, params.contents, params.author, "/Squiggly", params.color, params.quadPoints)
 
         this.annotations.push(annot)
     }
@@ -265,15 +338,17 @@ export class AnnotationFactory {
      * contents : the content of the annotation
      * author : the author of the annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
+     * quadPoints : regions to mark with the highlight
      * */
-    createStrikeOutAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []) {
-        this.checkQuadPoints(quadPoints)
+    createStrikeOutAnnotation(...values : any[]) {
+        let params = this.parseParameters(values)
+        this.checkQuadPoints(params.quadPoints)
 
-        if (rect.length === 0 && quadPoints.length > 0) {
-            rect = this.extractRectFromQuadPoints(quadPoints)
+        if (params.rect.length === 0 && params.quadPoints.length > 0) {
+            params.rect = this.extractRectFromQuadPoints(params.quadPoints)
         }
-        this.checkRect(4, rect)
-        let annot = this.createTextMarkupAnnotation(page, rect, contents, author, "/StrikeOut", color, quadPoints)
+        this.checkRect(4, params.rect)
+        let annot = this.createTextMarkupAnnotation(params.page, params.rect, params.contents, params.author, "/StrikeOut", params.color, params.quadPoints)
 
         this.annotations.push(annot)
     }
@@ -286,9 +361,10 @@ export class AnnotationFactory {
      * author : the author of the annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createFreeTextAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }) {
-        this.checkRect(4, rect)
-        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
+    createFreeTextAnnotation(...values : any[]) {
+        let params = this.parseParameters(values)
+        this.checkRect(4, params.rect)
+        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(params.page), {
             textAlignment: "right-justified",
             defaultAppearance: "/Invalid_font 9 Tf"
         })
@@ -311,9 +387,9 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createSquareCircleAnnotation(page: number, rect: number[], contents: string, author: string, subtype: string, color: Color = { r: 1, g: 1, b: 0 }, fill: Color = { r: 1, g: 1, b: 0 }): Annotation {
+    createSquareCircleAnnotation(page: number, rect: number[], contents: string = "", author: string = "", subtype: string, color: Color = { r: 1, g: 1, b: 0 }, fill: Color = { r: 1, g: 1, b: 0 }): Annotation {
 
-        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
+        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page), {
             opacity: 1,
             initiallyOpen: false,
             annotation_flag: 4,
@@ -336,9 +412,10 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createSquareAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, fill: Color = { r: 1, g: 1, b: 0 }) {
-        this.checkRect(4, rect)
-        let annot: Annotation = this.createSquareCircleAnnotation(page, rect, contents, author, "/Square", color, fill)
+    createSquareAnnotation(...values : any[]) {
+        let params = this.parseParameters(values)
+        this.checkRect(4, params.rect)
+        let annot: Annotation = this.createSquareCircleAnnotation(params.page, params.rect, params.contents, params.author, "/Square", params.color, params.fill)
 
         this.annotations.push(annot)
     }
@@ -352,9 +429,10 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createCircleAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }, fill: Color = { r: 1, g: 1, b: 0 }) {
-        this.checkRect(4, rect)
-        let annot: Annotation = this.createSquareCircleAnnotation(page, rect, contents, author, "/Circle", color, fill)
+    createCircleAnnotation(...values : any[]) {
+        let params = this.parseParameters(values)
+        this.checkRect(4, params.rect)
+        let annot: Annotation = this.createSquareCircleAnnotation(params.page, params.rect, params.contents, params.author, "/Circle", params.color, params.fill)
 
         this.annotations.push(annot)
     }
@@ -369,9 +447,9 @@ export class AnnotationFactory {
      * subtyp: Polygon or PolyLine
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createPolygonPolyLineAnnotation(page: number, rect: number[], contents: string, author: string, vertices: number[], subtype: string, color: Color = { r: 1, g: 1, b: 0 }): Annotation {
+    createPolygonPolyLineAnnotation(page: number, rect: number[], contents: string = "", author: string = "", vertices: number[], subtype: string, color: Color = { r: 1, g: 1, b: 0 }): Annotation {
 
-        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
+        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page), {
             opacity: 1,
             initiallyOpen: false,
             annotation_flag: 4,
@@ -393,9 +471,10 @@ export class AnnotationFactory {
      * vertices : the vertices defining the arrangement of the object
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createPolygonAnnotation(page: number, rect: number[], contents: string, author: string, vertices: number[], color: Color = { r: 1, g: 1, b: 0 }) {
-        this.checkRect(4, rect)
-        let annot: Annotation = this.createPolygonPolyLineAnnotation(page, rect, contents, author, vertices, "/Polygon", color)
+    createPolygonAnnotation(...values : any[]) {
+        let params = this.parseParameters(values)
+        this.checkRect(4, params.rect)
+        let annot: Annotation = this.createPolygonPolyLineAnnotation(params.page, params.rect, params.contents, params.author, params.vertices, "/Polygon", params.color)
 
         this.annotations.push(annot)
     }
@@ -410,9 +489,10 @@ export class AnnotationFactory {
      * vertices : the vertices defining the arrangement of the object
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createPolyLineAnnotation(page: number, rect: number[], contents: string, author: string, vertices: number[], color: Color = { r: 1, g: 1, b: 0 }) {
-        this.checkRect(4, rect)
-        let annot: Annotation = this.createPolygonPolyLineAnnotation(page, rect, contents, author, vertices, "/PolyLine", color)
+    createPolyLineAnnotation(...values : any[]) {
+        let params = this.parseParameters(values)
+        this.checkRect(4, params.rect)
+        let annot: Annotation = this.createPolygonPolyLineAnnotation(params.page, params.rect, params.contents, params.author, params.vertices, "/PolyLine", params.color)
 
         this.annotations.push(annot)
     }
@@ -426,23 +506,24 @@ export class AnnotationFactory {
      * inkList : a list of list containing the points for drawing the lines
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createInkAnnotation(page: number, rect: number[], contents: string, author: string, inkList: number[][] | number[], color: Color = { r: 0, g: 1, b: 0 }) {
+    createInkAnnotation(...values : any[]) {
+        let params = this.parseParameters(values)
 
-        if (inkList.length === 0)
+        if (params.inkList.length === 0)
             throw Error("InkList is empty")
 
         let _inkList: any = []
-        if ('number' === typeof inkList[0]) {
-            _inkList = [inkList]
+        if ('number' === typeof params.inkList[0]) {
+            _inkList = [params.inkList]
         } else {
-            _inkList = inkList
+            _inkList = params.inkList
         }
 
-        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
+        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(params.page), {
             opacity: 1,
             initiallyOpen: false,
             annotation_flag: 4,
-            color: color,
+            color: params.color,
             inkList: _inkList
         })
 
@@ -459,13 +540,14 @@ export class AnnotationFactory {
      * stampType : the name of the used stamp type. Can be: [Approved, Experimental, NotApproved, AsIs, Expired, NotForPublicRelease, Confidential, Final, Sold, Departmental, ForComment, TopSecret, Draft, ForPublicRelease]
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createStampAnnotation(page: number, contents: string, author: string, stampType: string = "Draft", color: Color = { r: 1, g: 1, b: 0 }) {
-        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, [50, 50, 80, 80], contents, author), {
+    createStampAnnotation(...values : any[]) {
+        let params = this.parseParameters(values)
+        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(params.page), {
             opacity: 1,
             initiallyOpen: false,
             annotation_flag: 4,
-            color: color,
-            stampType: stampType
+            color: params.color,
+            stampType: params.stampType
         })
 
         annot.type = "/Stamp"
@@ -481,13 +563,14 @@ export class AnnotationFactory {
      * caretSymbol : None or P, with P for using the paragraph symbol as caret
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createCaretAnnotation(page: number, contents: string, author: string, caretSymbol: string = "P", color: Color = { r: 1, g: 1, b: 0 }) {
-        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, [], contents, author), {
+    createCaretAnnotation(...values : any[]) {
+        let params = this.parseParameters(values)
+        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(params.page), {
             opacity: 1,
             initiallyOpen: false,
             annotation_flag: 4,
-            color: color,
-            caretSymbol: caretSymbol
+            color: params.color,
+            caretSymbol: params.caretSymbol
         })
 
         annot.type = "/Caret"

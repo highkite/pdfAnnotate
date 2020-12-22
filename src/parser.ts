@@ -15,11 +15,18 @@ export interface Color {
     b: number
 }
 
+export enum BorderStyles {
+    Solid, Dashed, Beveled, Inset, Underline
+}
+
 export interface Border {
-    horizontal_corner_radius: number
-    vertical_corner_radius: number
-    border_width: number
-    dash_patter?: number[]
+    horizontal_corner_radius?: number
+    vertical_corner_radius?: number
+    border_width?: number
+    dash_pattern?: number[]
+    border_style?: BorderStyles
+    cloudy?: boolean
+    cloud_intensity?: number
 }
 
 /**
@@ -34,7 +41,291 @@ export interface ReferencePointer {
     reused?: boolean | undefined
 }
 
-export class Annotation {
+export interface AnnotationFlags {
+    invisible?: boolean
+    hidden?: boolean
+    print?: boolean
+    noZoom?: boolean
+    noRotate?: boolean
+    noView?: boolean
+    readOnly?: boolean
+    locked?: boolean
+    toggleNoView?: boolean
+    lockedContents?: boolean
+}
+
+export interface AppearanceStream {
+}
+
+export interface OptionalContent {
+}
+
+export interface BaseAnnotation {
+    page: number
+    pageReference: Page | undefined // The reference to the page object to which the annotation is added
+    object_id: ReferencePointer | undefined // an unused object id
+    type?: string
+    rect: number[]
+    contents?: string | undefined
+    id: string // /NM
+    updateDate: string | Date// /M
+    annotationFlags?: AnnotationFlags | undefined // /F
+    appearanceStream?: AppearanceStream | undefined // /AP
+    appearanceStreamSelector?: string | undefined // /AS
+    border?: Border | undefined
+    color?: Color | undefined // /C
+    structParent?: number | undefined // /StructParent
+    optionalContent?: OptionalContent | undefined // /OC
+    is_deleted?: boolean // internal flag to determine whether the annotation was deleted
+}
+
+export class BaseAnnotationObj implements BaseAnnotation {
+    page: number = -1
+    pageReference: Page | undefined = undefined// The reference to the page object to which the annotation is added
+    object_id: ReferencePointer | undefined = undefined// an unused object id
+    type?: string = ""
+    rect: number[] = []
+    contents: string | undefined
+    id: string = ""// /NM
+    updateDate: string | Date = ""// /M
+    annotationFlags: AnnotationFlags | undefined // /F
+    appearanceStream: AppearanceStream | undefined // /AP
+    appearanceStreamSelector: string | undefined // /AS
+    border: Border | undefined
+    color: Color | undefined // /C
+    structParent: number | undefined // /StructParent
+    optionalContent: OptionalContent | undefined // /OC
+    is_deleted: boolean = false// internal flag to determine whether the annotation was deleted
+
+    constructor() { }
+
+    public encodeAnnotationFlags() : number {
+        if (!this.annotationFlags) {
+            return 0
+        }
+
+        let val = 0
+
+        if (this.annotationFlags.invisible) {
+            val |= 1
+        }
+        if (this.annotationFlags.hidden) {
+            val |= 2
+        }
+        if (this.annotationFlags.print) {
+            val |= 4
+        }
+        if (this.annotationFlags.noZoom) {
+            val |= 8
+        }
+        if (this.annotationFlags.noRotate) {
+            val |= 16
+        }
+        if (this.annotationFlags.noView) {
+            val |= 32
+        }
+        if (this.annotationFlags.readOnly) {
+            val |= 64
+        }
+        if (this.annotationFlags.locked) {
+            val |= 128
+        }
+        if (this.annotationFlags.toggleNoView) {
+            val |= 256
+        }
+        if (this.annotationFlags.lockedContents) {
+            val |= 512
+        }
+
+        return val
+    }
+
+    public validate() : void {
+        this.checkRect(4, this.rect)
+
+        this.checkReferencePointer(this.object_id)
+
+        if(!this.pageReference || typeof this.pageReference !== 'object') {
+            throw Error("Inalid page reference")
+        }
+
+        if (typeof this.updateDate === 'object') {
+            this.updateDate = this.checkDate(this.updateDate)
+        }
+
+        if (this.color && (!this.color.r || !this.color.g || !this.color.b)) {
+            throw Error("Invalid color definition")
+        } else if (this.color) {
+            if (this.color.r > 255 || this.color.r < 0) {
+                throw Error("Invalid red value")
+            }
+            if (this.color.g > 255 || this.color.g < 0) {
+                throw Error("Invalid green value")
+            }
+            if (this.color.b > 255 || this.color.b < 0) {
+                throw Error("Invalid blue value")
+            }
+        }
+
+        if (!this.id || this.id === "") {
+            throw Error("Invalid ID provided")
+        }
+    }
+
+    protected checkReferencePointer(ptr : ReferencePointer | undefined) {
+        if(ptr && ptr.obj >= 0 && ptr.generation >= 0) {
+            return
+        }
+
+        throw Error("Invalid reference pointer")
+    }
+
+    protected checkDate(date : string | Date) : string {
+        try {
+            return Util.convertDateToPDFDate(date as Date)
+        } catch (e) {
+            throw Error("Invalid update date provided")
+        }
+    }
+
+    protected checkRect(nr: number, rect: number[]) {
+        if (!Array.isArray(rect)) {
+            throw Error("invalid rect parameter")
+        }
+
+        if (rect.length !== nr)
+            throw Error("Rect has invalid number of entries: " + rect + " has " + rect.length + " entries, but should have " + nr + " entries")
+
+        rect.forEach((a) => {
+            if ('number' !== typeof a)
+                throw Error("Rect " + rect + " has invalid entry: " + a)
+        })
+    }
+}
+
+export enum ReplyTypes {
+    Reply, Group
+}
+
+export interface InReplyTo {}
+
+export interface MarkupAnnotation extends BaseAnnotation {
+    author?: string // /T
+    opacity?: number // /CA
+    richtextString?: string // /RC
+    creationDate?: string | Date // /CreationDate
+    inReplyTo?: InReplyTo // /IRT
+    subject?: string // /Subj
+    replyType?: ReplyTypes // /RT
+    intent?: string // /IT
+}
+
+export class MarkupAnnotationObj extends BaseAnnotationObj implements MarkupAnnotation {
+    author: string = ""
+    opacity?: number = 1// /CA
+    creationDate?: string | Date // /CreationDate
+    subject : string = ""
+    richtextString?: string
+
+    constructor() {
+        super()
+    }
+
+    public validate() : void {
+        super.validate()
+
+        if (this.opacity) {
+            try {
+                this.opacity = +this.opacity
+            } catch (e) {
+                throw e
+            }
+
+            if (this.opacity < 0 || this.opacity > 255) {
+                throw Error("Invalid opacity value")
+            }
+
+            if (this.creationDate && typeof this.creationDate === 'object') {
+                this.creationDate = this.checkDate(this.creationDate)
+            }
+        }
+    }
+}
+
+export enum AnnotationIcon {
+    Comment, Key, Note, Help, NewParagraph, Paragraph, Insert
+}
+
+export enum AnnotationStateModel {
+    Marked, Review
+}
+
+export enum AnnotationState {
+    Marked, Unmarked, Accepted, Rejected, Cancelled, Completed, None
+}
+
+export interface TextAnnotation extends MarkupAnnotation {
+    open: boolean
+    icon: AnnotationIcon
+    state: AnnotationState | undefined
+    stateModel? : AnnotationStateModel
+}
+
+export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnotation {
+    open: boolean = false
+    icon: AnnotationIcon = AnnotationIcon.Note
+    state: AnnotationState | undefined = undefined
+    stateModel? : AnnotationStateModel
+
+    constructor() {
+        super()
+        this.type = "/Text"
+        // demanded by PDF specification (p. 394 - 12.5.6.4 Text Annotations)
+        this.annotationFlags = {noZoom: true, noRotate: true}
+    }
+
+    public validate() : void {
+        super.validate()
+
+        if (this.type !== "/Text") {
+            throw Error("Invalid text annotation type")
+        }
+
+        if (this.state && !this.stateModel) {
+            throw Error("You need to specify a state model, when specifying a state")
+        }
+
+        if (this.stateModel && !this.state) {
+            if (this.stateModel.valueOf() === AnnotationStateModel.Marked) {
+                this.state = AnnotationState.Unmarked
+            } else if (this.stateModel.valueOf() === AnnotationStateModel.Review) {
+                this.state = AnnotationState.None
+            } else {
+                throw Error("Invalid state model selected")
+            }
+        }
+
+        if (this.state && this.stateModel) {
+            if (this.stateModel.valueOf() === AnnotationStateModel.Marked) {
+                if (this.state.valueOf() !== AnnotationState.Marked && this.state.valueOf() !== AnnotationState.Unmarked) {
+                    throw Error("Invalid annotation state for state model 'Marked' only 'Marked' and 'Unmarked' are legal values")
+                }
+            } else if (this.stateModel.valueOf() === AnnotationStateModel.Review) {
+                if (this.state.valueOf() !== AnnotationState.Accepted && this.state.valueOf() !== AnnotationState.Rejected &&
+                    this.state.valueOf() !== AnnotationState.Cancelled && this.state.valueOf() !== AnnotationState.Completed &&
+                    this.state.valueOf() !== AnnotationState.None) {
+                    throw Error("Invalid annotation state for state model 'Review' only 'Accepted', 'Rejected', 'Cancelled', 'Completed' and 'None' are legal values")
+                }
+            } else {
+                throw Error("Invalid state model selected")
+            }
+        }
+    }
+}
+
+export type Annotation = _Annotation | TextAnnotationObj
+
+export class _Annotation {
     page: number = -1// the target page of the annotation
     type: string = ""// the sub type of the array (Text, Highlight, ...)
     object_id: ReferencePointer | undefined = undefined// an unused object id
@@ -44,7 +335,7 @@ export class Annotation {
     pageReference: Page | undefined = undefined// The reference to the page object to which the annotation is added
     updateDate: string = ""// The date when the annotation was created or updated
     contents?: string // Text that shall be displayed for the annotation
-    annotation_flag?: number // See PDF spcecification 'Annotation Flag'
+    annotationFlags?: AnnotationFlags// See PDF spcecification 'Annotation Flag'
     appearance_dictionary?: any // control the appearance of the annotation
     appearance_state?: any // change the appearance according to states
     border?: Border | undefined = undefined// define the border
@@ -77,6 +368,47 @@ export class Annotation {
     interior_color?: number[]
     measure?: any
     is_deleted?: boolean
+
+    public encodeAnnotationFlags() : number {
+        if (!this.annotationFlags) {
+            return 0
+        }
+
+        let val = 0
+
+        if (this.annotationFlags.invisible) {
+            val |= 1
+        }
+        if (this.annotationFlags.hidden) {
+            val |= 2
+        }
+        if (this.annotationFlags.print) {
+            val |= 4
+        }
+        if (this.annotationFlags.noZoom) {
+            val |= 8
+        }
+        if (this.annotationFlags.noRotate) {
+            val |= 16
+        }
+        if (this.annotationFlags.noView) {
+            val |= 32
+        }
+        if (this.annotationFlags.readOnly) {
+            val |= 64
+        }
+        if (this.annotationFlags.locked) {
+            val |= 128
+        }
+        if (this.annotationFlags.toggleNoView) {
+            val |= 256
+        }
+        if (this.annotationFlags.lockedContents) {
+            val |= 512
+        }
+
+        return val
+    }
 
 
     constructor(private data: Uint8Array = new Uint8Array([]), private cryptoInterface : CryptoInterface = new CryptoInterface()) {
@@ -538,7 +870,7 @@ export class PDFDocumentParser {
             let pageAnnots: Annotation[] = []
 
             for (let refPtr of annotationReferences) {
-                let a = new Annotation(this.data, this.cryptoInterface)
+                let a = new _Annotation(this.data, this.cryptoInterface)
                 a.extract(obj_table[refPtr.obj], page, obj_table)
                 a.page = i
                 pageAnnots.push(a)
@@ -549,4 +881,4 @@ export class PDFDocumentParser {
         return annots
     }
 
-    }
+}
