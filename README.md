@@ -13,8 +13,9 @@
         1. [The Translation of Coordinates](#TranslationCoordinates)
         2. [Quadpoints](#QuadPoints)
     4. [API Documentation](#API)
-        1. [constructor(...)](#constructor)
-        2. [loadFile(...)](#loadfile)
+    	1. [Configuration Options](#configurationOptions)
+        2. [constructor(...)](#constructor)
+        3. [loadFile(...)](#loadfile)
         3. [createTextAnnotation(...)](#createtext)
         4. [createHighlightAnnotation(...)](#createhighlight)
         5. [createUnderlineAnnotation(...)](#createunderline)
@@ -140,6 +141,54 @@ Please note that the coordinate system origin in PDF canvas is the **left bottom
 
 In the following we introduce the API.
 
+### <a name="configurationOptions"></a>Configuration Options
+It is possible to provide additional options to the functions, that create the annotations to configure the appearance and behavior. In the following we provide an overview of existing options. Note that not every annotation type support every option. The PDF specification differentiates between different annotation classes. For once, there exists parameters, that are supported by every annotation, than there exists parameters, that are only supported by *Markup* annotations and than there exists individual options.
+
+Please also note, that just because the specification supports these options, there is no guarantee that a specific PDF reader (as for instance, pdfjs, Foxit reader, or the Adobe reader) implemented the option.
+
+These are the options that are supported by every annotation:
+
+```
+{
+	updateDate: Date // Specify an update date for the annotation
+	annotationFlags: { // Specify the behavior of annotations
+		invisible: boolean // Do not display annotation
+		hidden: boolean // Do not display or print annotation
+		print: boolean // Do not print annotation
+		noZoom: boolean // Do not scale annotation, when zooming
+		noRotate: boolean // Do not rotate annotation, when page is rotated
+		noView: boolean // Disable interaction and display of the annotation
+		readOnly: boolean
+		locked?: boolean
+		toggleNoView: boolean // inverts noView option
+		lockedContents: boolean // Lock content of the annotation
+	}
+	border: { // Specify the display of the border
+		horizontal_corner_radius: number
+		vertical_corner_radius: number
+		border_width: number
+		dash_pattern: number[] // See specification for more information
+		border_style: BorderStyles.Solid | BorderStyles.Dashed | BorderStyles.Beveled | BorderStyles.Inset | BorderStyles.Underline // define a border style
+		cloudy: boolean // Smear the border
+		cloud_intensity: number // Intensity of the smearing
+	}
+	color: {r : number, g : number, b : number} // Specify the color can be the background color, the title bar color, the border color, depending on the annotation type
+}
+```
+We now show options, that are only supported by *Markup* annotations.
+Markup annotations are: `Text, FreeText, Line, Square, Circle, Polygon, PolyLine, Highlight,` `Underline, Squiggly, StrikeOut, Stamp, Caret, Ink, FileAttachment, Sound, Redact`
+
+```
+{
+	opacity: number // A number in the interval [0, 1] to control the opacity
+	richtextString: string // Is displayed in the pop up window, when the annotation is opened
+	creationDate: Date // Specify a creation date
+	subject: string // A short description of the subject that is referred in the annotation
+	intent: string // The intent of the annotation
+}
+```
+Individual configuration options are discussed in the corresponding documentation sections.
+
 ### <a name="constructor"></a>constructor(...)
 It is possible to create an annotation factory and initialize it directly with the data of a PDF document given as *Int8Array*. This is for instance useful, when using the pdfAnnotate library with *PDFjs*.
 
@@ -147,8 +196,8 @@ It is possible to create an annotation factory and initialize it directly with t
 | Paramater     | Type      | Description                                    |
 |---------------|-----------|------------------------------------------------|
 | data          | Int8Array | The PDF document data                          |
-| userPassword  | string    | An user password if the document is encrypted  |
-| ownerPassword | string    | An owner password if the document is encrypted |
+| userPassword  | string    | User password if the document is encrypted  |
+| ownerPassword | string    | Owner password if the document is encrypted |
 
 ### <a name="loadfile"></a>loadFile(...)
 
@@ -160,8 +209,8 @@ It returns a promise with the instantiated factory as argument.
 | Paramater     | Type   | Description                                    |
 |---------------|--------|------------------------------------------------|
 | path          | string | Path to the PDF file                           |
-| userPassword  | string | An user password if the document is encrypted  |
-| ownerPassword | string | An owner password if the document is encrypted |
+| userPassword  | string | User password if the document is encrypted  |
+| ownerPassword | string | Owner password if the document is encrypted |
 
 ### <a name="createtext"></a>createTextAnnotation(...)
 
@@ -177,6 +226,17 @@ A text annotation is an icon, which shows a popup text when clicking on it.
 | contents | string |  The annotation text ('Pop up note' in the example) |
 | author | string |    The author name. ('Max' in the example) |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
+| options | object | Additional options to configure the annotation are described below and in section [Configuration Options](#configurationOptions). Note that a text annotation is a **Markup** annotation.|
+
+Individual options:
+```
+{
+	open: boolean // If true, the annotation is opened by default; default value is *false*
+	icon: AnnotationIcon.Comment | AnnotationIcon.Key | AnnotationIcon.Note | AnnotationIcon.Help | AnnotationIcon.NewParagraph | AnnotationIcon.Paragraph | AnnotationIcon.Insert // control the displayed icon. default is *note*
+	state: AnnotationState.Marked | AnnotationState.Unmarked | AnnotationState.Accepted | AnnotationState.Rejected | AnnotationState.Cancelled | AnnotationState.Completed | AnnotationState.None // Controls the state of the annotation
+	stateModel: AnnotationStateModel.Marked | AnnotationStateModel.Review // The state model. This option is linked to the *state*. For state model *Marked* the **only** legal state options are *Marked* and *Unmarked*. The other state options are only legal for the *Review* state model.
+}
+```
 
 ### <a name="createhighlight"></a>createHighlightAnnotation(...)
 The highlight annotation emphasizes a selected text, with a semitransparent color.
