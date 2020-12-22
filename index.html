@@ -12,10 +12,14 @@
         </head>
         <body>
                 <div id="app"></div>
+                <hr>
+                Filename:<input style="margin-left: 10px;" type="text" id="inputFileName" value="./test_documents/test.pdf">
+                <button id="reloadFile" type="button">Reload</button>
+                <hr>
                 <div> <button id="textAnnotColorPicker">Choose Color</button>
                         <input type="checkbox" id="textAnnotOpen" name="textAnnotOpen"><label for="textAnnotOpen">Open?</label>
                         <p>
-                        Opacity:<input type="number" id="textAnnotOpacity" value="0.5">
+                        Opacity:<input style="margin-left: 10px;" type="number" id="textAnnotOpacity" value="0.5">
                         </p>
                         <p>
                         <fieldset>
@@ -89,14 +93,9 @@
                                 fillColor = {r: color._rgba[0], g: color._rgba[1], b: color._rgba[2]}
                         };
 
-                        let once = false
                         let pdfFactory = undefined
 
                         let fileLoad = function (filepath) {
-                                if (once)
-                                        return
-
-                                once = true
                                 console.log("Load " + filepath)
 
                                 pdfAnnotate.AnnotationFactory.loadFile(filepath, "123", "123").then((factory) => {
@@ -218,8 +217,13 @@
                                 })
                         })
 
+                        document.querySelector('#reloadFile').addEventListener('click', (evt) => {
+                                console.log("reload file")
+                                fileLoad(document.getElementById("inputFileName").value)
+                        })
+
                         window.onload =  function(){
-                                fileLoad("./test_documents/test.pdf")
+                                fileLoad(document.getElementById("inputFileName").value)
                         }
                 </script>
         </body>
