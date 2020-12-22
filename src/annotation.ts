@@ -3,9 +3,8 @@ import { Util } from './util'
 import { Writer } from './writer'
 
 /**
- * The annotation factory provides methods to create annotations. Those are stored temporary
- * and than encoded into PDF code when the PDF document is outputted and for instance downloaded.
- * That
+ * The annotation factory provides methods to create annotations. Those are stored temporarily
+ * and than encoded into PDF code when the PDF document is written.
  * */
 export class AnnotationFactory {
     private annotations: Annotation[] = []
@@ -71,7 +70,7 @@ export class AnnotationFactory {
     }
 
     /**
-     * Writes the made annotations into a bytestream
+     * Writes the created annotations into a bytestream
      * */
     write(): Uint8Array {
         if (this.annotations.length === 0 && this.toDelete.length === 0)
@@ -119,8 +118,8 @@ export class AnnotationFactory {
     }
 
     /**
-     * Creates a base annotation that mean the raw object of annotation or those parts that are all existing
-     * and equally set in all types of annotations
+     * Creates a base annotation that means the raw object of annotation or those parts that exist
+     * in equal form in all types of annotations
      * */
     createBaseAnnotation(page: number, rect: number[], contents: string, author: string): Annotation {
         let annot: Annotation = new Annotation()
@@ -535,8 +534,9 @@ export class AnnotationFactory {
     }
 
     /**
-     * Returns a promise with the resul of all annotations that are part of the document. This will
-     * comprise those that are already exists and those that were created using this library
+     * Returns a promise with all the annotations that are part of the document. This
+     * comprises annotations, that are already part of the parsed document and those that were created using this library and
+     * not yet appended to the document.
      * */
     getAnnotations(): Promise<Annotation[][]> {
         return new Promise((resolve) => {
