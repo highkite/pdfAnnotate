@@ -14,28 +14,29 @@
         2. [Quadpoints](#QuadPoints)
     4. [API Documentation](#API)
     	1. [Configuration Options](#configurationOptions)
-        2. [constructor(...)](#constructor)
-        3. [loadFile(...)](#loadfile)
-        3. [createTextAnnotation(...)](#createtext)
-        4. [createHighlightAnnotation(...)](#createhighlight)
-        5. [createUnderlineAnnotation(...)](#createunderline)
-        6. [createSquigglyAnnotation(...)](#createsquiggly)
-        7. [createStrikeOutAnnotation(...)](#createstrikeout)
-        8. [createFreeTextAnnotation(...)](#createfreetext)
-        9. [createLineAnnotation(...)](#createline)
-        10. [createCircleAnnotation(...)](#createcircle)
-        11. [createSquareAnnotation(...)](#createsquare)
-        12. [createPolygonAnnotation(...)](#createpolygon)
-        13. [createPolyLineAnnotation(...)](#createpolyline)
-        14. [createStampAnnotation(...)](#createstamp)
-        15. [createCaretAnnotation(...)](#createcaret)
-        16. [createInkAnnotation(...)](#createink)
-        17. [createPopupAnnotation(...)](#createpopup)
-        18. [deleteAnnotation(...)](#deleteAnnotation)
-        19. [getAnnotations()](#getAnnotations)
-        20. [write(...)](#write)
-        21. [download(...)](#download)
-        22. [save(...)](#save)
+    	2. [Backward Compatibility](#backwardCompatibility)
+        3. [constructor(...)](#constructor)
+        4. [loadFile(...)](#loadfile)
+        5. [createTextAnnotation(...)](#createtext)
+        6. [createHighlightAnnotation(...)](#createhighlight)
+        7. [createUnderlineAnnotation(...)](#createunderline)
+        8. [createSquigglyAnnotation(...)](#createsquiggly)
+        9. [createStrikeOutAnnotation(...)](#createstrikeout)
+        10. [createFreeTextAnnotation(...)](#createfreetext)
+        11. [createLineAnnotation(...)](#createline)
+        12. [createCircleAnnotation(...)](#createcircle)
+        13. [createSquareAnnotation(...)](#createsquare)
+        14. [createPolygonAnnotation(...)](#createpolygon)
+        15. [createPolyLineAnnotation(...)](#createpolyline)
+        16. [createStampAnnotation(...)](#createstamp)
+        17. [createCaretAnnotation(...)](#createcaret)
+        18. [createInkAnnotation(...)](#createink)
+        19. [createPopupAnnotation(...)](#createpopup)
+        20. [deleteAnnotation(...)](#deleteAnnotation)
+        21. [getAnnotations()](#getAnnotations)
+        22. [write(...)](#write)
+        23. [download(...)](#download)
+        24. [save(...)](#save)
     5. [How does the Library Works?](#HowWorks)
         1. [Trivia](#Trivia)
         2. [Adding an Annotation](#AddingAnnotation)
@@ -71,9 +72,15 @@ Annotations can be easily created by calling `creator` methods (see [API Documen
 
 ```
 AnnotationFactory.loadFile(path).then((factory) => {
-                        factory.createTextAnnotation(0, [50, 50, 80, 80], "Pop up note", "Max")
-                        factory.download()
+                        factory.createTextAnnotation({
+                        	page: 0, 
+                        	rect: [50, 50, 80, 80], 
+                        	contents: "Pop up note", 
+                        	author: "Max"
+                        	...
                         })
+                        factory.download()
+})
 ```
 When using a PDF viewer, as for instance *PDF.js* the factory can be initialized as follows:
 ```
@@ -189,6 +196,33 @@ Markup annotations are: `Text, FreeText, Line, Square, Circle, Polygon, PolyLine
 ```
 Individual configuration options are discussed in the corresponding documentation sections.
 
+### <a name="backwardCompatibility"></a>Backward Compatibility
+There exists a lot of parameters and options to control the behavior and appearance of annotations. In fact, there exists so many, that it is not feasible to add them to the parameter lists in the annotation creation function headers. Instead we decided to provide dictionaries to the creation functions. The dictionaries are required to contain a number of mandatory parameters, as for instance the page number, the coordinate rectangle or the content text and other optional parameters. The user can decide, what optional parameters she is going to use. For compatibility reasons, we also support the former variant. However, in this case the optional parameters must be provided within a dictionary as a last parameter.
+
+For clarification: The example in the former notation
+```
+AnnotationFactory.loadFile(path).then((factory) => {
+                        factory.createTextAnnotation(0, [50, 50, 80, 80], "Pop up note", "Max", {optionalParam1: <...>, optionalParam2: <...>,...})
+                        factory.download()
+})
+```
+is better written as:
+
+```
+AnnotationFactory.loadFile(path).then((factory) => {
+                        factory.createTextAnnotation({
+                        	page: 0, 
+                        	rect: [50, 50, 80, 80], 
+                        	contents: "Pop up note", 
+                        	author: "Max"
+                        	optionalParam1: <...>,
+                        	optionalParam2: <...>
+                        	...
+                        })
+                        factory.download()
+})
+```
+
 ### <a name="constructor"></a>constructor(...)
 It is possible to create an annotation factory and initialize it directly with the data of a PDF document given as *Int8Array*. This is for instance useful, when using the pdfAnnotate library with *PDFjs*.
 
@@ -219,23 +253,39 @@ A text annotation is an icon, which shows a popup text when clicking on it.
 ![ Example of a text annotation](./documentation/TextAnnotation.png  "Example of a text annotation")
 
 #### Parameters:
+The parameters must be wrapped within a dictionary (cfg. [Backward Compatibility](#backwardCompatibility)).
+
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
 | page |  number | The page number where the annotation must be added (starting with 0)|
 | rect  |   number array   |   Rectangle defining the coordinates \[x, y\] to place the annotation. It is also possible to specify \[x_1, y_1, x_2, y_2 \] to define the bounds of the annotation. |
 | contents | string |  The annotation text ('Pop up note' in the example) |
 | author | string |    The author name. ('Max' in the example) |
-| color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
-| options | object | Additional options to configure the annotation are described below and in section [Configuration Options](#configurationOptions). Note that a text annotation is a **Markup** annotation.|
+| color | object |   (*Optional*) Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
+| open | boolean | (*Optional*) If true, the annotation is opened by default; default value is *false*|
+| icon  | enum | (*Optional*) {*AnnotationIcon.Comment, AnnotationIcon.Key, AnnotationIcon.Note, AnnotationIcon.Help, AnnotationIcon.NewParagraph,  AnnotationIcon.Paragraph,  AnnotationIcon.Insert*}  control the displayed icon. default is *note* |
+| state | enum | (*Optional*) {*AnnotationState.Marked, AnnotationState.Unmarked, AnnotationState.Accepted, AnnotationState.Rejected, AnnotationState.Cancelled, AnnotationState.Completed, AnnotationState.None*}  Controls the state of the annotation|
+| stateModel | enum | (*Optional*) {*AnnotationStateModel.Marked, AnnotationStateModel.Review*} The state model. This option is linked to the *state*. For state model *Marked* the **only** legal state options are *Marked* and *Unmarked*. The other state options are only legal for the *Review* state model.|
 
-Individual options:
+Note that there are more optional parameters available, as described in [Configuration Options](#configurationOptions). Also note, that a text annotation is a **Markup** annotation.
+
+Example usage:
+
 ```
-{
-	open: boolean // If true, the annotation is opened by default; default value is *false*
-	icon: AnnotationIcon.Comment | AnnotationIcon.Key | AnnotationIcon.Note | AnnotationIcon.Help | AnnotationIcon.NewParagraph | AnnotationIcon.Paragraph | AnnotationIcon.Insert // control the displayed icon. default is *note*
-	state: AnnotationState.Marked | AnnotationState.Unmarked | AnnotationState.Accepted | AnnotationState.Rejected | AnnotationState.Cancelled | AnnotationState.Completed | AnnotationState.None // Controls the state of the annotation
-	stateModel: AnnotationStateModel.Marked | AnnotationStateModel.Review // The state model. This option is linked to the *state*. For state model *Marked* the **only** legal state options are *Marked* and *Unmarked*. The other state options are only legal for the *Review* state model.
-}
+import { AnnotationFactory, AnnotationIcon } from 'annotpdf';
+
+AnnotationFactory.loadFile(path).then((factory) => {
+	factory.createTextAnnotation({
+		page: 0,
+		rect: [50, 50, 80, 80],
+		contents: "Pop up note",
+		author: "Max",
+		color: {r: 128, g: 128, b: 128},
+		open: false,
+		icon: AnnotationIcon.Comment,
+		opacity: 0.5
+	})
+})
 ```
 
 ### <a name="createhighlight"></a>createHighlightAnnotation(...)
