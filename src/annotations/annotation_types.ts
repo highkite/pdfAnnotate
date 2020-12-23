@@ -63,7 +63,7 @@ export class BaseAnnotationObj implements BaseAnnotation {
     page: number = -1
     pageReference: Page | undefined = undefined// The reference to the page object to which the annotation is added
     object_id: ReferencePointer | undefined = undefined// an unused object id
-    type?: string = ""
+    type: string = ""
     rect: number[] = []
     contents: string | undefined
     id: string = ""// /NM
@@ -133,23 +133,20 @@ export class BaseAnnotationObj implements BaseAnnotation {
             this.updateDate = this.checkDate(this.updateDate)
         }
 
-        if (this.color && (!this.color.r || !this.color.g || !this.color.b)) {
+        if (this.checkColor(this.color)) {
             throw Error("Invalid color definition")
-        } else if (this.color) {
-            if (this.color.r > 255 || this.color.r < 0) {
-                throw Error("Invalid red value")
-            }
-            if (this.color.g > 255 || this.color.g < 0) {
-                throw Error("Invalid green value")
-            }
-            if (this.color.b > 255 || this.color.b < 0) {
-                throw Error("Invalid blue value")
-            }
         }
 
         if (!this.id || this.id === "") {
             throw Error("Invalid ID provided")
         }
+    }
+
+    protected checkColor(color : Color | undefined) {
+        return color && "r" in color && "g" in color && "b" in color &&
+            color.r <= 255 && color.r >= 0 &&
+            color.g <= 255 && color.g >= 0 &&
+            color.b <= 255 && color.b >= 0
     }
 
     protected checkReferencePointer(ptr : ReferencePointer | undefined) {
