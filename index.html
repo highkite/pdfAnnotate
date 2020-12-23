@@ -70,9 +70,15 @@
                 </div>
                 <div class="buttonClass"><button id="addTextAnnotation" type="button">Create Text Annotation</button></div>
                 <hr>
+                <div> <button id="highlightAnnotColorPicker">Choose Color</button>
+                        <p>
+                        Opacity:<input style="margin-left: 10px;" type="number" id="highlightAnnotOpacity" value="0.5">
+                        </p>
+                </div>
                 <div class="buttonClass"><button id="addHighlightAnnotation" type="button">Create Highlight Annotation</button></div>
                 <div class="buttonClass"><button id="addHighlightAnnotationQuadPoint" type="button">Create Highlight Annotation QuadPoint</button></div>
                 <div class="buttonClass"><button id="addHighlightAnnotationQuadPointWithoutRect" type="button">Create Highlight Annotation QuadPoint without Rect Definition</button></div>
+                <hr>
                 <div class="buttonClass"><button id="addUnderlineAnnotation" type="button">Create Underline Annotation</button></div>
                 <div class="buttonClass"><button id="addSquigglyAnnotation" type="button">Create Squiggly Annotation</button></div>
                 <div class="buttonClass"><button id="addStrikeOutAnnotation" type="button">Create StrikeOut Annotation</button></div>
@@ -93,6 +99,7 @@
                 <script>
 
                         var textAnnotColor = {r : 0, g : 0, b : 0}
+                        var highlightAnnotColor = {r : 0, g : 0, b : 0}
                         var lineColor = {r : 0, g : 0, b : 0}
                         var fillColor = {r : 0, g : 0, b : 0}
 
@@ -102,6 +109,14 @@
                         _textAnnotColorPicker.onChange = function(color) {
                                 textAnnotColorPicker.style.background = color.rgbaString;
                                 textAnnotColor = {r: color._rgba[0], g: color._rgba[1], b: color._rgba[2]}
+                        };
+
+                        var highlightAnnotColorPicker = document.querySelector('#highlightAnnotColorPicker');
+                        var _highlightAnnotColorPicker = new Picker(highlightAnnotColorPicker);
+
+                        _highlightAnnotColorPicker.onChange = function(color) {
+                                highlightAnnotColorPicker.style.background = color.rgbaString;
+                                highlightAnnotColor = {r: color._rgba[0], g: color._rgba[1], b: color._rgba[2]}
                         };
 
 
@@ -231,11 +246,26 @@
                         })
 
                         document.querySelector('#addHighlightAnnotation').addEventListener('click', (evt) => {
-                                pdfFactory.createHighlightAnnotation(0, [100, 100, 120, 120], "Test123", "John")
+                                pdfFactory.createHighlightAnnotation({
+                                        page: 0,
+                                        rect: [100, 100, 200, 200],
+                                        contents: "Test123",
+                                        author: "John",
+                                        color: highlightAnnotColor,
+                                        opacity: document.getElementById("highlightAnnotOpacity").value,
+                                })
                         })
 
                         document.querySelector('#addHighlightAnnotationQuadPoint').addEventListener('click', (evt) => {
-                                pdfFactory.createHighlightAnnotation(0, [100, 100, 200, 200], "Test123", "John", {r: 1, g: 1, b: 0}, [100, 130, 150, 130, 100, 100, 150, 100 /*rectangle one*/, 150, 180, 200, 180, 150, 150, 200, 150 /*rectangle two*/])
+                                pdfFactory.createHighlightAnnotation({
+                                        page: 0,
+                                        rect: [100, 100, 200, 200],
+                                        contents: "Test123",
+                                        author: "John",
+                                        color: highlightAnnotColor,
+                                        quadPoints:[100, 130, 150, 130, 100, 100, 150, 100 /*rectangle one*/, 150, 180, 200, 180, 150, 150, 200, 150 /*rectangle two*/],
+                                        opacity: document.getElementById("highlightAnnotOpacity").value,
+                                })
                         })
 
                         document.querySelector('#addHighlightAnnotationQuadPointWithoutRect').addEventListener('click', (evt) => {

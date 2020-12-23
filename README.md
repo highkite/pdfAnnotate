@@ -170,7 +170,7 @@ These are the options that are supported by every annotation:
 		toggleNoView: boolean // inverts noView option
 		lockedContents: boolean // Lock content of the annotation
 	}
-	border: { // Specify the display of the border
+	border: { // Specify the appearance of the border; Note that not every option is available on every annotation
 		horizontal_corner_radius: number
 		vertical_corner_radius: number
 		border_width: number
