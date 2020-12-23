@@ -1,4 +1,6 @@
-import { ReferencePointer, PDFDocumentParser, Page, Annotation, Border, Color, TextAnnotationObj, BaseAnnotation } from './parser'
+import { ReferencePointer, PDFDocumentParser, Page, Annotation } from './parser'
+import { Border, Color, BaseAnnotation } from './annotations/annotation_types';
+import { TextAnnotationObj } from './annotations/text_annotation';
 import { Util } from './util'
 import { Writer } from './writer'
 
