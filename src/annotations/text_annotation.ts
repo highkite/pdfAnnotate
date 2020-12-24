@@ -1,4 +1,5 @@
 import { MarkupAnnotation, MarkupAnnotationObj } from './annotation_types';
+import { ErrorList, InvalidAnnotationTypeError, InvalidStateError } from './annotation_errors';
 
 export enum AnnotationIcon {
     Comment, Key, Note, Help, NewParagraph, Paragraph, Insert
@@ -32,15 +33,15 @@ export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnota
         this.annotationFlags = {noZoom: true, noRotate: true}
     }
 
-    public validate() : void {
-        super.validate()
+    public validate(enact : boolean = true) : ErrorList {
+        let errorList : ErrorList = super.validate(false)
 
         if (this.type !== "/Text") {
-            throw Error("Invalid text annotation type")
+            errorList.push(new InvalidAnnotationTypeError(`Invalid annotation type ${this.type}`))
         }
 
         if (this.state && !this.stateModel) {
-            throw Error("You need to specify a state model, when specifying a state")
+            errorList.push(new InvalidStateError("You need to specify a state model, when specifying a state"))
         }
 
         if (this.stateModel && !this.state) {
@@ -49,24 +50,32 @@ export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnota
             } else if (this.stateModel.valueOf() === AnnotationStateModel.Review) {
                 this.state = AnnotationState.None
             } else {
-                throw Error("Invalid state model selected")
+                errorList.push(new InvalidStateError("Invalid state model selected"))
             }
         }
 
         if (this.state && this.stateModel) {
             if (this.stateModel.valueOf() === AnnotationStateModel.Marked) {
                 if (this.state.valueOf() !== AnnotationState.Marked && this.state.valueOf() !== AnnotationState.Unmarked) {
-                    throw Error("Invalid annotation state for state model 'Marked' only 'Marked' and 'Unmarked' are legal values")
+                    errorList.push(new InvalidStateError("Invalid annotation state for state model 'Marked' only 'Marked' and 'Unmarked' are legal values"))
                 }
             } else if (this.stateModel.valueOf() === AnnotationStateModel.Review) {
                 if (this.state.valueOf() !== AnnotationState.Accepted && this.state.valueOf() !== AnnotationState.Rejected &&
                     this.state.valueOf() !== AnnotationState.Cancelled && this.state.valueOf() !== AnnotationState.Completed &&
                     this.state.valueOf() !== AnnotationState.None) {
-                    throw Error("Invalid annotation state for state model 'Review' only 'Accepted', 'Rejected', 'Cancelled', 'Completed' and 'None' are legal values")
+                    errorList.push(new InvalidStateError("Invalid annotation state for state model 'Review' only 'Accepted', 'Rejected', 'Cancelled', 'Completed' and 'None' are legal values"))
                 }
             } else {
-                throw Error("Invalid state model selected")
+                errorList.push(new InvalidStateError("Invalid state model selected"))
             }
         }
+
+        if (enact) {
+            for(let error of errorList) {
+                throw error
+            }
+        }
+
+        return errorList
     }
 }

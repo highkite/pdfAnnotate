@@ -1,8 +1,80 @@
 import { ReferencePointer, PDFDocumentParser, Page, Annotation } from './parser'
 import { Border, Color, BaseAnnotation } from './annotations/annotation_types';
 import { TextAnnotationObj } from './annotations/text_annotation';
+import { HighlightAnnotationObj } from './annotations/text_markup_annotation';
 import { Util } from './util'
 import { Writer } from './writer'
+
+export class ParameterParser {
+    /**
+     * Parses and checks the parameter. This is for backward compatibility and to support arbitrary annotation parameters
+     * */
+    static parseParameters(values : any[]) {
+        if (values.length === 0) {
+            throw Error("No parameters provided")
+        }
+
+        let i = 0
+        if (typeof values[i] === 'number') {
+            let ret_val : any = {}
+            ret_val.page = values[i++]
+            ret_val.rect = values[i++]
+
+            ret_val.contents = values[i++]
+            if(typeof ret_val.contents !== 'string') {
+                throw Error("Invalid contents parameter")
+            }
+
+            ret_val.author = values[i++]
+            if(typeof ret_val.author !== 'string') {
+                throw Error("Invalid author parameter")
+            }
+
+            if (i >= values.length) return ret_val
+
+            if ("r" in values[i] && "g" in values[i] && "b" in values[i]) {
+                ret_val.color = values[i++]
+            } else if (Array.isArray(values[i]) && values[i].length > 0 && typeof values[i][0] === 'number') {
+                ret_val.vertices = values[i++]
+            } else if (Array.isArray(values[i]) && values[i].length > 0 && Array.isArray(values[i][0])) {
+                ret_val.inkList = values[i++]
+            } else {
+                throw Error("Invalid parameter provided - is neither color, nor quadpoints array or an inklist")
+            }
+
+            if (i >= values.length) return ret_val
+
+            if ("r" in values[i] && "g" in values[i] && "b" in values[i]) {
+                if (ret_val.color) {
+                    ret_val.fill = values[i++]
+                } else {
+                    ret_val.color = values[i++]
+                }
+            } else if (Array.isArray(values[i]) && values[i].length > 0 && typeof values[i][0] === 'number') {
+                ret_val.quadPoints = values[i++]
+            } else if (typeof values[i] === 'object'){
+                ret_val.config = true
+                ret_val = (<any>Object).assign(ret_val, values[i++])
+            } else {
+                throw Error("Invalid parameter provided")
+            }
+
+            if (i >= values.length) return ret_val
+
+            if (!ret_val.config && typeof values[i] === 'object') {
+                ret_val = (<any>Object).assign(ret_val, values[i++])
+            } else {
+                throw Error("Invalid configuration provided")
+            }
+
+            return ret_val
+        } else if (typeof values[i] === 'object') {
+            return values[0]
+        } else {
+            throw Error("Invalid configuration object")
+        }
+    }
+}
 
 /**
  * The annotation factory provides methods to create annotations. Those are stored temporarily
@@ -144,75 +216,6 @@ export class AnnotationFactory {
         return annot
     }
 
-    /**
-     * Parses and checks the parameter. This is for backward compatibility and to support arbitrary annotation parameters
-     * */
-    parseParameters(values : any[]) {
-        if (values.length === 0) {
-            throw Error("No parameters provided")
-        }
-
-        let i = 0
-        if (typeof values[i] === 'number') {
-            let ret_val : any = {}
-            ret_val.page = values[i++]
-            ret_val.rect = values[i++]
-            this.checkRect(4, ret_val.rect)
-
-            ret_val.contents = values[i++]
-            if(typeof ret_val.contents !== 'string') {
-                throw Error("Invalid contents parameter")
-            }
-
-            ret_val.author = values[i++]
-            if(typeof ret_val.author !== 'string') {
-                throw Error("Invalid author parameter")
-            }
-
-            if (i >= values.length) return ret_val
-
-            if (values[i].r && values[i].g && values[i].b) {
-                ret_val.color = values[i++]
-            } else if (Array.isArray(values[i]) && values[i].length > 0 && typeof values[i][0] === 'number') {
-                ret_val.vertices = values[i++]
-            } else if (Array.isArray(values[i]) && values[i].length > 0 && Array.isArray(values[i][0])) {
-                ret_val.inkList = values[i++]
-            } else {
-                throw Error("Invalid parameter provided")
-            }
-
-            if (i >= values.length) return ret_val
-
-            if (values[i].r && values[i].g && values[i].b) {
-                if (ret_val.color) {
-                    ret_val.fill = values[i++]
-                } else {
-                    ret_val.color = values[i++]
-                }
-            } else if (Array.isArray(values[i]) && values[i].length > 0 && typeof values[i][0] === 'number') {
-                ret_val.quadPoints = values[i++]
-            } else if (typeof values[i] === 'object'){
-                ret_val.config = true
-                ret_val = (<any>Object).assign(ret_val, values[i++])
-            } else {
-                throw Error("Invalid parameter provided")
-            }
-
-            if (i >= values.length) return ret_val
-
-            if (!ret_val.config && typeof values[i] === 'object') {
-                ret_val = (<any>Object).assign(ret_val, values[i++])
-            } else {
-                throw Error("Invalid configuration provided")
-            }
-
-            return ret_val
-        } else if (typeof values[i] === 'object') {
-            return values[0]
-        } else {
-            throw Error("Invalid configuration object")
-        }
-    }
 
     /**
      * Creates a text annotation
@@ -224,7 +227,7 @@ export class AnnotationFactory {
      * options : dictionary containing additional configuration values, see documentation
      * */
     createTextAnnotation(...values : any[]) {
-        let params = this.parseParameters(values)
+        let params = ParameterParser.parseParameters(values)
 
         let annot : TextAnnotationObj = new TextAnnotationObj()
         annot = (<any>Object).assign(annot, this.createBaseAnnotation(params.page))
@@ -276,17 +279,25 @@ export class AnnotationFactory {
      * quadPoints : regions to mark with the highlight
      * */
     createHighlightAnnotation(...values : any[]) {
-        let params = this.parseParameters(values)
-        this.checkQuadPoints(params.quadPoints)
+        let params = ParameterParser.parseParameters(values)
 
-        if (params.rect.length === 0 && params.quadPoints.length > 0) {
-            params.rect = this.extractRectFromQuadPoints(params.quadPoints)
-        }
-        this.checkRect(4, params.rect)
+        let annot : HighlightAnnotationObj = new HighlightAnnotationObj()
+        annot = (<any>Object).assign(annot, this.createBaseAnnotation(params.page))
+        annot = (<any>Object).assign(annot, params)
 
-        let annot = this.createTextMarkupAnnotation(params.page, params.rect, params.contents, params.author, "/Highlight", params.color, params.quadPoints)
+        annot.validate()
 
         this.annotations.push(annot)
+        //this.checkQuadPoints(params.quadPoints)
+
+        //if (params.rect.length === 0 && params.quadPoints.length > 0) {
+        //    params.rect = this.extractRectFromQuadPoints(params.quadPoints)
+        //}
+        //this.checkRect(4, params.rect)
+
+        //let annot = this.createTextMarkupAnnotation(params.page, params.rect, params.contents, params.author, "/Highlight", params.color, params.quadPoints)
+
+        //this.annotations.push(annot)
     }
 
     /**
@@ -299,7 +310,7 @@ export class AnnotationFactory {
      * quadPoints : regions to mark with the highlight
      * */
     createUnderlineAnnotation(...values : any[]) {
-        let params = this.parseParameters(values)
+        let params = ParameterParser.parseParameters(values)
         this.checkQuadPoints(params.quadPoints)
 
         if (params.rect.length === 0 && params.quadPoints.length > 0) {
@@ -321,7 +332,7 @@ export class AnnotationFactory {
      * quadPoints : regions to mark with the highlight
      * */
     createSquigglyAnnotation(...values : any[]) {
-        let params = this.parseParameters(values)
+        let params = ParameterParser.parseParameters(values)
         this.checkQuadPoints(params.quadPoints)
 
         if (params.rect.length === 0 && params.quadPoints.length > 0) {
@@ -343,7 +354,7 @@ export class AnnotationFactory {
      * quadPoints : regions to mark with the highlight
      * */
     createStrikeOutAnnotation(...values : any[]) {
-        let params = this.parseParameters(values)
+        let params = ParameterParser.parseParameters(values)
         this.checkQuadPoints(params.quadPoints)
 
         if (params.rect.length === 0 && params.quadPoints.length > 0) {
@@ -364,7 +375,7 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
     createFreeTextAnnotation(...values : any[]) {
-        let params = this.parseParameters(values)
+        let params = ParameterParser.parseParameters(values)
         this.checkRect(4, params.rect)
         let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(params.page), {
             textAlignment: "right-justified",
@@ -415,7 +426,7 @@ export class AnnotationFactory {
      * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
     createSquareAnnotation(...values : any[]) {
-        let params = this.parseParameters(values)
+        let params = ParameterParser.parseParameters(values)
         this.checkRect(4, params.rect)
         let annot: Annotation = this.createSquareCircleAnnotation(params.page, params.rect, params.contents, params.author, "/Square", params.color, params.fill)
 
@@ -432,7 +443,7 @@ export class AnnotationFactory {
      * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
     createCircleAnnotation(...values : any[]) {
-        let params = this.parseParameters(values)
+        let params = ParameterParser.parseParameters(values)
         this.checkRect(4, params.rect)
         let annot: Annotation = this.createSquareCircleAnnotation(params.page, params.rect, params.contents, params.author, "/Circle", params.color, params.fill)
 
@@ -474,7 +485,7 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
     createPolygonAnnotation(...values : any[]) {
-        let params = this.parseParameters(values)
+        let params = ParameterParser.parseParameters(values)
         this.checkRect(4, params.rect)
         let annot: Annotation = this.createPolygonPolyLineAnnotation(params.page, params.rect, params.contents, params.author, params.vertices, "/Polygon", params.color)
 
@@ -492,7 +503,7 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
     createPolyLineAnnotation(...values : any[]) {
-        let params = this.parseParameters(values)
+        let params = ParameterParser.parseParameters(values)
         this.checkRect(4, params.rect)
         let annot: Annotation = this.createPolygonPolyLineAnnotation(params.page, params.rect, params.contents, params.author, params.vertices, "/PolyLine", params.color)
 
@@ -509,7 +520,7 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
     createInkAnnotation(...values : any[]) {
-        let params = this.parseParameters(values)
+        let params = ParameterParser.parseParameters(values)
 
         if (params.inkList.length === 0)
             throw Error("InkList is empty")
@@ -543,7 +554,7 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
     createStampAnnotation(...values : any[]) {
-        let params = this.parseParameters(values)
+        let params = ParameterParser.parseParameters(values)
         let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(params.page), {
             opacity: 1,
             initiallyOpen: false,
@@ -566,7 +577,7 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
     createCaretAnnotation(...values : any[]) {
-        let params = this.parseParameters(values)
+        let params = ParameterParser.parseParameters(values)
         let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(params.page), {
             opacity: 1,
             initiallyOpen: false,

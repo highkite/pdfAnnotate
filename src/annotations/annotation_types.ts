@@ -1,5 +1,6 @@
 import { Page, ReferencePointer } from '../parser';
 import { Util } from '../util';
+import { ErrorList, InvalidOpacityError, InvalidRectError, InvalidDateError, InvalidReferencePointerError, ColorOutOfRangeError, InvalidColorError, InvalidIDError } from './annotation_errors';
 
 export interface Color {
     r: number
@@ -120,63 +121,100 @@ export class BaseAnnotationObj implements BaseAnnotation {
         return val
     }
 
-    public validate() : void {
-        this.checkRect(4, this.rect)
+    /**
+     * If enact is true, the error will be thrown directly, otherwise the errors are collected
+     * and returned as error list.
+     * */
+    public validate(enact : boolean = true) : ErrorList {
+        let errorList : ErrorList = this.checkRect(4, this.rect)
 
-        this.checkReferencePointer(this.object_id)
+        errorList = errorList.concat(this.checkReferencePointer(this.object_id))
 
         if(!this.pageReference || typeof this.pageReference !== 'object') {
-            throw Error("Inalid page reference")
+            errorList.push(new InvalidReferencePointerError("Inalid page reference"))
         }
 
-        if (typeof this.updateDate === 'object') {
-            this.updateDate = this.checkDate(this.updateDate)
+        let res = this.checkDate(this.updateDate)
+        if (res[1]) {
+            this.updateDate = res[1]
         }
+        errorList = errorList.concat(res[0])
 
-        if (this.checkColor(this.color)) {
-            throw Error("Invalid color definition")
-        }
+        errorList = errorList.concat(this.checkColor(this.color))
 
         if (!this.id || this.id === "") {
-            throw Error("Invalid ID provided")
-        }
-    }
-
-    protected checkColor(color : Color | undefined) {
-        return color && "r" in color && "g" in color && "b" in color &&
-            color.r <= 255 && color.r >= 0 &&
-            color.g <= 255 && color.g >= 0 &&
-            color.b <= 255 && color.b >= 0
-    }
-
-    protected checkReferencePointer(ptr : ReferencePointer | undefined) {
-        if(ptr && ptr.obj >= 0 && ptr.generation >= 0) {
-            return
+            errorList.push(new InvalidIDError("Invalid ID provided"))
         }
 
-        throw Error("Invalid reference pointer")
+        if (enact) {
+            for(let error of errorList) {
+                throw error
+            }
+        }
+
+        return errorList
     }
 
-    protected checkDate(date : string | Date) : string {
+    protected checkColor(color : Color | undefined) : ErrorList {
+        let errorList : ErrorList = []
+
+        if (!(color && "r" in color && "g" in color && "b" in color)) {
+            errorList.push(new InvalidColorError("Not {r: <r>, g: <g>, b: <b>}"))
+        }
+
+        if (color!.r <= 255 && color!.r >= 0) {
+            errorList.push(new ColorOutOfRangeError("Red value out of range"))
+        }
+
+        if (color!.g <= 255 && color!.g >= 0) {
+            errorList.push(new ColorOutOfRangeError("Green value out of range"))
+        }
+
+        if(color!.b <= 255 && color!.b >= 0) {
+            errorList.push(new ColorOutOfRangeError("Blue value out of range"))
+        }
+
+        return errorList
+    }
+
+    protected checkReferencePointer(ptr : ReferencePointer | undefined) : ErrorList {
+        let errorList : ErrorList = []
+        if(!(ptr && "obj" in ptr && ptr.obj >= 0 && "generation" in ptr && ptr.generation >= 0)) {
+            errorList.push(new InvalidReferencePointerError("Invalid reference pointer"))
+        }
+
+        return errorList
+    }
+
+    protected checkDate(date : string | Date) : [ErrorList, string | undefined] {
+        let errorList : ErrorList = []
+        let ret_val : string | undefined = undefined
         try {
-            return Util.convertDateToPDFDate(date as Date)
+            ret_val = Util.convertDateToPDFDate(date as Date)
         } catch (e) {
-            throw Error("Invalid update date provided")
+            errorList.push(new InvalidDateError("Invalid update date provided"))
         }
+
+        return [errorList, ret_val]
     }
 
-    protected checkRect(nr: number, rect: number[]) {
+    protected checkRect(nr: number, rect: number[]) : ErrorList {
+        let errorList : ErrorList = []
         if (!Array.isArray(rect)) {
-            throw Error("invalid rect parameter")
+            errorList.push(new InvalidRectError("invalid rect parameter"))
         }
 
-        if (rect.length !== nr)
-            throw Error("Rect has invalid number of entries: " + rect + " has " + rect.length + " entries, but should have " + nr + " entries")
+        if (rect.length !== nr) {
+            errorList.push(new InvalidRectError("Rect has invalid number of entries: " + rect + " has " + rect.length + " entries, but should have " + nr + " entries"))
+        }
 
         rect.forEach((a) => {
-            if ('number' !== typeof a)
-                throw Error("Rect " + rect + " has invalid entry: " + a)
+            if ('number' !== typeof a) {
+                errorList.push(new InvalidRectError("Rect " + rect + " has invalid entry: " + a))
+            }
         })
+
+        return errorList
     }
 }
 
@@ -208,23 +246,34 @@ export class MarkupAnnotationObj extends BaseAnnotationObj implements MarkupAnno
         super()
     }
 
-    public validate() : void {
-        super.validate()
+    public validate(enact : boolean = true) : ErrorList {
+        let errorList : ErrorList = super.validate(false)
 
         if (this.opacity) {
             try {
                 this.opacity = +this.opacity
             } catch (e) {
-                throw e
+                errorList.push(new InvalidOpacityError("Opacity no numerical value"))
             }
 
             if (this.opacity < 0 || this.opacity > 255) {
-                throw Error("Invalid opacity value")
-            }
-
-            if (this.creationDate && typeof this.creationDate === 'object') {
-                this.creationDate = this.checkDate(this.creationDate)
+                errorList.push(new InvalidOpacityError("Opacity out of range"))
             }
         }
+
+        if (this.creationDate) {
+            let res = this.checkDate(this.creationDate)
+            this.creationDate = res[1]
+
+            errorList = errorList.concat(res[0])
+        }
+
+        if (enact) {
+            for(let error of errorList) {
+                throw error
+            }
+        }
+
+        return errorList
     }
 }
