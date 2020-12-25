@@ -119,33 +119,33 @@ export class Writer {
         let ret: number[] = []
         let lookupTable = this.parser.documentHistory.createObjectLookupTable()
 
-let page_ptr: XRef = lookupTable[page.object_id.obj]
+        let page_ptr: XRef = lookupTable[page.object_id.obj]
 
-if (page_ptr.compressed) {
-    let obj = ObjectUtil.extractObject(this.data, page_ptr, lookupTable)
-    let obj_data = obj.stream.getData().slice(obj.pointer_stream_start, obj.pointer_stream_end + 1)
+        if (page_ptr.compressed) {
+            let obj = ObjectUtil.extractObject(this.data, page_ptr, lookupTable)
+            let obj_data = obj.stream.getData().slice(obj.pointer_stream_start, obj.pointer_stream_end + 1)
 
-    let ref_ptr = WriterUtil.writeReferencePointer(obj.id, false).concat(32)
+            let ref_ptr = WriterUtil.writeReferencePointer(obj.id, false).concat(32)
 
-    let new_data: Uint8Array = new Uint8Array(ref_ptr.length + Writer.OBJ.length + obj_data.length + Writer.ENDOBJ.length)
-    new_data.set(ref_ptr)
-    new_data.set(Writer.OBJ, ref_ptr.length)
-    new_data.set(obj_data, Writer.OBJ.length + ref_ptr.length)
-    new_data.set(Writer.ENDOBJ, Writer.OBJ.length + obj_data.length + ref_ptr.length)
+            let new_data: Uint8Array = new Uint8Array(ref_ptr.length + Writer.OBJ.length + obj_data.length + Writer.ENDOBJ.length)
+            new_data.set(ref_ptr)
+            new_data.set(Writer.OBJ, ref_ptr.length)
+            new_data.set(obj_data, Writer.OBJ.length + ref_ptr.length)
+            new_data.set(Writer.ENDOBJ, Writer.OBJ.length + obj_data.length + ref_ptr.length)
 
-    return WriterUtil.replaceAnnotsFieldInPageObject(new_data, page, 0, annot_array_reference)
-}
+            return WriterUtil.replaceAnnotsFieldInPageObject(new_data, page, 0, annot_array_reference)
+        }
 
-return WriterUtil.replaceAnnotsFieldInPageObject(this.data, page, page_ptr.pointer, annot_array_reference)
+        return WriterUtil.replaceAnnotsFieldInPageObject(this.data, page, page_ptr.pointer, annot_array_reference)
     }
 
     /**
      * Takes the annotations of >>one<< page and derives the annotations array from it.
-        * Thereby it also considers the potentially existing annotation array.
-        *
-        * toDelete := contains those annotations that must be deleted. It removes them from the reference array
-        * and marks them as removed
-        * */
+     * Thereby it also considers the potentially existing annotation array.
+     *
+     * toDelete := contains those annotations that must be deleted. It removes them from the reference array
+     * and marks them as removed
+     * */
     writeAnnotArray(annots: Annotation[], toDelete: Annotation[]): { ptr: ReferencePointer, data: number[], pageReference: ReferencePointer, pageData: number[] } {
         let page = annots[0].pageReference
 
@@ -510,7 +510,7 @@ return WriterUtil.replaceAnnotsFieldInPageObject(this.data, page, page_ptr.point
             ret.push(Writer.SPACE)
         }
 
-        if ((annot as _Annotation).quadPoints) {
+        if ((annot as _Annotation).quadPoints && (annot as _Annotation).quadPoints!.length > 0) {
             ret = ret.concat(Writer.QUADPOINTS)
             ret.push(Writer.SPACE)
             ret = ret.concat(WriterUtil.writeNumberArray((annot as _Annotation).quadPoints!))

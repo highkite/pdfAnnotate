@@ -263,13 +263,21 @@
                                         contents: "Test123",
                                         author: "John",
                                         color: highlightAnnotColor,
-                                        quadPoints:[100, 130, 150, 130, 100, 100, 150, 100 /*rectangle one*/, 150, 180, 200, 180, 150, 150, 200, 150 /*rectangle two*/],
+                                        quadPoints: [100, 130, 150, 130, 100, 100, 150, 100 /*rectangle one*/, 150, 180, 200, 180, 150, 150, 200, 150 /*rectangle two*/],
                                         opacity: document.getElementById("highlightAnnotOpacity").value,
                                 })
                         })
 
                         document.querySelector('#addHighlightAnnotationQuadPointWithoutRect').addEventListener('click', (evt) => {
-                                pdfFactory.createHighlightAnnotation(0, [], "Test123", "John", {r: 1, g: 1, b: 0}, [100, 130, 150, 130, 100, 100, 150, 100 /*rectangle one*/, 150, 180, 200, 180, 150, 150, 200, 150 /*rectangle two*/])
+                                pdfFactory.createHighlightAnnotation({
+                                        page: 0,
+                                        rect: [],
+                                        contents: "Test123",
+                                        author: "John",
+                                        color: highlightAnnotColor,
+                                        quadPoints: [100, 130, 150, 130, 100, 100, 150, 100 /*rectangle one*/, 150, 180, 200, 180, 150, 150, 200, 150 /*rectangle two*/],
+                                        opacity: document.getElementById("highlightAnnotOpacity").value,
+                                })
                         })
 
                         document.querySelector('#addUnderlineAnnotation').addEventListener('click', (evt) => {

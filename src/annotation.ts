@@ -173,29 +173,6 @@ export class AnnotationFactory {
     }
 
     /**
-     * Extracts the rectangular hull from a quadPoint definition
-     * */
-    private extractRectFromQuadPoints(quadPoints: number[]): number[] {
-        let x_values = quadPoints.filter((element, index) => index % 2 === 0)
-        let y_values = quadPoints.filter((element, index) => index % 2 !== 0)
-
-        return [Math.min(...x_values), Math.min(...y_values), Math.max(...x_values), Math.max(...y_values)]
-    }
-
-    /**
-     * Checks the 'quadPoints' parameter
-     * */
-    private checkQuadPoints(quadPoints: number[]) {
-        if (quadPoints.length % 8 !== 0)
-            throw Error(`Quadpoints array has length ${quadPoints.length} but must be a multiple of 8`)
-
-        quadPoints.forEach((a) => {
-            if ('number' !== typeof a)
-                throw Error("Quadpoint " + quadPoints + " has invalid entry: " + a)
-        })
-    }
-
-    /**
      * Creates a base annotation that means the raw object of annotation or those parts that exist
      * in equal form in all types of annotations
      * */
@@ -253,7 +230,7 @@ export class AnnotationFactory {
         if (0 === quadPoints.length)
             quadPoints = [rect[0], rect[3], rect[2], rect[3], rect[0], rect[1], rect[2], rect[1]]
         else {
-            this.checkQuadPoints(quadPoints)
+            // this.checkQuadPoints(quadPoints)
         }
 
         let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page), {
@@ -311,12 +288,12 @@ export class AnnotationFactory {
      * */
     createUnderlineAnnotation(...values : any[]) {
         let params = ParameterParser.parseParameters(values)
-        this.checkQuadPoints(params.quadPoints)
+        //this.checkQuadPoints(params.quadPoints)
 
-        if (params.rect.length === 0 && params.quadPoints.length > 0) {
-            params.rect = this.extractRectFromQuadPoints(params.quadPoints)
-        }
-        this.checkRect(4, params.rect)
+        //if (params.rect.length === 0 && params.quadPoints.length > 0) {
+        //    params.rect = this.extractRectFromQuadPoints(params.quadPoints)
+        //}
+        //this.checkRect(4, params.rect)
         let annot = this.createTextMarkupAnnotation(params.page, params.rect, params.contents, params.author, "/Underline", params.color, params.quadPoints)
 
         this.annotations.push(annot)
@@ -333,12 +310,12 @@ export class AnnotationFactory {
      * */
     createSquigglyAnnotation(...values : any[]) {
         let params = ParameterParser.parseParameters(values)
-        this.checkQuadPoints(params.quadPoints)
+        //this.checkQuadPoints(params.quadPoints)
 
-        if (params.rect.length === 0 && params.quadPoints.length > 0) {
-            params.rect = this.extractRectFromQuadPoints(params.quadPoints)
-        }
-        this.checkRect(4, params.rect)
+        //if (params.rect.length === 0 && params.quadPoints.length > 0) {
+        //    params.rect = this.extractRectFromQuadPoints(params.quadPoints)
+        //}
+        //this.checkRect(4, params.rect)
         let annot = this.createTextMarkupAnnotation(params.page, params.rect, params.contents, params.author, "/Squiggly", params.color, params.quadPoints)
 
         this.annotations.push(annot)
@@ -355,12 +332,12 @@ export class AnnotationFactory {
      * */
     createStrikeOutAnnotation(...values : any[]) {
         let params = ParameterParser.parseParameters(values)
-        this.checkQuadPoints(params.quadPoints)
+        //this.checkQuadPoints(params.quadPoints)
 
-        if (params.rect.length === 0 && params.quadPoints.length > 0) {
-            params.rect = this.extractRectFromQuadPoints(params.quadPoints)
-        }
-        this.checkRect(4, params.rect)
+        //if (params.rect.length === 0 && params.quadPoints.length > 0) {
+        //    params.rect = this.extractRectFromQuadPoints(params.quadPoints)
+        //}
+        //this.checkRect(4, params.rect)
         let annot = this.createTextMarkupAnnotation(params.page, params.rect, params.contents, params.author, "/StrikeOut", params.color, params.quadPoints)
 
         this.annotations.push(annot)

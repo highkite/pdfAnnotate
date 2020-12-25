@@ -162,15 +162,15 @@ export class BaseAnnotationObj implements BaseAnnotation {
             errorList.push(new InvalidColorError("Not {r: <r>, g: <g>, b: <b>}"))
         }
 
-        if (color!.r <= 255 && color!.r >= 0) {
+        if (color!.r > 255 || color!.r < 0) {
             errorList.push(new ColorOutOfRangeError("Red value out of range"))
         }
 
-        if (color!.g <= 255 && color!.g >= 0) {
+        if (color!.g > 255 || color!.g < 0) {
             errorList.push(new ColorOutOfRangeError("Green value out of range"))
         }
 
-        if(color!.b <= 255 && color!.b >= 0) {
+        if(color!.b > 255 && color!.b < 0) {
             errorList.push(new ColorOutOfRangeError("Blue value out of range"))
         }
 
@@ -187,6 +187,9 @@ export class BaseAnnotationObj implements BaseAnnotation {
     }
 
     protected checkDate(date : string | Date) : [ErrorList, string | undefined] {
+        if (typeof date === 'string') {
+            return [[], date]
+        }
         let errorList : ErrorList = []
         let ret_val : string | undefined = undefined
         try {

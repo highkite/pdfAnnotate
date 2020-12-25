@@ -1,45 +1,71 @@
-class BaseError {
-    constructor() {
-        Error.apply(this, arguments as any)
+export class InvalidAnnotationTypeError extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "InvalidAnnotationTypeError"
     }
 }
 
-BaseError.prototype = new Error()
-
-export class InvalidAnnotationTypeError extends BaseError {
-    constructor(public message : string) { super() }
+export class InvalidOpacityError extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "InvalidOpacityError"
+    }
 }
 
-export class InvalidOpacityError extends BaseError {
-    constructor(public message : string) { super() }
+export class InvalidColorError extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "InvalidColorError"
+    }
 }
 
-export class InvalidColorError extends BaseError {
-    constructor(public message : string) { super() }
+export class ColorOutOfRangeError extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "ColorOutOfRangeError"
+    }
 }
 
-export class ColorOutOfRangeError extends BaseError {
-    constructor(public message : string) { super() }
+export class InvalidReferencePointerError extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "InvalidReferencePointerError"
+    }
 }
 
-export class InvalidReferencePointerError extends BaseError {
-    constructor(public message : string) { super() }
+export class InvalidDateError extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "InvalidDateError"
+    }
 }
 
-export class InvalidDateError extends BaseError {
-    constructor(public message : string) { super() }
+export class InvalidRectError extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "InvalidRectError"
+    }
 }
 
-export class InvalidRectError extends BaseError {
-    constructor(public message : string) { super() }
+export class InvalidIDError extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "InvalidIDError"
+    }
 }
 
-export class InvalidIDError extends BaseError {
-    constructor(public message : string) { super() }
+export class InvalidStateError extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "InvalidStateError"
+    }
 }
 
-export class InvalidStateError extends BaseError {
-    constructor(public message : string) { super() }
+export class InvalidQuadPointError extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "InvalidQuadPointError"
+    }
 }
 
-export type ErrorList = (BaseError | Error | ColorOutOfRangeError | InvalidReferencePointerError | InvalidDateError | InvalidRectError | InvalidIDError | InvalidColorError | InvalidOpacityError | InvalidAnnotationTypeError | InvalidStateError)[]
+export type ErrorList = (Error | ColorOutOfRangeError | InvalidReferencePointerError | InvalidDateError | InvalidRectError | InvalidIDError | InvalidColorError | InvalidOpacityError | InvalidAnnotationTypeError | InvalidStateError | InvalidQuadPointError)[]
