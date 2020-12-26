@@ -85,3 +85,75 @@ export class HighlightAnnotationObj extends TextMarkupAnnotationObj {
         return errorList
     }
 }
+
+export class UnderlineAnnotationObj extends TextMarkupAnnotationObj {
+
+    constructor() {
+        super()
+        this.type = "/Underline"
+    }
+
+    public validate(enact : boolean = true) : ErrorList {
+        let errorList : ErrorList = super.validate(false)
+
+        if (this.type !== "/Underline") {
+            errorList.push(new InvalidAnnotationTypeError(`Invalid annotation type ${this.type}`))
+        }
+
+        if (enact) {
+            for(let error of errorList) {
+                throw error
+            }
+        }
+
+        return errorList
+    }
+}
+
+export class SquigglyAnnotationObj extends TextMarkupAnnotationObj {
+
+    constructor() {
+        super()
+        this.type = "/Squiggly"
+    }
+
+    public validate(enact : boolean = true) : ErrorList {
+        let errorList : ErrorList = super.validate(false)
+
+        if (this.type !== "/Squiggly") {
+            errorList.push(new InvalidAnnotationTypeError(`Invalid annotation type ${this.type}`))
+        }
+
+        if (enact) {
+            for(let error of errorList) {
+                throw error
+            }
+        }
+
+        return errorList
+    }
+}
+
+export class StrikeOutAnnotationObj extends TextMarkupAnnotationObj {
+
+    constructor() {
+        super()
+        this.type = "/StrikeOut"
+    }
+
+    public validate(enact : boolean = true) : ErrorList {
+        let errorList : ErrorList = super.validate(false)
+
+        if (this.type !== "/StrikeOut") {
+            errorList.push(new InvalidAnnotationTypeError(`Invalid annotation type ${this.type}`))
+        }
+
+        if (enact) {
+            for(let error of errorList) {
+                throw error
+            }
+        }
+
+        return errorList
+    }
+}

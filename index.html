@@ -78,10 +78,10 @@
                 <div class="buttonClass"><button id="addHighlightAnnotation" type="button">Create Highlight Annotation</button></div>
                 <div class="buttonClass"><button id="addHighlightAnnotationQuadPoint" type="button">Create Highlight Annotation QuadPoint</button></div>
                 <div class="buttonClass"><button id="addHighlightAnnotationQuadPointWithoutRect" type="button">Create Highlight Annotation QuadPoint without Rect Definition</button></div>
-                <hr>
                 <div class="buttonClass"><button id="addUnderlineAnnotation" type="button">Create Underline Annotation</button></div>
                 <div class="buttonClass"><button id="addSquigglyAnnotation" type="button">Create Squiggly Annotation</button></div>
                 <div class="buttonClass"><button id="addStrikeOutAnnotation" type="button">Create StrikeOut Annotation</button></div>
+                <hr>
                 <div class="buttonClass"><button id="addFreeTextAnnotation" type="button">Create FreeText Annotation</button></div>
                 <div class="buttonClass"><button id="addLineAnnotation" type="button">Create Line Annotation</button></div>
                 <hr>
@@ -281,15 +281,36 @@
                         })
 
                         document.querySelector('#addUnderlineAnnotation').addEventListener('click', (evt) => {
-                                pdfFactory.createUnderlineAnnotation(0, [50, 50, 80, 80], "Test123", "John")
+                                pdfFactory.createUnderlineAnnotation({
+                                        page: 0,
+                                        rect: [50, 50, 80, 80],
+                                        contents: "Test123",
+                                        author: "John",
+                                        color: highlightAnnotColor,
+                                        opacity: document.getElementById("highlightAnnotOpacity").value,
+                                })
                         })
 
                         document.querySelector('#addSquigglyAnnotation').addEventListener('click', (evt) => {
-                                pdfFactory.createSquigglyAnnotation(0, [10, 20, 120, 20], "Test123", "John")
+                                pdfFactory.createSquigglyAnnotation({
+                                        page: 0,
+                                        rect: [100, 100, 200, 200],
+                                        contents: "Test123",
+                                        author: "John",
+                                        color: highlightAnnotColor,
+                                        opacity: document.getElementById("highlightAnnotOpacity").value,
+                                })
                         })
 
                         document.querySelector('#addStrikeOutAnnotation').addEventListener('click', (evt) => {
-                                pdfFactory.createStrikeOutAnnotation(0, [10, 40, 120, 40], "Test123", "John")
+                                pdfFactory.createStrikeOutAnnotation({
+                                        page: 0,
+                                        rect: [100, 100, 200, 200],
+                                        contents: "Test123",
+                                        author: "John",
+                                        color: highlightAnnotColor,
+                                        opacity: document.getElementById("highlightAnnotOpacity").value,
+                                })
                         })
 
                         document.querySelector('#addFreeTextAnnotation').addEventListener('click', (evt) => {

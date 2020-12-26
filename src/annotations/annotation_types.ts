@@ -158,6 +158,10 @@ export class BaseAnnotationObj implements BaseAnnotation {
     protected checkColor(color : Color | undefined) : ErrorList {
         let errorList : ErrorList = []
 
+        if (!color) {
+            return errorList
+        }
+
         if (!(color && "r" in color && "g" in color && "b" in color)) {
             errorList.push(new InvalidColorError("Not {r: <r>, g: <g>, b: <b>}"))
         }

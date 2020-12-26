@@ -1,7 +1,7 @@
 import { ReferencePointer, PDFDocumentParser, Page, Annotation } from './parser'
 import { Border, Color, BaseAnnotation } from './annotations/annotation_types';
 import { TextAnnotationObj } from './annotations/text_annotation';
-import { HighlightAnnotationObj } from './annotations/text_markup_annotation';
+import { HighlightAnnotationObj, UnderlineAnnotationObj, SquigglyAnnotationObj, StrikeOutAnnotationObj } from './annotations/text_markup_annotation';
 import { Util } from './util'
 import { Writer } from './writer'
 
@@ -216,37 +216,6 @@ export class AnnotationFactory {
     }
 
     /**
-     * Creates a text markup annotation
-     * page : the number of the PDF document page, where the annotation must be attached
-     * rect : the position of the annotation on the page
-     * contents : the content of the annotation
-     * author : the author of the annotation
-     * subtype : the subtype of the Textmarkup annotation
-     * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
-     * quadPoints : regions to mark with the highlight
-     * */
-    createTextMarkupAnnotation(page: number, rect: number[], contents: string = "", author: string = "", subtype: string, color: Color = { r: 1, g: 1, b: 0 }, quadPoints: number[] = []): Annotation {
-
-        if (0 === quadPoints.length)
-            quadPoints = [rect[0], rect[3], rect[2], rect[3], rect[0], rect[1], rect[2], rect[1]]
-        else {
-            // this.checkQuadPoints(quadPoints)
-        }
-
-        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page), {
-            opacity: 1,
-            initiallyOpen: false,
-            annotation_flag: 4,
-            color: color,
-            quadPoints: quadPoints
-        })
-
-        annot.type = subtype
-
-        return annot
-    }
-
-    /**
      * Creates a highlight annotation
      * page : the number of the PDF document page, where the annotation must be attached
      * rect : the position of the annotation on the page
@@ -265,16 +234,6 @@ export class AnnotationFactory {
         annot.validate()
 
         this.annotations.push(annot)
-        //this.checkQuadPoints(params.quadPoints)
-
-        //if (params.rect.length === 0 && params.quadPoints.length > 0) {
-        //    params.rect = this.extractRectFromQuadPoints(params.quadPoints)
-        //}
-        //this.checkRect(4, params.rect)
-
-        //let annot = this.createTextMarkupAnnotation(params.page, params.rect, params.contents, params.author, "/Highlight", params.color, params.quadPoints)
-
-        //this.annotations.push(annot)
     }
 
     /**
@@ -288,13 +247,12 @@ export class AnnotationFactory {
      * */
     createUnderlineAnnotation(...values : any[]) {
         let params = ParameterParser.parseParameters(values)
-        //this.checkQuadPoints(params.quadPoints)
 
-        //if (params.rect.length === 0 && params.quadPoints.length > 0) {
-        //    params.rect = this.extractRectFromQuadPoints(params.quadPoints)
-        //}
-        //this.checkRect(4, params.rect)
-        let annot = this.createTextMarkupAnnotation(params.page, params.rect, params.contents, params.author, "/Underline", params.color, params.quadPoints)
+        let annot : UnderlineAnnotationObj = new UnderlineAnnotationObj()
+        annot = (<any>Object).assign(annot, this.createBaseAnnotation(params.page))
+        annot = (<any>Object).assign(annot, params)
+
+        annot.validate()
 
         this.annotations.push(annot)
     }
@@ -310,13 +268,12 @@ export class AnnotationFactory {
      * */
     createSquigglyAnnotation(...values : any[]) {
         let params = ParameterParser.parseParameters(values)
-        //this.checkQuadPoints(params.quadPoints)
 
-        //if (params.rect.length === 0 && params.quadPoints.length > 0) {
-        //    params.rect = this.extractRectFromQuadPoints(params.quadPoints)
-        //}
-        //this.checkRect(4, params.rect)
-        let annot = this.createTextMarkupAnnotation(params.page, params.rect, params.contents, params.author, "/Squiggly", params.color, params.quadPoints)
+        let annot : SquigglyAnnotationObj = new SquigglyAnnotationObj()
+        annot = (<any>Object).assign(annot, this.createBaseAnnotation(params.page))
+        annot = (<any>Object).assign(annot, params)
+
+        annot.validate()
 
         this.annotations.push(annot)
     }
@@ -332,13 +289,12 @@ export class AnnotationFactory {
      * */
     createStrikeOutAnnotation(...values : any[]) {
         let params = ParameterParser.parseParameters(values)
-        //this.checkQuadPoints(params.quadPoints)
 
-        //if (params.rect.length === 0 && params.quadPoints.length > 0) {
-        //    params.rect = this.extractRectFromQuadPoints(params.quadPoints)
-        //}
-        //this.checkRect(4, params.rect)
-        let annot = this.createTextMarkupAnnotation(params.page, params.rect, params.contents, params.author, "/StrikeOut", params.color, params.quadPoints)
+        let annot : StrikeOutAnnotationObj = new StrikeOutAnnotationObj()
+        annot = (<any>Object).assign(annot, this.createBaseAnnotation(params.page))
+        annot = (<any>Object).assign(annot, params)
+
+        annot.validate()
 
         this.annotations.push(annot)
     }
