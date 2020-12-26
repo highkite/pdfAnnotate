@@ -13,8 +13,8 @@
         1. [The Translation of Coordinates](#TranslationCoordinates)
         2. [Quadpoints](#QuadPoints)
     4. [API Documentation](#API)
-    	1. [Configuration Options](#configurationOptions)
-    	2. [Backward Compatibility](#backwardCompatibility)
+        1. [Configuration Options](#configurationOptions)
+        2. [Backward Compatibility](#backwardCompatibility)
         3. [constructor(...)](#constructor)
         4. [loadFile(...)](#loadfile)
         5. [createTextAnnotation(...)](#createtext)
@@ -73,11 +73,11 @@ Annotations can be easily created by calling `creator` methods (see [API Documen
 ```
 AnnotationFactory.loadFile(path).then((factory) => {
                         factory.createTextAnnotation({
-                        	page: 0, 
-                        	rect: [50, 50, 80, 80], 
-                        	contents: "Pop up note", 
-                        	author: "Max"
-                        	...
+                                page: 0,
+                                rect: [50, 50, 80, 80],
+                                contents: "Pop up note",
+                                author: "Max"
+                                ...
                         })
                         factory.download()
 })
@@ -157,29 +157,29 @@ These are the options that are supported by every annotation:
 
 ```
 {
-	updateDate: Date // Specify an update date for the annotation
-	annotationFlags: { // Specify the behavior of annotations
-		invisible: boolean // Do not display annotation
-		hidden: boolean // Do not display or print annotation
-		print: boolean // Do not print annotation
-		noZoom: boolean // Do not scale annotation, when zooming
-		noRotate: boolean // Do not rotate annotation, when page is rotated
-		noView: boolean // Disable interaction and display of the annotation
-		readOnly: boolean
-		locked?: boolean
-		toggleNoView: boolean // inverts noView option
-		lockedContents: boolean // Lock content of the annotation
-	}
-	border: { // Specify the appearance of the border; Note that not every option is available on every annotation
-		horizontal_corner_radius: number
-		vertical_corner_radius: number
-		border_width: number
-		dash_pattern: number[] // See specification for more information
-		border_style: BorderStyles.Solid | BorderStyles.Dashed | BorderStyles.Beveled | BorderStyles.Inset | BorderStyles.Underline // define a border style
-		cloudy: boolean // Smear the border
-		cloud_intensity: number // Intensity of the smearing
-	}
-	color: {r : number, g : number, b : number} // Specify the color can be the background color, the title bar color, the border color, depending on the annotation type
+        updateDate: Date // Specify an update date for the annotation
+        annotationFlags: { // Specify the behavior of annotations
+                invisible: boolean // Do not display annotation
+                hidden: boolean // Do not display or print annotation
+                print: boolean // Do not print annotation
+                noZoom: boolean // Do not scale annotation, when zooming
+                noRotate: boolean // Do not rotate annotation, when page is rotated
+                noView: boolean // Disable interaction and display of the annotation
+                readOnly: boolean
+                locked?: boolean
+                toggleNoView: boolean // inverts noView option
+                lockedContents: boolean // Lock content of the annotation
+        }
+        border: { // Specify the appearance of the border; Note that not every option is available on every annotation
+                horizontal_corner_radius: number
+                vertical_corner_radius: number
+                border_width: number
+                dash_pattern: number[] // See specification for more information
+                border_style: BorderStyles.Solid | BorderStyles.Dashed | BorderStyles.Beveled | BorderStyles.Inset | BorderStyles.Underline // define a border style
+                cloudy: boolean // Smear the border
+                cloud_intensity: number // Intensity of the smearing
+        }
+        color: {r : number, g : number, b : number} // Specify the color can be the background color, the title bar color, the border color, depending on the annotation type
 }
 ```
 We now show options, that are only supported by *Markup* annotations.
@@ -187,11 +187,11 @@ Markup annotations are: `Text, FreeText, Line, Square, Circle, Polygon, PolyLine
 
 ```
 {
-	opacity: number // A number in the interval [0, 1] to control the opacity
-	richtextString: string // Is displayed in the pop up window, when the annotation is opened
-	creationDate: Date // Specify a creation date
-	subject: string // A short description of the subject that is referred in the annotation
-	intent: string // The intent of the annotation
+        opacity: number // A number in the interval [0, 1] to control the opacity
+        richtextString: string // Is displayed in the pop up window, when the annotation is opened
+        creationDate: Date // Specify a creation date
+        subject: string // A short description of the subject that is referred in the annotation
+        intent: string // The intent of the annotation
 }
 ```
 Individual configuration options are discussed in the corresponding documentation sections.
@@ -211,13 +211,13 @@ is better written as:
 ```
 AnnotationFactory.loadFile(path).then((factory) => {
                         factory.createTextAnnotation({
-                        	page: 0, 
-                        	rect: [50, 50, 80, 80], 
-                        	contents: "Pop up note", 
-                        	author: "Max"
-                        	optionalParam1: <...>,
-                        	optionalParam2: <...>
-                        	...
+                                page: 0,
+                                rect: [50, 50, 80, 80],
+                                contents: "Pop up note",
+                                author: "Max"
+                                optionalParam1: <...>,
+                                optionalParam2: <...>
+                                ...
                         })
                         factory.download()
 })
@@ -281,16 +281,16 @@ Example usage:
 import { AnnotationFactory, AnnotationIcon } from 'annotpdf';
 
 AnnotationFactory.loadFile(path).then((factory) => {
-	factory.createTextAnnotation({
-		page: 0,
-		rect: [50, 50, 80, 80],
-		contents: "Pop up note",
-		author: "Max",
-		color: {r: 128, g: 128, b: 128},
-		open: false,
-		icon: AnnotationIcon.Help,
-		opacity: 0.5
-	})
+        factory.createTextAnnotation({
+                page: 0,
+                rect: [50, 50, 80, 80],
+                contents: "Pop up note",
+                author: "Max",
+                color: {r: 128, g: 128, b: 128},
+                open: false,
+                icon: AnnotationIcon.Help,
+                opacity: 0.5
+        })
 })
 ```
 
@@ -309,6 +309,25 @@ The highlight annotation emphasizes a selected text, with a semitransparent colo
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
 | quadPoints | number array | Optional argument for specifying the quadpoints of the annotation (cfg. [Quadpoints](#QuadPoints) ). |
 
+Note that there are more optional parameters available, as described in [Configuration Options](#configurationOptions). Also note, that a text annotation is a **Markup** annotation.
+
+Example usage:
+
+```
+import { AnnotationFactory, AnnotationIcon } from 'annotpdf';
+
+AnnotationFactory.loadFile(path).then((factory) => {
+        factory.createHighlightAnnotation({
+                page: 0,
+                rect: [100, 100, 200, 200],
+                contents: "Test123",
+                author: "John",
+                color: {r: 128, g: 128, b: 128},
+                opacity: 0.5
+        })
+})
+```
+
 ### <a name="createunderline"></a>createUnderlineAnnotation(...)
 The underline annotation underlines a selected text. However, see the remark: This annotation is not always correctly rendered.
 
@@ -324,7 +343,27 @@ The underline annotation underlines a selected text. However, see the remark: Th
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
 | quadPoints | number array | Optional argument for specifying the quadpoints of the annotation (cfg. [Quadpoints](#QuadPoints) ). |
 
+Note that there are more optional parameters available, as described in [Configuration Options](#configurationOptions). Also note, that a text annotation is a **Markup** annotation.
+
 **Note** The underline annotation is not displayed by the PDFjs renderer. However, it is displayed in the chrome PDF viewer. Sometimes it is wrongly rendered. In the Ubuntu Gnome PDF viewer *Evince* it is displayed as *overline*.
+
+Example usage:
+
+```
+import { AnnotationFactory, AnnotationIcon } from 'annotpdf';
+
+AnnotationFactory.loadFile(path).then((factory) => {
+        factory.createUnderlineAnnotation({
+                page: 0,
+                rect: [100, 100, 200, 200],
+                contents: "Test123",
+                author: "John",
+                color: {r: 128, g: 128, b: 128},
+                opacity: 0.5
+        })
+})
+```
+
 
 ### <a name="createsquiggly"></a>createSquigglyAnnotation(...)
 
@@ -342,6 +381,25 @@ Uses a curly line for underlining a selected text.
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
 | quadPoints | number array | Optional argument for specifying the quadpoints of the annotation (cfg. [Quadpoints](#QuadPoints) ). |
 
+Note that there are more optional parameters available, as described in [Configuration Options](#configurationOptions). Also note, that a text annotation is a **Markup** annotation.
+
+Example usage:
+
+```
+import { AnnotationFactory, AnnotationIcon } from 'annotpdf';
+
+AnnotationFactory.loadFile(path).then((factory) => {
+        factory.createSquigglyAnnotation({
+                page: 0,
+                rect: [100, 100, 200, 200],
+                contents: "Test123",
+                author: "John",
+                color: {r: 128, g: 128, b: 128},
+                opacity: 0.5
+        })
+})
+```
+
 ### <a name="createstrikeout"></a>createStrikeOutAnnotation(...)
 
 Can be used to cross out the selected text.
@@ -357,6 +415,25 @@ Can be used to cross out the selected text.
 | author | string |    The author name.  |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
 | quadPoints | number array | Optional argument for specifying the quadpoints of the annotation (cfg. [Quadpoints](#QuadPoints) ). |
+
+Note that there are more optional parameters available, as described in [Configuration Options](#configurationOptions). Also note, that a text annotation is a **Markup** annotation.
+
+Example usage:
+
+```
+import { AnnotationFactory, AnnotationIcon } from 'annotpdf';
+
+AnnotationFactory.loadFile(path).then((factory) => {
+        factory.createStrikeOutAnnotation({
+                page: 0,
+                rect: [100, 100, 200, 200],
+                contents: "Test123",
+                author: "John",
+                color: {r: 128, g: 128, b: 128},
+                opacity: 0.5
+        })
+})
+```
 
 ### <a name="createfreetext"></a>createFreeTextAnnotation(...)
 
@@ -696,3 +773,4 @@ encoding. If this becomes a problem, please file a feature request.
 
 The optional decode parameters determine additional filtering of the stream data. So for instance it is possible to apply the PNG predictor functions to improve the actual compression. When uncompressing a stream data it is then necessary
 to invert the predictor values.
+h

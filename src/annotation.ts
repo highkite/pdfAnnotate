@@ -524,6 +524,10 @@ export class AnnotationFactory {
         this.annotations.push(annot)
     }
 
+    createPopupAnnotation() {
+        throw Error("No yet implemented")
+    }
+
     /**
      * Deletes the annotation with the given id or the given reference object
      * */
@@ -575,10 +579,6 @@ export class AnnotationFactory {
             }
             resolve(existingAnnots)
         })
-    }
-
-    createPopupAnnotation() {
-        throw Error("No yet implemented")
     }
 
     /**
