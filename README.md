@@ -35,6 +35,7 @@
         20. [write(...)](#write)
         21. [download(...)](#download)
         22. [save(...)](#save)
+        23. [toBuffer()](#tobuffer)
     5. [How does the Library Works?](#HowWorks)
         1. [Trivia](#Trivia)
         2. [Adding an Annotation](#AddingAnnotation)
@@ -385,6 +386,12 @@ If you want to use this method you need to uncomment it in the code. Sorry for t
 | Paramater   |     Type      |  Description |
 |----------|-------------|------|
 | fileName | string |  Specify a file name of the file. By default it is called 'output.pdf'. |
+
+### <a name="tobuffer"></a>toBuffer(...)
+
+The toBuffer method returns a Buffer of the adapted PDF document. Buffer could used to createWriteStream or to
+save adapted PDF document easily
+
 
 # <a name="HowWorks"></a>How does the Library Works? -- Head Jump into the Rabbit Hole
 

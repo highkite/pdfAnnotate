@@ -593,4 +593,12 @@ export class AnnotationFactory {
         //         console.log(`The file was written to: ${fileName}`);
         //     })
     }
+
+    /**
+     * returns adapted PDF document buffer.
+     * */
+    toBuffer(){
+        return Buffer.from(this.write())
+    }
+
 }
