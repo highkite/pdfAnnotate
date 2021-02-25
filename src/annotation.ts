@@ -291,6 +291,7 @@ export class AnnotationFactory {
         this.checkRect(4, rect)
         let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
             textAlignment: "right-justified",
+            annotation_flag: 4,
             defaultAppearance: "/Invalid_font 9 Tf"
         })
 
