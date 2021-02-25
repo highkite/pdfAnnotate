@@ -287,10 +287,11 @@ export class AnnotationFactory {
      * author : the author of the annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createFreeTextAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 0 }) {
+    createFreeTextAnnotation(page: number, rect: number[], contents: string, author: string, color: Color = { r: 1, g: 1, b: 1 }) {
         this.checkRect(4, rect)
         let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page, rect, contents, author), {
             textAlignment: "right-justified",
+            color: color,
             defaultAppearance: "/Invalid_font 9 Tf"
         })
 
