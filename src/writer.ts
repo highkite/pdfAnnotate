@@ -177,7 +177,8 @@ export class Writer {
         let ret: number[] = WriterUtil.writeReferencePointer(refArray_id)
         ret.push(Writer.SPACE)
         ret = ret.concat(Writer.OBJ)
-        ret.push(Writer.SPACE)
+        ret.push(Writer.CR)
+        ret.push(Writer.LF)
         ret.push(Writer.ARRAY_START)
 
 
@@ -187,7 +188,8 @@ export class Writer {
         }
 
         ret.push(Writer.ARRAY_END)
-        ret.push(Writer.SPACE)
+        ret.push(Writer.CR)
+        ret.push(Writer.LF)
 
         ret = ret.concat(Writer.ENDOBJ)
         ret.push(Writer.CR)
@@ -261,7 +263,8 @@ export class Writer {
         let ret: number[] = WriterUtil.writeReferencePointer(annot.object_id)
         ret.push(Writer.SPACE)
         ret = ret.concat(Writer.OBJ)
-        ret.push(Writer.SPACE)
+        ret.push(Writer.CR)
+        ret.push(Writer.LF)
         ret = ret.concat(Writer.DICT_START)
         ret = ret.concat(Writer.TYPE_ANNOT)
         ret.push(Writer.SPACE)
@@ -413,7 +416,8 @@ export class Writer {
         }
 
         ret = ret.concat(Writer.DICT_END)
-        ret.push(Writer.SPACE)
+        ret.push(Writer.CR)
+        ret.push(Writer.LF)
         ret = ret.concat(Writer.ENDOBJ)
         ret.push(Writer.CR)
         ret.push(Writer.LF)
@@ -756,7 +760,8 @@ export class Writer {
         let ret: number[] = WriterUtil.writeReferencePointer(refArray_id)
         ret.push(Writer.SPACE)
         ret = ret.concat(Writer.OBJ)
-        ret.push(Writer.SPACE)
+        ret.push(Writer.CR)
+        ret.push(Writer.LF)
         ret.push(Writer.ARRAY_START)
 
 
@@ -766,7 +771,8 @@ export class Writer {
         }
 
         ret.push(Writer.ARRAY_END)
-        ret.push(Writer.SPACE)
+        ret.push(Writer.CR)
+        ret.push(Writer.LF)
 
         ret = ret.concat(Writer.ENDOBJ)
         ret.push(Writer.CR)
