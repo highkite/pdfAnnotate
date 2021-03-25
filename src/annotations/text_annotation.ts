@@ -109,7 +109,7 @@ export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnota
 
         if (this.state) {
             ret = ret.concat(WriterUtil.STATE)
-            ret.push(WriterUtil.BRACKET_START)
+            ret.push(WriterUtil.SPACE)
             ret = ret.concat(this.convertState(this.state))
             ret.push(WriterUtil.SPACE)
         }
