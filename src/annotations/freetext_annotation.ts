@@ -30,6 +30,8 @@ export interface FreeTextAnnotation extends MarkupAnnotation {
 
 export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTextAnnotation {
     defaultAppearance : string = "/Invalid_font 9 Tf" // /DA
+    defaultStyleString : string | undefined
+    differenceRectangle : number[] = []
     textJustification : TextJustification = TextJustification.Left // /Q
     calloutLine: number[] = []
     freeTextType: FreeTextType = FreeTextType.FreeText
@@ -126,6 +128,22 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
             ret = ret.concat(WriterUtil.LINE_ENDING)
             ret.push(WriterUtil.SPACE)
             ret = ret.concat(this.convertLineEndingStyle(this.lineEndingStyle))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.defaultStyleString && this.defaultStyleString !== "") {
+            ret = ret.concat(WriterUtil.DEFAULT_STYLE_STRING)
+            ret.push(WriterUtil.SPACE)
+            ret.push(WriterUtil.BRACKET_START)
+            ret = ret.concat(Util.convertStringToAscii(this.defaultStyleString))
+            ret.push(WriterUtil.BRACKET_END)
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.differenceRectangle && this.differenceRectangle.length > 0) {
+            ret = ret.concat(WriterUtil.DIFFERENCE_RECTANGLE)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(WriterUtil.writeNumberArray(this.differenceRectangle))
             ret.push(WriterUtil.SPACE)
         }
 

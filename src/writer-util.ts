@@ -54,6 +54,8 @@ export class WriterUtil {
     public static XREF: number[] = [120, 114, 101, 102] // = 'xref'
 
     public static TEXT_JUSTIFICATION : number[] = [47, 81] // = '/Q'
+    public static DEFAULT_STYLE_STRING : number[] = [47, 68, 83] // = '/DS'
+    public static DIFFERENCE_RECTANGLE : number[] = [47, 82, 68] // = '/RD'
     public static IT : number[] = [47, 73, 84] // = '/IT'
     public static LINE_ENDING : number[] = [47, 76, 69] // = '/LE'
     public static CALLOUT_LINE : number[] = [47, 67, 76] // = '/CL'
