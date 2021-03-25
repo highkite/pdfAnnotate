@@ -129,7 +129,8 @@ export class Writer {
         let ret: number[] = WriterUtil.writeReferencePointer(refArray_id)
         ret.push(WriterUtil.SPACE)
         ret = ret.concat(WriterUtil.OBJ)
-        ret.push(WriterUtil.SPACE)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
         ret.push(WriterUtil.ARRAY_START)
 
 
@@ -139,7 +140,8 @@ export class Writer {
         }
 
         ret.push(WriterUtil.ARRAY_END)
-        ret.push(WriterUtil.SPACE)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
 
         ret = ret.concat(WriterUtil.ENDOBJ)
         ret.push(WriterUtil.CR)
@@ -153,12 +155,6 @@ export class Writer {
      * Writes an annotation object
      * */
     writeAnnotationObject(annot: Annotation): { ptr: ReferencePointer, data: number[] } {
-
-
-
-
-
-
 
         //if ((annot as _Annotation).stampType) {
         //    ret = ret.concat(Writer.NAME)
@@ -174,13 +170,6 @@ export class Writer {
         //    ret.push(Writer.SPACE)
         //}
 
-
-        //ret = ret.concat(Writer.DICT_END)
-        //ret.push(Writer.SPACE)
-        //ret = ret.concat(Writer.ENDOBJ)
-        //ret.push(Writer.CR)
-        //ret.push(Writer.LF)
-        //
         let ret : number[] = annot.writeAnnotationPreamble()
 
         ret = ret.concat(annot.writeAnnotationObject(this.cryptoInterface))
@@ -524,7 +513,8 @@ export class Writer {
         let ret: number[] = WriterUtil.writeReferencePointer(refArray_id)
         ret.push(WriterUtil.SPACE)
         ret = ret.concat(WriterUtil.OBJ)
-        ret.push(WriterUtil.SPACE)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
         ret.push(WriterUtil.ARRAY_START)
 
 
@@ -534,7 +524,8 @@ export class Writer {
         }
 
         ret.push(WriterUtil.ARRAY_END)
-        ret.push(WriterUtil.SPACE)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
 
         ret = ret.concat(WriterUtil.ENDOBJ)
         ret.push(WriterUtil.CR)

@@ -94,7 +94,8 @@ export class BaseAnnotationObj implements BaseAnnotation {
         let ret: number[] = WriterUtil.writeReferencePointer(this.object_id!)
         ret.push(WriterUtil.SPACE)
         ret = ret.concat(WriterUtil.OBJ)
-        ret.push(WriterUtil.SPACE)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
         ret = ret.concat(WriterUtil.DICT_START)
 
         ret = ret.concat(WriterUtil.TYPE_ANNOT)
@@ -210,8 +211,9 @@ export class BaseAnnotationObj implements BaseAnnotation {
 
     public writeAnnotationPostamble() : number[] {
         let ret : number[] = WriterUtil.DICT_END
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
 
-        ret.push(WriterUtil.SPACE)
         ret = ret.concat(WriterUtil.ENDOBJ)
         ret.push(WriterUtil.CR)
         ret.push(WriterUtil.LF)
