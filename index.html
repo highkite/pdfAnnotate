@@ -135,6 +135,56 @@
                 <div class="buttonClass"><button id="addCircleAnnotation" type="button">Create Circle Annotation</button></div>
                 <div class="buttonClass"><button id="addSquareAnnotation" type="button">Create Square Annotation</button></div>
                 <div class="buttonClass"><button id="addPolygonAnnotation" type="button">Create Polygon Annotation</button></div>
+                <p>
+                Start line ending:
+                <fieldset>
+                        <input type="radio" id="square" name="polyline_line_start">
+                        <label for="square">Square</label>
+                        <input type="radio" id="circle" name="polyline_line_start">
+                        <label for="circle">Circle</label>
+                        <input type="radio" id="diamond" name="polyline_line_start">
+                        <label for="diamond">Diamond</label>
+                        <input type="radio" id="open_arrow" name="polyline_line_start">
+                        <label for="open_arrow">OpenArrow</label>
+                        <input type="radio" id="closed_arrow" name="polyline_line_start">
+                        <label for="closed_arrow">ClosedArrow</label>
+                        <input type="radio" id="none" name="polyline_line_start" checked>
+                        <label for="none">None</label>
+                        <input type="radio" id="butt" name="polyline_line_start">
+                        <label for="butt">Butt</label>
+                        <input type="radio" id="r_open_arrow" name="polyline_line_start">
+                        <label for="r_open_arrow">ROpenArrow</label>
+                        <input type="radio" id="r_closed_arrow" name="polyline_line_start">
+                        <label for="r_closed_arrow">RClosedArrow</label>
+                        <input type="radio" id="slash" name="polyline_line_start">
+                        <label for="slash">Slash</label>
+                </fieldset>
+                </p>
+                <p>
+                End line ending:
+                <fieldset>
+                        <input type="radio" id="square" name="polyline_line_end">
+                        <label for="square">Square</label>
+                        <input type="radio" id="circle" name="polyline_line_end">
+                        <label for="circle">Circle</label>
+                        <input type="radio" id="diamond" name="polyline_line_end">
+                        <label for="diamond">Diamond</label>
+                        <input type="radio" id="open_arrow" name="polyline_line_end">
+                        <label for="open_arrow">OpenArrow</label>
+                        <input type="radio" id="closed_arrow" name="polyline_line_end">
+                        <label for="closed_arrow">ClosedArrow</label>
+                        <input type="radio" id="none" name="polyline_line_end" checked>
+                        <label for="none">None</label>
+                        <input type="radio" id="butt" name="polyline_line_end">
+                        <label for="butt">Butt</label>
+                        <input type="radio" id="r_open_arrow" name="polyline_line_end">
+                        <label for="r_open_arrow">ROpenArrow</label>
+                        <input type="radio" id="r_closed_arrow" name="polyline_line_end">
+                        <label for="r_closed_arrow">RClosedArrow</label>
+                        <input type="radio" id="slash" name="polyline_line_end">
+                        <label for="slash">Slash</label>
+                </fieldset>
+                </p>
                 <div class="buttonClass"><button id="addPolyLineAnnotation" type="button">Create PolyLine Annotation</button></div>
                 <hr>
                 <div class="buttonClass"><button id="addInkAnnotation" type="button">Create Ink Annotation</button></div>
@@ -463,6 +513,56 @@
                         })
 
                         document.querySelector('#addPolyLineAnnotation').addEventListener('click', (evt) => {
+                                let lineStart = pdfAnnotate.LineEndingStyle.None
+                                let lineEnd = pdfAnnotate.LineEndingStyle.None
+
+                                radios = document.getElementsByName("polyline_line_start")
+
+                                if (radios[0].checked) {
+                                        lineStart = pdfAnnotate.LineEndingStyle.Square
+                                } else if (radios[1].checked) {
+                                        lineStart = pdfAnnotate.LineEndingStyle.Circle
+                                } else if (radios[2].checked) {
+                                        lineStart = pdfAnnotate.LineEndingStyle.Diamond
+                                } else if (radios[3].checked) {
+                                        lineStart = pdfAnnotate.LineEndingStyle.OpenArrow
+                                } else if (radios[4].checked) {
+                                        lineStart = pdfAnnotate.LineEndingStyle.ClosedArrow
+                                } else if (radios[5].checked) {
+                                        lineStart = pdfAnnotate.LineEndingStyle.None
+                                } else if (radios[6].checked) {
+                                        lineStart = pdfAnnotate.LineEndingStyle.Butt
+                                } else if (radios[7].checked) {
+                                        lineStart = pdfAnnotate.LineEndingStyle.ROpenArrow
+                                } else if (radios[8].checked) {
+                                        lineStart = pdfAnnotate.LineEndingStyle.RClosedArrow
+                                } else if (radios[9].checked) {
+                                        lineStart = pdfAnnotate.LineEndingStyle.Slash
+                                }
+
+                                radios = document.getElementsByName("polyline_line_end")
+
+                                if (radios[0].checked) {
+                                        lineEnd = pdfAnnotate.LineEndingStyle.Square
+                                } else if (radios[1].checked) {
+                                        lineEnd = pdfAnnotate.LineEndingStyle.Circle
+                                } else if (radios[2].checked) {
+                                        lineEnd = pdfAnnotate.LineEndingStyle.Diamond
+                                } else if (radios[3].checked) {
+                                        lineEnd = pdfAnnotate.LineEndingStyle.OpenArrow
+                                } else if (radios[4].checked) {
+                                        lineEnd = pdfAnnotate.LineEndingStyle.ClosedArrow
+                                } else if (radios[5].checked) {
+                                        lineEnd = pdfAnnotate.LineEndingStyle.None
+                                } else if (radios[6].checked) {
+                                        lineEnd = pdfAnnotate.LineEndingStyle.Butt
+                                } else if (radios[7].checked) {
+                                        lineEnd = pdfAnnotate.LineEndingStyle.ROpenArrow
+                                } else if (radios[8].checked) {
+                                        lineEnd = pdfAnnotate.LineEndingStyle.RClosedArrow
+                                } else if (radios[9].checked) {
+                                        lineEnd = pdfAnnotate.LineEndingStyle.Slash
+                                }
                                 pdfFactory.createPolyLineAnnotation({
                                         page: 0,
                                         rect: [80, 80, 120, 120],
@@ -470,7 +570,8 @@
                                         author: "John",
                                         vertices: [80, 80, 100, 100, 110, 80, 120, 120],
                                         color: lineColor,
-                                        fill: fillColor
+                                        fill: fillColor,
+                                        lineEndingStyles: [lineStart, lineEnd]
                                 })
                         })
 

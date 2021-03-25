@@ -75,15 +75,34 @@ export class PolygonPolyLineAnnotationObj extends MarkupAnnotationObj implements
 }
 
 export interface PolyLineAnnotation extends PolygonPolyLineAnnotation {
-    lineEndingStyles? : LineEndingStyle[]
+    lineEndingStyles? : LineEndingStyle[] // /LE
 }
 
 export class PolyLineAnnotationObj extends PolygonPolyLineAnnotationObj implements PolyLineAnnotation {
+    lineEndingStyles : LineEndingStyle[] = []
 
     constructor() {
         super()
         this.type = "/PolyLine"
         this.type_encoded = [47, 80, 111, 108, 121, 76, 105, 110, 101] // '/PolyLine
+    }
+
+    public writeAnnotationObject(cryptoInterface : CryptoInterface) : number[] {
+        let ret : number[] = super.writeAnnotationObject(cryptoInterface)
+
+        if (this.lineEndingStyles && this.lineEndingStyles.length >= 2) {
+            ret = ret.concat(WriterUtil.LINE_ENDING)
+            ret.push(WriterUtil.SPACE)
+            ret.push(WriterUtil.ARRAY_START)
+            ret = ret.concat(this.convertLineEndingStyle(this.lineEndingStyles[0]))
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(this.convertLineEndingStyle(this.lineEndingStyles[1]))
+            ret.push(WriterUtil.SPACE)
+            ret.push(WriterUtil.ARRAY_END)
+            ret.push(WriterUtil.SPACE)
+        }
+
+        return ret
     }
 
     public validate(enact : boolean = true) : ErrorList {

@@ -172,6 +172,32 @@ export class BaseAnnotationObj implements BaseAnnotation {
         return ret
     }
 
+    protected convertLineEndingStyle(lne : LineEndingStyle) : number[] {
+        switch(lne) {
+            case LineEndingStyle.Square:
+                return Util.convertStringToAscii("/Square")
+            case LineEndingStyle.Circle:
+                return Util.convertStringToAscii("/Circle")
+            case LineEndingStyle.Diamond:
+                return Util.convertStringToAscii("/Diamond")
+            case LineEndingStyle.OpenArrow:
+                return Util.convertStringToAscii("/OpenArrow")
+            case LineEndingStyle.ClosedArrow:
+                return Util.convertStringToAscii("/ClosedArrow")
+            case LineEndingStyle.Butt:
+                return Util.convertStringToAscii("/Butt")
+            case LineEndingStyle.ROpenArrow:
+                return Util.convertStringToAscii("/ROpenArrow")
+            case LineEndingStyle.RClosedArrow:
+                return Util.convertStringToAscii("/RClosedArrow")
+            case LineEndingStyle.Slash:
+                return Util.convertStringToAscii("/Slash")
+            default:
+                return Util.convertStringToAscii("/None")
+        }
+
+    }
+
     public writeAnnotationPostamble() : number[] {
         let ret : number[] = WriterUtil.DICT_END
 

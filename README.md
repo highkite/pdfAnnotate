@@ -514,6 +514,7 @@ Adds a polygon as depicted in the following figure.
 | author | string |    The author name.  |
 | vertices | number array |    \[x_1, y_1, ... , x_n, y_n\] the points building the polygon. |
 | color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
+| fill      | object       | Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the background color of the annotation. |
 
 ### <a name="createpolyline"></a>createPolyLineAnnotation(...)
 
@@ -522,14 +523,16 @@ Adds a polygon line as depicted in the following figure.
 ![ Example of a poly line annotation](./documentation/PolyLineAnnotation.png  "Example of a poly line annotation")
 
 #### Parameters:
-| Paramater   |     Type      |  Description |
-|----------|-------------|------|
-| page |  number | The page number where the annotation must be added (starting with 0)|
-| rect  |   number array   |   The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the square. |
-| contents | string |  The annotation text  |
-| author | string |    The author name.  |
-| vertices | number array |    \[x_1, y_1, ... , x_n, y_n\] the points building the polygon. |
-| color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
+| Paramater        | Type         |                                                                                                                                                                                                                                        Description |
+|------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| page             | number       |                                                                                                                                                                               The page number where the annotation must be added (starting with 0) |
+| rect             | number array |                                                                                                                                       The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the square. |
+| contents         | string       |                                                                                                                                                                                                                                The annotation text |
+| author           | string       |                                                                                                                                                                                                                                   The author name. |
+| vertices         | number array |                                                                                                                                                                                      \[x_1, y_1, ... , x_n, y_n\] the points building the polygon. |
+| color            | object       |                                                                                                            Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation. |
+| fill             | object       |                                                                                                 Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the background color of the annotation. |
+| lineEndingStyles | enum array   | (Optional) See line ending styles in FreeTextAnnotation documentation parts. Provide an array of to line ending styles for the start and the end of the polyline object. Please note that these option is not supported by numerous PDF renderers. |
 
 ### <a name="createstamp"></a>createStampAnnotation(...)
 Not yet implemented.
