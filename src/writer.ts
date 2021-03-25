@@ -159,12 +159,6 @@ export class Writer {
 
 
 
-        //if ((annot as _Annotation).vertices) {
-        //    ret = ret.concat(Writer.VERTICES)
-        //    ret.push(Writer.SPACE)
-        //    ret = ret.concat(WriterUtil.writeNumberArray((annot as _Annotation).vertices!))
-        //    ret.push(Writer.SPACE)
-        //}
 
         //if ((annot as _Annotation).stampType) {
         //    ret = ret.concat(Writer.NAME)

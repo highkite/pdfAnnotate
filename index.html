@@ -134,9 +134,9 @@
                 <div> <button id="lineColorPicker">Choose Line Color</button><button id="fillColorPicker">Choose Fill Color</button></div>
                 <div class="buttonClass"><button id="addCircleAnnotation" type="button">Create Circle Annotation</button></div>
                 <div class="buttonClass"><button id="addSquareAnnotation" type="button">Create Square Annotation</button></div>
-                <hr>
                 <div class="buttonClass"><button id="addPolygonAnnotation" type="button">Create Polygon Annotation</button></div>
                 <div class="buttonClass"><button id="addPolyLineAnnotation" type="button">Create PolyLine Annotation</button></div>
+                <hr>
                 <div class="buttonClass"><button id="addInkAnnotation" type="button">Create Ink Annotation</button></div>
                 <div class="buttonClass"><button id="download" type="button">Download</button></div>
                 <div class="buttonClass"><button id="showAnnotations" type="button">Show Annotations</button></div>
@@ -451,11 +451,27 @@
                         })
 
                         document.querySelector('#addPolygonAnnotation').addEventListener('click', (evt) => {
-                                pdfFactory.createPolygonAnnotation(0, [80, 80, 120, 120], "Test123", "John", [80, 80, 100, 100, 110, 80, 120, 120], {r: 0, g: 1, b: 0})
+                                pdfFactory.createPolygonAnnotation({
+                                        page: 0,
+                                        rect: [80, 80, 120, 120],
+                                        contents: "Test123",
+                                        author: "John",
+                                        vertices: [80, 80, 100, 100, 110, 80, 120, 120],
+                                        color: lineColor,
+                                        fill: fillColor
+                                })
                         })
 
                         document.querySelector('#addPolyLineAnnotation').addEventListener('click', (evt) => {
-                                pdfFactory.createPolyLineAnnotation(0, [80, 80, 120, 120], "Test123", "John", [80, 80, 100, 100, 110, 80, 120, 120], {r: 1, g: 0, b: 0})
+                                pdfFactory.createPolyLineAnnotation({
+                                        page: 0,
+                                        rect: [80, 80, 120, 120],
+                                        contents: "Test123",
+                                        author: "John",
+                                        vertices: [80, 80, 100, 100, 110, 80, 120, 120],
+                                        color: lineColor,
+                                        fill: fillColor
+                                })
                         })
 
                         document.querySelector('#addInkAnnotation').addEventListener('click', (evt) => {

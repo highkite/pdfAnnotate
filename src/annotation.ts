@@ -4,6 +4,7 @@ import { TextAnnotationObj } from './annotations/text_annotation';
 import { HighlightAnnotationObj, UnderlineAnnotationObj, SquigglyAnnotationObj, StrikeOutAnnotationObj } from './annotations/text_markup_annotation';
 import { FreeTextAnnotationObj } from './annotations/freetext_annotation';
 import { SquareAnnotationObj, CircleAnnotationObj } from './annotations/circle_square_annotation';
+import { PolygonAnnotationObj, PolyLineAnnotationObj } from './annotations/polygon_polyline_annotation';
 import { Util } from './util';
 import { Writer } from './writer';
 
@@ -369,31 +370,6 @@ export class AnnotationFactory {
     }
 
     /**
-     * Creates the base object of a polygon or polyline annotation
-     * page : the number of the PDF document page, where the annotation must be attached
-     * rect : the position of the annotation on the page
-     * contents : the content of the annotation
-     * author : the author of the annotation
-     * vertices : the vertices defining the arrangement of the object
-     * subtyp: Polygon or PolyLine
-     * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
-     * */
-    createPolygonPolyLineAnnotation(page: number, rect: number[], contents: string = "", author: string = "", vertices: number[], subtype: string, color: Color = { r: 1, g: 1, b: 0 }): Annotation {
-
-        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(page), {
-            opacity: 1,
-            initiallyOpen: false,
-            annotation_flag: 4,
-            color: color,
-            vertices: vertices
-        })
-
-        annot.type = subtype
-
-        return annot
-    }
-
-    /**
      * Creates a polygon annotation
      * page : the number of the PDF document page, where the annotation must be attached
      * rect : the position of the annotation on the page
@@ -404,8 +380,12 @@ export class AnnotationFactory {
      * */
     createPolygonAnnotation(...values : any[]) {
         let params = ParameterParser.parseParameters(values)
-        this.checkRect(4, params.rect)
-        let annot: Annotation = this.createPolygonPolyLineAnnotation(params.page, params.rect, params.contents, params.author, params.vertices, "/Polygon", params.color)
+
+        let annot : PolygonAnnotationObj = new PolygonAnnotationObj()
+        annot = (<any>Object).assign(annot, this.createBaseAnnotation(params.page))
+        annot = (<any>Object).assign(annot, params)
+
+        annot.validate()
 
         this.annotations.push(annot)
     }
@@ -422,8 +402,12 @@ export class AnnotationFactory {
      * */
     createPolyLineAnnotation(...values : any[]) {
         let params = ParameterParser.parseParameters(values)
-        this.checkRect(4, params.rect)
-        let annot: Annotation = this.createPolygonPolyLineAnnotation(params.page, params.rect, params.contents, params.author, params.vertices, "/PolyLine", params.color)
+
+        let annot : PolyLineAnnotationObj = new PolyLineAnnotationObj()
+        annot = (<any>Object).assign(annot, this.createBaseAnnotation(params.page))
+        annot = (<any>Object).assign(annot, params)
+
+        annot.validate()
 
         this.annotations.push(annot)
     }
@@ -541,11 +525,11 @@ export class AnnotationFactory {
                             return
                         } else if (id.obj && annot.object_id && id.obj === annot.object_id.obj && id.generation && id.generation === annot.object_id.generation) {
                             this.toDelete.push(annot)
-            resolve(this.toDelete)
-            return
-        }
-        }
-        }
+                            resolve(this.toDelete)
+                            return
+                        }
+                    }
+                }
             })
 
         })
@@ -566,40 +550,40 @@ export class AnnotationFactory {
         })
     }
 
-                            /**
-                             * Downloads the adapted PDF document
-                             * */
-                            download(fileName: string = "output.pdf") {
-                                let a: any = document.createElement("a");
-                                document.body.appendChild(a);
-                                a.style = "display: none";
+    /**
+     * Downloads the adapted PDF document
+     * */
+    download(fileName: string = "output.pdf") {
+        let a: any = document.createElement("a");
+        document.body.appendChild(a);
+        a.style = "display: none";
 
-                                let extended_pdf = this.write()
-                                let blob = new Blob([extended_pdf], { type: "application/pdf" })
-                                let url = window.URL.createObjectURL(blob)
-                                a.href = url
-                                a.download = fileName
-                                a.click()
-                                a.remove()
-                                window.URL.revokeObjectURL(url);
-                            }
+        let extended_pdf = this.write()
+        let blob = new Blob([extended_pdf], { type: "application/pdf" })
+        let url = window.URL.createObjectURL(blob)
+        a.href = url
+        a.download = fileName
+        a.click()
+        a.remove()
+        window.URL.revokeObjectURL(url);
+    }
 
-                        /**
-                         * Saves the adapted PDF document in a nodejs environment and downloads it in a browser environment.
-                         * */
-                        save(fileName: string = "output.pdf") {
-                            if (typeof window !== 'undefined') { // browser environment
-                                this.download(fileName)
-                            } else if (typeof process === 'object') { // node environment
-                                const fs = require('fs')
-                                let data = this.write()
-                                fs.writeFile(fileName, Buffer.from(new Uint8Array(data)), (err: any) => {
-                                    if (err) {
-                                        throw Error(err);
-                                    }
-                                })
-                            } else {
-                                throw Error("Unsupported environment")
-                            }
-                        }
-                    }
+    /**
+     * Saves the adapted PDF document in a nodejs environment and downloads it in a browser environment.
+     * */
+    save(fileName: string = "output.pdf") {
+        if (typeof window !== 'undefined') { // browser environment
+            this.download(fileName)
+        } else if (typeof process === 'object') { // node environment
+            const fs = require('fs')
+            let data = this.write()
+            fs.writeFile(fileName, Buffer.from(new Uint8Array(data)), (err: any) => {
+                if (err) {
+                    throw Error(err);
+                }
+            })
+        } else {
+            throw Error("Unsupported environment")
+        }
+    }
+}

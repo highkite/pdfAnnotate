@@ -68,4 +68,11 @@ export class InvalidQuadPointError extends Error {
     }
 }
 
-export type ErrorList = (Error | ColorOutOfRangeError | InvalidReferencePointerError | InvalidDateError | InvalidRectError | InvalidIDError | InvalidColorError | InvalidOpacityError | InvalidAnnotationTypeError | InvalidStateError | InvalidQuadPointError)[]
+export class InvalidVerticesError extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "InvalidVerticesError"
+    }
+}
+
+export type ErrorList = (Error | ColorOutOfRangeError | InvalidReferencePointerError | InvalidDateError | InvalidRectError | InvalidIDError | InvalidColorError | InvalidOpacityError | InvalidAnnotationTypeError | InvalidStateError | InvalidQuadPointError | InvalidVerticesError)[]

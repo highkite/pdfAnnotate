@@ -1,4 +1,4 @@
-import { MarkupAnnotation, MarkupAnnotationObj } from './annotation_types';
+import { MarkupAnnotation, MarkupAnnotationObj, LineEndingStyle } from './annotation_types';
 import { ErrorList, InvalidAnnotationTypeError } from './annotation_errors';
 import { CryptoInterface } from '../parser';
 import { WriterUtil } from '../writer-util';
@@ -10,10 +10,6 @@ export enum TextJustification {
 
 export enum FreeTextType {
     FreeText, FreeTextCallout, FreeTextTypeWriter
-}
-
-export enum LineEndingStyle {
-    Square, Circle, Diamond, OpenArrow, ClosedArrow, Butt, ROpenArrow, RClosedArrow, Slash, None
 }
 
 export interface FreeTextAnnotation extends MarkupAnnotation {

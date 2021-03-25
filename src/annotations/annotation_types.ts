@@ -3,6 +3,10 @@ import { Util } from '../util';
 import { ErrorList, InvalidOpacityError, InvalidRectError, InvalidDateError, InvalidReferencePointerError, ColorOutOfRangeError, InvalidColorError, InvalidIDError } from './annotation_errors';
 import { WriterUtil } from '../writer-util';
 
+export enum LineEndingStyle {
+    Square, Circle, Diamond, OpenArrow, ClosedArrow, Butt, ROpenArrow, RClosedArrow, Slash, None
+}
+
 export interface Color {
     r: number
     g: number
@@ -338,7 +342,6 @@ export interface MarkupAnnotation extends BaseAnnotation {
     inReplyTo?: InReplyTo // /IRT
     subject?: string // /Subj
     replyType?: ReplyTypes // /RT
-    intent?: string // /IT
 }
 
 export class MarkupAnnotationObj extends BaseAnnotationObj implements MarkupAnnotation {
