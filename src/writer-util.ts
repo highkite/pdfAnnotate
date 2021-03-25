@@ -55,6 +55,7 @@ export class WriterUtil {
 
     public static TEXT_JUSTIFICATION : number[] = [47, 81] // = '/Q'
     public static IT : number[] = [47, 73, 84] // = '/IT'
+    public static LINE_ENDING : number[] = [47, 76, 69] // = '/LE'
     public static CALLOUT_LINE : number[] = [47, 67, 76] // = '/CL'
     public static QUADPOINTS: number[] = [47, 81, 117, 97, 100, 80, 111, 105, 110, 116, 115] // = '/QuadPoints'
     public static VERTICES: number[] = [47, 86, 101, 114, 116, 105, 99, 101, 115] // = '/Vertices'

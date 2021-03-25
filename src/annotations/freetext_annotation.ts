@@ -41,6 +41,32 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
         this.type_encoded = [47, 70, 114, 101, 101, 84, 101, 120, 116] // = '/FreeText'
     }
 
+    private convertLineEndingStyle(lne : LineEndingStyle) : number[] {
+        switch(lne) {
+            case LineEndingStyle.Square:
+                return Util.convertStringToAscii("/Square")
+            case LineEndingStyle.Circle:
+                return Util.convertStringToAscii("/Circle")
+            case LineEndingStyle.Diamond:
+                return Util.convertStringToAscii("/Diamond")
+            case LineEndingStyle.OpenArrow:
+                return Util.convertStringToAscii("/OpenArrow")
+            case LineEndingStyle.ClosedArrow:
+                return Util.convertStringToAscii("/ClosedArrow")
+            case LineEndingStyle.Butt:
+                return Util.convertStringToAscii("/Butt")
+            case LineEndingStyle.ROpenArrow:
+                return Util.convertStringToAscii("/ROpenArrow")
+            case LineEndingStyle.RClosedArrow:
+                return Util.convertStringToAscii("/RClosedArrow")
+            case LineEndingStyle.Slash:
+                return Util.convertStringToAscii("/Slash")
+            default:
+                return Util.convertStringToAscii("/None")
+        }
+
+    }
+
     private convertJustification(just : TextJustification) : number {
         switch (just) {
             case TextJustification.Left:
@@ -93,6 +119,13 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
             ret = ret.concat(WriterUtil.CALLOUT_LINE)
             ret.push(WriterUtil.SPACE)
             ret = ret.concat(WriterUtil.writeNumberArray(this.calloutLine))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.lineEndingStyle !== LineEndingStyle.None) {
+            ret = ret.concat(WriterUtil.LINE_ENDING)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(this.convertLineEndingStyle(this.lineEndingStyle))
             ret.push(WriterUtil.SPACE)
         }
 
