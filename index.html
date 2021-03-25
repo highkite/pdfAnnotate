@@ -429,11 +429,25 @@
                         })
 
                         document.querySelector('#addCircleAnnotation').addEventListener('click', (evt) => {
-                                pdfFactory.createCircleAnnotation(0, [60, 60, 80, 80], "Test123", "John", lineColor, fillColor)
+                                pdfFactory.createCircleAnnotation({
+                                        page: 0,
+                                        rect: [60, 60, 80, 80],
+                                        contents: "Test123",
+                                        author: "John",
+                                        color: lineColor,
+                                        fill: fillColor
+                                })
                         })
 
                         document.querySelector('#addSquareAnnotation').addEventListener('click', (evt) => {
-                                pdfFactory.createSquareAnnotation(0, [60, 60, 80, 80], "Test123", "John", lineColor, fillColor)
+                                pdfFactory.createSquareAnnotation({
+                                        page: 0,
+                                        rect: [60, 60, 80, 80],
+                                        contents: "Test123",
+                                        author: "John",
+                                        color: lineColor,
+                                        fill: fillColor
+                                })
                         })
 
                         document.querySelector('#addPolygonAnnotation').addEventListener('click', (evt) => {

@@ -6,6 +6,7 @@ import { AnnotationFlags, Border, Color } from './annotations/annotation_types';
 import { TextAnnotationObj } from './annotations/text_annotation';
 import { HighlightAnnotationObj } from './annotations/text_markup_annotation';
 import { FreeTextAnnotationObj } from './annotations/freetext_annotation';
+import { SquareAnnotationObj, CircleAnnotationObj } from './annotations/circle_square_annotation';
 
 /**
  * Note that this parser does not parses the PDF file completely. It lookups those
@@ -26,7 +27,7 @@ export interface ReferencePointer {
     reused?: boolean | undefined
 }
 
-export type Annotation = _Annotation | TextAnnotationObj | HighlightAnnotationObj | FreeTextAnnotationObj
+export type Annotation = _Annotation | TextAnnotationObj | HighlightAnnotationObj | FreeTextAnnotationObj | SquareAnnotationObj | CircleAnnotationObj
 
 export class _Annotation {
     page: number = -1// the target page of the annotation

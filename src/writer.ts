@@ -155,19 +155,6 @@ export class Writer {
     writeAnnotationObject(annot: Annotation): { ptr: ReferencePointer, data: number[] } {
 
 
-        //if ((annot as _Annotation).fill) {
-        //    let fill : Color = (annot as _Annotation).fill!
-        //        if (fill.r > 1) fill.r /= 255
-        //    if (fill.g > 1) fill.g /= 255
-        //    if (fill.b > 1) fill.b /= 255
-
-        //    ret.push(Writer.SPACE)
-        //    ret = ret.concat(Writer.FILL)
-        //    ret.push(Writer.SPACE)
-        //    ret = ret.concat(WriterUtil.writeNumberArray([fill.r, fill.g, fill.b]))
-        //    ret.push(Writer.SPACE)
-        //}
-
 
 
 
