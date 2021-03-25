@@ -5,6 +5,7 @@ import { HighlightAnnotationObj, UnderlineAnnotationObj, SquigglyAnnotationObj, 
 import { FreeTextAnnotationObj } from './annotations/freetext_annotation';
 import { SquareAnnotationObj, CircleAnnotationObj } from './annotations/circle_square_annotation';
 import { PolygonAnnotationObj, PolyLineAnnotationObj } from './annotations/polygon_polyline_annotation';
+import { InkAnnotationObj } from './annotations/ink_annotation';
 import { Util } from './util';
 import { Writer } from './writer';
 
@@ -424,25 +425,11 @@ export class AnnotationFactory {
     createInkAnnotation(...values : any[]) {
         let params = ParameterParser.parseParameters(values)
 
-        if (params.inkList.length === 0)
-            throw Error("InkList is empty")
+        let annot : InkAnnotationObj = new InkAnnotationObj()
+        annot = (<any>Object).assign(annot, this.createBaseAnnotation(params.page))
+        annot = (<any>Object).assign(annot, params)
 
-        let _inkList: any = []
-        if ('number' === typeof params.inkList[0]) {
-            _inkList = [params.inkList]
-        } else {
-            _inkList = params.inkList
-        }
-
-        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(params.page), {
-            opacity: 1,
-            initiallyOpen: false,
-            annotation_flag: 4,
-            color: params.color,
-            inkList: _inkList
-        })
-
-        annot.type = "/Ink"
+        annot.validate()
 
         this.annotations.push(annot)
     }

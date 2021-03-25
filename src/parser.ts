@@ -8,6 +8,7 @@ import { HighlightAnnotationObj } from './annotations/text_markup_annotation';
 import { FreeTextAnnotationObj } from './annotations/freetext_annotation';
 import { SquareAnnotationObj, CircleAnnotationObj } from './annotations/circle_square_annotation';
 import { PolygonAnnotationObj, PolyLineAnnotationObj } from './annotations/polygon_polyline_annotation';
+import { InkAnnotationObj } from './annotations/ink_annotation';
 
 /**
  * Note that this parser does not parses the PDF file completely. It lookups those
@@ -28,7 +29,7 @@ export interface ReferencePointer {
     reused?: boolean | undefined
 }
 
-export type Annotation = _Annotation | TextAnnotationObj | HighlightAnnotationObj | FreeTextAnnotationObj | SquareAnnotationObj | CircleAnnotationObj | PolygonAnnotationObj | PolyLineAnnotationObj
+export type Annotation = _Annotation | TextAnnotationObj | HighlightAnnotationObj | FreeTextAnnotationObj | SquareAnnotationObj | CircleAnnotationObj | PolygonAnnotationObj | PolyLineAnnotationObj | InkAnnotationObj
 
 export class _Annotation {
     page: number = -1// the target page of the annotation

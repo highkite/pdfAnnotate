@@ -174,12 +174,6 @@ export class Writer {
         //    ret.push(Writer.SPACE)
         //}
 
-        //if ((annot as _Annotation).inkList) {
-        //    ret = ret.concat(Writer.INKLIST)
-        //    ret.push(Writer.SPACE)
-        //    ret = ret.concat(WriterUtil.writeNestedNumberArray((annot as _Annotation).inkList!))
-        //    ret.push(Writer.SPACE)
-        //}
 
         //ret = ret.concat(Writer.DICT_END)
         //ret.push(Writer.SPACE)
