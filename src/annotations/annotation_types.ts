@@ -69,6 +69,8 @@ export class BaseAnnotationObj implements BaseAnnotation {
     object_id: ReferencePointer | undefined = undefined// an unused object id
     is_deleted: boolean = false// internal flag to determine whether the annotation was deleted
 
+    raw_parameters: number[][] | undefined
+
     page: number = -1
     pageReference: Page | undefined = undefined// The reference to the page object to which the annotation is added
     type: string = ""
@@ -167,6 +169,14 @@ export class BaseAnnotationObj implements BaseAnnotation {
             ret.push(WriterUtil.SPACE)
             ret = ret.concat(WriterUtil.writeNumberArray([this.color.r, this.color.g, this.color.b]))
             ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.raw_parameters && this.raw_parameters.length > 0) {
+            for(let i of this.raw_parameters) {
+                ret.push(WriterUtil.SPACE)
+                ret = ret.concat(i)
+                ret.push(WriterUtil.SPACE)
+            }
         }
 
         return ret
