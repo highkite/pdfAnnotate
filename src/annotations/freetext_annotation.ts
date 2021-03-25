@@ -42,7 +42,7 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
     }
 
     private convertJustification(just : TextJustification) : number {
-        switch (just){
+        switch (just) {
             case TextJustification.Left:
                 return 0
             case TextJustification.Centered:
@@ -51,6 +51,19 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
                 return 2
             default:
                 return 0
+        }
+    }
+
+    private convertFreeTextType(ft : FreeTextType) : number[] {
+        switch (ft) {
+            case FreeTextType.FreeText:
+                return Util.convertStringToAscii("/FreeText")
+            case FreeTextType.FreeTextCallout:
+                return Util.convertStringToAscii("/FreeTextCallout")
+            case FreeTextType.FreeTextTypeWriter:
+                return Util.convertStringToAscii("/FreeTextTypeWriter")
+            default:
+                return Util.convertStringToAscii("/FreeText")
         }
     }
 
@@ -70,6 +83,18 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
         ret.push(WriterUtil.SPACE)
         ret = ret.concat(Util.convertNumberToCharArray(this.convertJustification(this.textJustification)))
         ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(WriterUtil.IT)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(this.convertFreeTextType(this.freeTextType))
+        ret.push(WriterUtil.SPACE)
+
+        if (this.calloutLine.length > 0) {
+            ret = ret.concat(WriterUtil.CALLOUT_LINE)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(WriterUtil.writeNumberArray(this.calloutLine))
+            ret.push(WriterUtil.SPACE)
+        }
 
         return ret
     }

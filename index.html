@@ -373,6 +373,7 @@
                                 }
 
                                 let freeTextType = pdfAnnotate.FreeTextType.FreeText
+                                let calloutline = []
 
                                 radios = document.getElementsByName("freetext_type")
 
@@ -380,6 +381,7 @@
                                         freeTextType = pdfAnnotate.FreeTextType.FreeText
                                 } else if (radios[1].checked) {
                                         freeTextType = pdfAnnotate.FreeTextType.FreeTextCallout
+                                        calloutline = [20, 20, 40, 40]
                                 } else if (radios[2].checked) {
                                         freeTextType = pdfAnnotate.FreeTextType.FreeTextTypeWriter
                                 }
@@ -417,7 +419,8 @@
                                         author: "John",
                                         textJustification: textJustification,
                                         freeTextType: freeTextType,
-                                        lineEndingStyle: lineEndingStyle
+                                        lineEndingStyle: lineEndingStyle,
+                                        calloutLine: calloutline
                                 })
                         })
 

@@ -61,19 +61,19 @@ export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnota
     convertState(state : AnnotationState) : number[] {
         switch(state) {
             case AnnotationState.Marked:
-                return Util.convertStringToAscii("Marked")
+                return Util.convertStringToAscii("/Marked")
             case AnnotationState.Unmarked:
-                return Util.convertStringToAscii("Unmarked")
+                return Util.convertStringToAscii("/Unmarked")
             case AnnotationState.Accepted:
-                return Util.convertStringToAscii("Accepted")
+                return Util.convertStringToAscii("/Accepted")
             case AnnotationState.Rejected:
-                return Util.convertStringToAscii("Rejected")
+                return Util.convertStringToAscii("/Rejected")
             case AnnotationState.Cancelled:
-                return Util.convertStringToAscii("Cancelled")
+                return Util.convertStringToAscii("/Cancelled")
             case AnnotationState.Completed:
-                return Util.convertStringToAscii("Completed")
+                return Util.convertStringToAscii("/Completed")
             case AnnotationState.None:
-                return Util.convertStringToAscii("None")
+                return Util.convertStringToAscii("/None")
         }
         return []
     }
@@ -81,9 +81,9 @@ export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnota
     convertStateModel(stateModel : AnnotationStateModel) : number[] {
         switch(stateModel) {
             case AnnotationStateModel.Marked:
-                return Util.convertStringToAscii("Marked")
+                return Util.convertStringToAscii("/Marked")
             case AnnotationStateModel.Review:
-                return Util.convertStringToAscii("Review")
+                return Util.convertStringToAscii("/Review")
         }
 
         return []
@@ -109,19 +109,15 @@ export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnota
 
         if (this.state) {
             ret = ret.concat(WriterUtil.STATE)
-            ret.push(WriterUtil.SPACE)
             ret.push(WriterUtil.BRACKET_START)
             ret = ret.concat(this.convertState(this.state))
-            ret.push(WriterUtil.BRACKET_END)
             ret.push(WriterUtil.SPACE)
         }
 
         if (this.stateModel) {
             ret = ret.concat(WriterUtil.STATEMODEL)
             ret.push(WriterUtil.SPACE)
-            ret.push(WriterUtil.BRACKET_START)
             ret = ret.concat(this.convertStateModel(this.stateModel))
-            ret.push(WriterUtil.BRACKET_END)
             ret.push(WriterUtil.SPACE)
         }
 
