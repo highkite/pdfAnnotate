@@ -1,10 +1,11 @@
 import { Util, PDFVersion } from './util';
-import { ObjectUtil } from './object-util'
+import { ObjectUtil } from './object-util';
 import { DocumentHistory, ObjectLookupTable, XRef } from './document-history';
 import { CryptoEngine, IdentityEngine, CryptoConfiguration, RC4CryptoEngine, RC4_40_BIT} from './crypto';
 import { AnnotationFlags, Border, Color } from './annotations/annotation_types';
 import { TextAnnotationObj } from './annotations/text_annotation';
 import { HighlightAnnotationObj } from './annotations/text_markup_annotation';
+import { FreeTextAnnotationObj } from './annotations/freetext_annotation';
 
 /**
  * Note that this parser does not parses the PDF file completely. It lookups those
@@ -25,7 +26,7 @@ export interface ReferencePointer {
     reused?: boolean | undefined
 }
 
-export type Annotation = _Annotation | TextAnnotationObj | HighlightAnnotationObj
+export type Annotation = _Annotation | TextAnnotationObj | HighlightAnnotationObj | FreeTextAnnotationObj
 
 export class _Annotation {
     page: number = -1// the target page of the annotation

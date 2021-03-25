@@ -53,6 +53,7 @@ export class WriterUtil {
 
     public static XREF: number[] = [120, 114, 101, 102] // = 'xref'
 
+    public static TEXT_JUSTIFICATION : number[] = [47, 81] // = '/Q'
     public static QUADPOINTS: number[] = [47, 81, 117, 97, 100, 80, 111, 105, 110, 116, 115] // = '/QuadPoints'
     public static VERTICES: number[] = [47, 86, 101, 114, 116, 105, 99, 101, 115] // = '/Vertices'
     public static NAME: number[] = [47, 78, 97, 109, 101] // = '/Name'

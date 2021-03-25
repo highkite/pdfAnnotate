@@ -1,9 +1,10 @@
-import { ReferencePointer, PDFDocumentParser, Page, Annotation } from './parser'
+import { ReferencePointer, PDFDocumentParser, Page, Annotation } from './parser';
 import { Border, Color, BaseAnnotation } from './annotations/annotation_types';
 import { TextAnnotationObj } from './annotations/text_annotation';
 import { HighlightAnnotationObj, UnderlineAnnotationObj, SquigglyAnnotationObj, StrikeOutAnnotationObj } from './annotations/text_markup_annotation';
-import { Util } from './util'
-import { Writer } from './writer'
+import { FreeTextAnnotationObj } from './annotations/freetext_annotation';
+import { Util } from './util';
+import { Writer } from './writer';
 
 export class ParameterParser {
     /**
@@ -309,13 +310,12 @@ export class AnnotationFactory {
      * */
     createFreeTextAnnotation(...values : any[]) {
         let params = ParameterParser.parseParameters(values)
-        this.checkRect(4, params.rect)
-        let annot: Annotation = (<any>Object).assign(this.createBaseAnnotation(params.page), {
-            textAlignment: "right-justified",
-            defaultAppearance: "/Invalid_font 9 Tf"
-        })
 
-        annot.type = "/FreeText"
+        let annot : FreeTextAnnotationObj = new FreeTextAnnotationObj()
+        annot = (<any>Object).assign(annot, this.createBaseAnnotation(params.page))
+        annot = (<any>Object).assign(annot, params)
+
+        annot.validate()
 
         this.annotations.push(annot)
     }

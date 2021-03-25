@@ -442,13 +442,14 @@ Creates a free text annotations. It puts a label at an arbitrary position. Notic
 ![ Example of a free text annotation](./documentation/FreeTextAnnotation.png  "Example of a free text annotation")
 
 #### Parameters:
-| Paramater   |     Type      |  Description |
-|----------|-------------|------|
-| page |  number | The page number where the annotation must be added (starting with 0)|
-| rect  |   number array   |   Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the text annotation. |
-| contents | string |  The annotation text  |
-| author | string |    The author name.  |
-| color | object |   Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.|
+| Paramater         | Type         | Description                                                                                                                                                                           |
+|-------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| page              | number       | The page number where the annotation must be added (starting with 0)                                                                                                                  |
+| rect              | number array | Rectangle defining the size and the position of the annotation. The format is \[x_1, y_1, x_2, y_2 \], what defines the upper left and the lower right corner of the text annotation. |
+| contents          | string       | The annotation text                                                                                                                                                                   |
+| author            | string       | The author name.                                                                                                                                                                      |
+| color             | object       | Of type `{ r : <r>, g : <g>, b : <b> }`. Values can be either in the range (0 - 255) or (0 - 1). Specifies the color of the annotation.                                               |
+| textJustification | enum         | (Optional) Justification of the text. {TextJustification.Left, TextJustification.Centered, TextJustification.Right}. Defaults to 'Left'                                               |
 
 ### <a name="createline"></a>createLineAnnotation(...)
 Not yet implemented.

@@ -1,5 +1,8 @@
 import { MarkupAnnotation, MarkupAnnotationObj } from './annotation_types';
 import { ErrorList, InvalidAnnotationTypeError } from './annotation_errors';
+import { CryptoInterface } from '../parser';
+import { WriterUtil } from '../writer-util';
+import { Util } from '../util'
 
 export enum TextJustification {
     Left, Centered, Right
@@ -26,7 +29,7 @@ export interface FreeTextAnnotation extends MarkupAnnotation {
 }
 
 export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTextAnnotation {
-    defaultAppearance : string = "" // /DA
+    defaultAppearance : string = "/Invalid_font 9 Tf" // /DA
     textJustification : TextJustification = TextJustification.Left // /Q
     calloutLine: number[] = []
     freeTextType: FreeTextType = FreeTextType.FreeText
@@ -36,6 +39,39 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
         super()
         this.type = "/FreeText"
         this.type_encoded = [47, 70, 114, 101, 101, 84, 101, 120, 116] // = '/FreeText'
+    }
+
+    private convertJustification(just : TextJustification) : number {
+        switch (just){
+            case TextJustification.Left:
+                return 0
+            case TextJustification.Centered:
+                return 1
+            case TextJustification.Right:
+                return 2
+            default:
+                return 0
+        }
+    }
+
+    public writeAnnotationObject(cryptoInterface : CryptoInterface) : number[] {
+        let ret : number[] = super.writeAnnotationObject(cryptoInterface)
+
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.DEFAULT_APPEARANCE)
+        ret.push(WriterUtil.SPACE)
+        ret.push(WriterUtil.BRACKET_START)
+        ret = ret.concat(Util.convertStringToAscii(this.defaultAppearance))
+        ret.push(WriterUtil.BRACKET_END)
+        ret.push(WriterUtil.SPACE)
+
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.TEXT_JUSTIFICATION)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(Util.convertNumberToCharArray(this.convertJustification(this.textJustification)))
+        ret.push(WriterUtil.SPACE)
+
+        return ret
     }
 
     public validate(enact : boolean = true) : ErrorList {

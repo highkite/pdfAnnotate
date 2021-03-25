@@ -171,15 +171,6 @@ export class Writer {
 
 
 
-        //if ((annot as _Annotation).defaultAppearance) {
-        //    ret.push(Writer.SPACE)
-        //    ret = ret.concat(Writer.DEFAULT_APPEARANCE)
-        //    ret.push(Writer.SPACE)
-        //    ret.push(Writer.BRACKET_START)
-        //    ret = ret.concat(Util.convertStringToAscii((annot as _Annotation).defaultAppearance!))
-        //    ret.push(Writer.BRACKET_END)
-        //    ret.push(Writer.SPACE)
-        //}
 
         //if ((annot as _Annotation).vertices) {
         //    ret = ret.concat(Writer.VERTICES)
