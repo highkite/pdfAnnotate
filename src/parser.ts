@@ -71,6 +71,18 @@ export class _Annotation {
     measure?: any
     is_deleted?: boolean
 
+    public writeAnnotationPreamble() : number[] {
+        throw Error("Error")
+    }
+
+    public writeAnnotationPostamble() : number[] {
+        throw Error("Error")
+    }
+
+    public writeAnnotationObject(cryptoInterface : CryptoInterface) : number[] {
+        throw Error("Error")
+    }
+
     public encodeAnnotationFlags() : number {
         if (!this.annotationFlags) {
             return 0

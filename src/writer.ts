@@ -11,64 +11,6 @@ import { WriterUtil } from './writer-util'
  * */
 export class Writer {
 
-    public static N: number = 110
-    public static F: number = 102
-
-    public static SPACE: number = 32
-    public static CR: number = 13
-    public static LF: number = 10
-    public static OBJ: number[] = [111, 98, 106]
-    public static ENDOBJ: number[] = [101, 110, 100, 111, 98, 106]
-    public static ENCRYPT: number[] = [47, 69, 110, 99, 114, 121, 112, 116]
-    public static ARRAY_START: number = 91
-    public static OPEN: number[] = [47, 79, 112, 101, 110]
-    public static ARRAY_END: number = 93
-    public static DICT_START: number[] = [60, 60]
-    public static HEX_STRING_START: number[] = [60]
-    public static HEX_STRING_END: number[] = [62]
-    public static DICT_END: number[] = [62, 62]
-    public static TYPE_ANNOT: number[] = [47, 84, 121, 112, 101, Writer.SPACE, 47, 65, 110, 110, 111, 116]
-    public static RECT: number[] = [47, 82, 101, 99, 116]
-    public static SUBTYPE: number[] = [47, 83, 117, 98, 116, 121, 112, 101]
-    public static UPDATE_DATE: number[] = [47, 77] // = '/M'
-    public static AUTHOR: number[] = [47, 84] // = '/T'
-    public static CONTENTS: number[] = [47, 67, 111, 110, 116, 101, 110, 116, 115] // = '/Contents'
-    public static BRACKET_START: number = 40
-    public static BRACKET_END: number = 41
-    public static FLAG: number[] = [47, 70] // = '/F'
-    public static ID: number[] = [47, 78, 77] // = '/NM'
-    public static DOCUMENT_ID: number[] = [47, 73, 68] // = '/ID'
-    public static COLOR: number[] = [47, 67] // = '/C'
-    public static FILL: number[] = [47, 73, 67] // = '/IC'
-    public static STATE: number[] = [47, 83, 116, 97, 116, 101] // = '/State'
-    public static STATEMODEL: number[] = [47, 83, 116, 97, 116, 101, 77, 111, 100, 101, 108] // = '/StateModel'
-    public static OPACITY: number[] = [47, 67, 65] // = '/CA'
-    public static BORDER: number[] = [47, 66, 111, 114, 100, 101, 114] // = '/Border'
-    public static PAGE_REFERENCE: number[] = [47, 80] // = '/P'
-    public static DEFAULT_APPEARANCE: number[] = [47, 68, 65] // = '/DA'
-    public static INKLIST: number[] = [47, 73, 110, 107, 76, 105, 115, 116] // = '/InkList'
-
-    public static RC: number[] = [47, 82, 67] // = '/RC'
-    public static CREATION_DATE: number[] = [47, 67, 114, 101, 97, 116, 105, 111, 110, 68, 97, 116, 101] // = '/CreationDate'
-    public static SUBJ: number[] = [47, 83, 117, 98, 106] // = '/Subj'
-    public static TRAILER: number[] = [116, 114, 97, 105, 108, 101, 114] // = 'trailer'
-    public static SIZE: number[] = [47, 83, 105, 122, 101] // = '/Size'
-    public static ROOT: number[] = [47, 82, 111, 111, 116] // = '/Root'
-    public static PREV: number[] = [47, 80, 114, 101, 118] // ='/Prev'
-    public static STARTXREF: number[] = [115, 116, 97, 114, 116, 120, 114, 101, 102] // = 'startxref'
-    public static EOF: number[] = [37, 37, 69, 79, 70] // = '%%EOF'
-
-    public static TRUE: number[] = [116, 114, 117, 101] // = 'true'
-
-    public static XREF: number[] = [120, 114, 101, 102] // = 'xref'
-
-    public static QUADPOINTS: number[] = [47, 81, 117, 97, 100, 80, 111, 105, 110, 116, 115] // = '/QuadPoints'
-    public static VERTICES: number[] = [47, 86, 101, 114, 116, 105, 99, 101, 115] // = '/Vertices'
-    public static NAME: number[] = [47, 78, 97, 109, 101] // = '/Name'
-    public static DRAFT: number[] = [47, 68, 114, 97, 102, 116] // = '/Draft'
-
-    public static SY: number[] = [47, 83, 121] // = '/Sy'
-    public static P: number = 80
 
     /**
      * Holds the crossite reference table
@@ -127,11 +69,11 @@ export class Writer {
 
             let ref_ptr = WriterUtil.writeReferencePointer(obj.id, false).concat(32)
 
-            let new_data: Uint8Array = new Uint8Array(ref_ptr.length + Writer.OBJ.length + obj_data.length + Writer.ENDOBJ.length)
+            let new_data: Uint8Array = new Uint8Array(ref_ptr.length + WriterUtil.OBJ.length + obj_data.length + WriterUtil.ENDOBJ.length)
             new_data.set(ref_ptr)
-            new_data.set(Writer.OBJ, ref_ptr.length)
-            new_data.set(obj_data, Writer.OBJ.length + ref_ptr.length)
-            new_data.set(Writer.ENDOBJ, Writer.OBJ.length + obj_data.length + ref_ptr.length)
+            new_data.set(WriterUtil.OBJ, ref_ptr.length)
+            new_data.set(obj_data, WriterUtil.OBJ.length + ref_ptr.length)
+            new_data.set(WriterUtil.ENDOBJ, WriterUtil.OBJ.length + obj_data.length + ref_ptr.length)
 
             return WriterUtil.replaceAnnotsFieldInPageObject(new_data, page, 0, annot_array_reference)
         }
@@ -185,373 +127,100 @@ export class Writer {
         }
 
         let ret: number[] = WriterUtil.writeReferencePointer(refArray_id)
-        ret.push(Writer.SPACE)
-        ret = ret.concat(Writer.OBJ)
-        ret.push(Writer.SPACE)
-        ret.push(Writer.ARRAY_START)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.OBJ)
+        ret.push(WriterUtil.SPACE)
+        ret.push(WriterUtil.ARRAY_START)
 
 
         for (let an of references) {
             ret = ret.concat(WriterUtil.writeReferencePointer(an, true))
-            ret.push(Writer.SPACE)
+            ret.push(WriterUtil.SPACE)
         }
 
-        ret.push(Writer.ARRAY_END)
-        ret.push(Writer.SPACE)
+        ret.push(WriterUtil.ARRAY_END)
+        ret.push(WriterUtil.SPACE)
 
-        ret = ret.concat(Writer.ENDOBJ)
-        ret.push(Writer.CR)
-        ret.push(Writer.LF)
+        ret = ret.concat(WriterUtil.ENDOBJ)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
 
         return { ptr: refArray_id, data: ret, pageReference: page.object_id, pageData: page_data }
     }
 
-    /**
-     * Converts a subtype to its byte representation
-     * */
-    convertSubtype(st: string): number[] {
-        switch (st) {
-            case 'Text':
-            case '/Text':
-                return [47, 84, 101, 120, 116] // = '/Text'
-            case 'Highlight':
-            case '/Highlight':
-                return [47, 72, 105, 103, 104, 108, 105, 103, 104, 116] // = '/Highlight'
-            case 'Underline':
-            case '/Underline':
-                return [47, 85, 110, 100, 101, 114, 108, 105, 110, 101] // = '/Underline'
-            case 'Squiggly':
-            case '/Squiggly':
-                return [47, 83, 113, 117, 105, 103, 103, 108, 121] // = '/Squiggly'
-            case 'StrikeOut':
-            case '/StrikeOut':
-                return [47, 83, 116, 114, 105, 107, 101, 79, 117, 116] // = '/StrikeOut'
-            case 'Square':
-            case '/Square':
-                return [47, 83, 113, 117, 97, 114, 101] // = '/Square'
-            case 'Circle':
-            case '/Circle':
-                return [47, 67, 105, 114, 99, 108, 101] // = '/Circle'
-            case 'FreeText':
-            case '/FreeText':
-                return [47, 70, 114, 101, 101, 84, 101, 120, 116] // = '/FreeText'
-            case 'Polygon':
-            case '/Polygon':
-                return [47, 80, 111, 108, 121, 103, 111, 110] // = '/Polygon'
-            case 'PolyLine':
-            case '/PolyLine':
-                return [47, 80, 111, 108, 121, 76, 105, 110, 101] // '/PolyLine
-            case 'Stamp':
-            case '/Stamp':
-                return [47, 83, 116, 97, 109, 112] // = '/Stamp'
-            case 'Caret':
-            case '/Caret':
-                return [47, 67, 97, 114, 101, 116] // = '/Caret'
-            case 'Ink':
-            case '/Ink':
-                return [47, 73, 110, 107] // = '/Ink'
-        }
-
-        return []
-    }
-
-    convertAnnotationIcon(icon : AnnotationIcon) : number[] {
-        switch(icon) {
-            case AnnotationIcon.Comment:
-                return [47, 67, 111, 109, 109, 101, 110, 116] // = '/Comment'
-            case AnnotationIcon.Key:
-                return [47, 75, 101, 121] // = '/Key'
-            case AnnotationIcon.Note:
-                return [47, 78, 111, 116, 101] // = '/Note'
-            case AnnotationIcon.Help:
-                return [47, 72, 101, 108, 112] // = '/Help'
-            case AnnotationIcon.NewParagraph:
-                return [47, 78, 101, 119, 80, 97, 114, 97, 103, 114, 97, 112, 104] // = '/NewParagraph'
-            case AnnotationIcon.Paragraph:
-                return [47, 80, 97, 114, 97, 103, 114, 97, 112, 104] // = '/Paragraph'
-            case AnnotationIcon.Insert:
-                return [47, 73, 110, 115, 101, 114, 116] // = '/Insert'
-        }
-
-        return []
-    }
-
-    convertState(state : AnnotationState) : number[] {
-        switch(state) {
-            case AnnotationState.Marked:
-                return Util.convertStringToAscii("Marked")
-            case AnnotationState.Unmarked:
-                return Util.convertStringToAscii("Unmarked")
-            case AnnotationState.Accepted:
-                return Util.convertStringToAscii("Accepted")
-            case AnnotationState.Rejected:
-                return Util.convertStringToAscii("Rejected")
-            case AnnotationState.Cancelled:
-                return Util.convertStringToAscii("Cancelled")
-            case AnnotationState.Completed:
-                return Util.convertStringToAscii("Completed")
-            case AnnotationState.None:
-                return Util.convertStringToAscii("None")
-        }
-        return []
-    }
-
-    convertStateModel(stateModel : AnnotationStateModel) : number[] {
-        switch(stateModel) {
-            case AnnotationStateModel.Marked:
-                return Util.convertStringToAscii("Marked")
-            case AnnotationStateModel.Review:
-                return Util.convertStringToAscii("Review")
-        }
-
-        return []
-    }
 
     /**
      * Writes an annotation object
      * */
     writeAnnotationObject(annot: Annotation): { ptr: ReferencePointer, data: number[] } {
-        if (!annot.author)
-            annot.author = ""
 
-        if (!annot.contents)
-            annot.contents = ""
 
-        if (!annot.object_id)
-            throw Error("No object_id")
+        //if ((annot as _Annotation).fill) {
+        //    let fill : Color = (annot as _Annotation).fill!
+        //        if (fill.r > 1) fill.r /= 255
+        //    if (fill.g > 1) fill.g /= 255
+        //    if (fill.b > 1) fill.b /= 255
 
-        let ret: number[] = WriterUtil.writeReferencePointer(annot.object_id)
-        ret.push(Writer.SPACE)
-        ret = ret.concat(Writer.OBJ)
-        ret.push(Writer.SPACE)
-        ret = ret.concat(Writer.DICT_START)
-        ret = ret.concat(Writer.TYPE_ANNOT)
-        ret.push(Writer.SPACE)
+        //    ret.push(Writer.SPACE)
+        //    ret = ret.concat(Writer.FILL)
+        //    ret.push(Writer.SPACE)
+        //    ret = ret.concat(WriterUtil.writeNumberArray([fill.r, fill.g, fill.b]))
+        //    ret.push(Writer.SPACE)
+        //}
 
-        if (annot.rect && annot.rect.length > 0) {
-            ret = ret.concat(Writer.RECT)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeNumberArray(annot.rect))
-            ret.push(Writer.SPACE)
-        }
 
-        if(!annot.type) {
-            throw Error("Annot type not set")
-        }
 
-        ret = ret.concat(Writer.SUBTYPE)
-        ret.push(Writer.SPACE)
-        ret = ret.concat(this.convertSubtype(annot.type!))
-        ret.push(Writer.SPACE)
 
-        if (typeof annot.updateDate === 'object') {
-            throw Error("Invalid updateDate date type")
-        }
+        //if ((annot as _Annotation).defaultAppearance) {
+        //    ret.push(Writer.SPACE)
+        //    ret = ret.concat(Writer.DEFAULT_APPEARANCE)
+        //    ret.push(Writer.SPACE)
+        //    ret.push(Writer.BRACKET_START)
+        //    ret = ret.concat(Util.convertStringToAscii((annot as _Annotation).defaultAppearance!))
+        //    ret.push(Writer.BRACKET_END)
+        //    ret.push(Writer.SPACE)
+        //}
 
-        ret = ret.concat(Writer.UPDATE_DATE)
-        ret.push(Writer.SPACE)
-        ret.push(Writer.BRACKET_START)
-        ret = ret.concat(Array.from(Util.escapeString(this.cryptoInterface.encrypt(new Uint8Array(Util.convertStringToAscii(annot.updateDate as string)), annot.object_id))))
-        ret.push(Writer.BRACKET_END)
-        ret.push(Writer.SPACE)
+        //if ((annot as _Annotation).vertices) {
+        //    ret = ret.concat(Writer.VERTICES)
+        //    ret.push(Writer.SPACE)
+        //    ret = ret.concat(WriterUtil.writeNumberArray((annot as _Annotation).vertices!))
+        //    ret.push(Writer.SPACE)
+        //}
 
-        ret = ret.concat(Writer.AUTHOR)
-        ret.push(Writer.SPACE)
-        ret.push(Writer.BRACKET_START)
-        ret = ret.concat(Array.from(Util.escapeString(this.cryptoInterface.encrypt(new Uint8Array(Util.convertStringToAscii(annot.author)), annot.object_id))))
-        ret.push(Writer.BRACKET_END)
-        ret.push(Writer.SPACE)
+        //if ((annot as _Annotation).stampType) {
+        //    ret = ret.concat(Writer.NAME)
+        //    ret.push(Writer.SPACE)
+        //    ret = ret.concat(Writer.DRAFT)
+        //    ret.push(Writer.SPACE)
+        //}
 
-        if (annot.contents) {
-            ret = ret.concat(Writer.CONTENTS)
-            ret.push(Writer.SPACE)
-            ret.push(Writer.BRACKET_START)
-            ret = ret.concat(Array.from(Util.escapeString(this.cryptoInterface.encrypt(new Uint8Array(Util.convertStringToAscii(annot.contents)), annot.object_id))))
-            ret.push(Writer.BRACKET_END)
-            ret.push(Writer.SPACE)
-        }
+        //if ((annot as _Annotation).caretSymbol) {
+        //    ret = ret.concat(Writer.SY)
+        //    ret.push(Writer.SPACE)
+        //    ret.push(Writer.P)
+        //    ret.push(Writer.SPACE)
+        //}
 
-        ret = ret.concat(Writer.ID)
-        ret.push(Writer.SPACE)
-        ret.push(Writer.BRACKET_START)
-        ret = ret.concat(Array.from(Util.escapeString(this.cryptoInterface.encrypt(new Uint8Array(Util.convertStringToAscii(annot.id)), annot.object_id))))
-        ret.push(Writer.BRACKET_END)
-        ret.push(Writer.SPACE)
+        //if ((annot as _Annotation).inkList) {
+        //    ret = ret.concat(Writer.INKLIST)
+        //    ret.push(Writer.SPACE)
+        //    ret = ret.concat(WriterUtil.writeNestedNumberArray((annot as _Annotation).inkList!))
+        //    ret.push(Writer.SPACE)
+        //}
 
-        if (annot.annotationFlags) {
-            let flags_value : number = annot.encodeAnnotationFlags()
-            ret = ret.concat(Writer.FLAG)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Util.convertNumberToCharArray(flags_value))
-            ret.push(Writer.SPACE)
-        }
+        //ret = ret.concat(Writer.DICT_END)
+        //ret.push(Writer.SPACE)
+        //ret = ret.concat(Writer.ENDOBJ)
+        //ret.push(Writer.CR)
+        //ret.push(Writer.LF)
+        //
+        let ret : number[] = annot.writeAnnotationPreamble()
 
-        if (annot.color) {
-            if (annot.color.r > 1) annot.color.r /= 255
-            if (annot.color.g > 1) annot.color.g /= 255
-            if (annot.color.b > 1) annot.color.b /= 255
+        ret = ret.concat(annot.writeAnnotationObject(this.cryptoInterface))
+        ret = ret.concat(annot.writeAnnotationPostamble())
 
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Writer.COLOR)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeNumberArray([annot.color.r, annot.color.g, annot.color.b]))
-            ret.push(Writer.SPACE)
-        }
-
-        if ((annot as _Annotation).fill) {
-            let fill : Color = (annot as _Annotation).fill!
-                if (fill.r > 1) fill.r /= 255
-            if (fill.g > 1) fill.g /= 255
-            if (fill.b > 1) fill.b /= 255
-
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Writer.FILL)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeNumberArray([fill.r, fill.g, fill.b]))
-            ret.push(Writer.SPACE)
-        }
-
-        if ((annot as MarkupAnnotationObj).subject) {
-            ret = ret.concat(Writer.SUBJ)
-            ret.push(Writer.SPACE)
-            ret.push(Writer.BRACKET_START)
-            ret = ret.concat(Array.from(Util.escapeString(this.cryptoInterface.encrypt(new Uint8Array(Util.convertStringToAscii((annot as MarkupAnnotationObj).subject)), annot.object_id))))
-            ret.push(Writer.BRACKET_END)
-            ret.push(Writer.SPACE)
-        }
-
-        if ((annot as MarkupAnnotationObj).creationDate) {
-            if (typeof (annot as MarkupAnnotationObj).creationDate! === 'object') {
-                throw Error("Invalid creationDate date type")
-            }
-            ret = ret.concat(Writer.CREATION_DATE)
-            ret.push(Writer.SPACE)
-            ret.push(Writer.BRACKET_START)
-            ret = ret.concat(Array.from(Util.escapeString(this.cryptoInterface.encrypt(new Uint8Array(Util.convertStringToAscii((annot as MarkupAnnotationObj).creationDate as string)), annot.object_id))))
-            ret.push(Writer.BRACKET_END)
-            ret.push(Writer.SPACE)
-        }
-
-        if ((annot as MarkupAnnotationObj).richtextString) {
-            ret = ret.concat(Writer.RC)
-            ret.push(Writer.SPACE)
-            ret.push(Writer.BRACKET_START)
-            ret = ret.concat(Array.from(Util.escapeString(this.cryptoInterface.encrypt(new Uint8Array(Util.convertStringToAscii((annot as MarkupAnnotationObj).richtextString!)), annot.object_id))))
-            ret.push(Writer.BRACKET_END)
-            ret.push(Writer.SPACE)
-        }
-
-        if ((annot as TextAnnotationObj).icon) {
-            ret = ret.concat(Writer.NAME)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(this.convertAnnotationIcon((annot as TextAnnotationObj).icon!))
-            ret.push(Writer.SPACE)
-        }
-
-        if ((annot as TextAnnotationObj).open) {
-            ret = ret.concat(Writer.OPEN)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Writer.TRUE)
-            ret.push(Writer.SPACE)
-        }
-
-        if ((annot as TextAnnotationObj).state) {
-            ret = ret.concat(Writer.STATE)
-            ret.push(Writer.SPACE)
-            ret.push(Writer.BRACKET_START)
-            ret = ret.concat(this.convertState((annot as TextAnnotationObj).state!))
-            ret.push(Writer.BRACKET_END)
-            ret.push(Writer.SPACE)
-        }
-
-        if ((annot as TextAnnotationObj).stateModel) {
-            ret = ret.concat(Writer.STATEMODEL)
-            ret.push(Writer.SPACE)
-            ret.push(Writer.BRACKET_START)
-            ret = ret.concat(this.convertStateModel((annot as TextAnnotationObj).stateModel!))
-            ret.push(Writer.BRACKET_END)
-            ret.push(Writer.SPACE)
-        }
-
-        let opacity = annot.opacity
-        if (opacity) {
-            ret = ret.concat(Writer.OPACITY)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Util.convertNumberToCharArray(opacity))
-            ret.push(Writer.SPACE)
-        }
-
-        if (annot.border) {
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Writer.BORDER)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeNumberArray([annot.border.horizontal_corner_radius || 0, annot.border.vertical_corner_radius || 0, annot.border.border_width || 1]))
-            ret.push(Writer.SPACE)
-        }
-
-        if ((annot as _Annotation).defaultAppearance) {
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Writer.DEFAULT_APPEARANCE)
-            ret.push(Writer.SPACE)
-            ret.push(Writer.BRACKET_START)
-            ret = ret.concat(Util.convertStringToAscii((annot as _Annotation).defaultAppearance!))
-            ret.push(Writer.BRACKET_END)
-            ret.push(Writer.SPACE)
-        }
-
-        if (!annot.pageReference)
-            throw Error("No page reference")
-
-        if (annot.pageReference.object_id) {
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Writer.PAGE_REFERENCE)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeReferencePointer(annot.pageReference.object_id, true))
-            ret.push(Writer.SPACE)
-        }
-
-        if ((annot as _Annotation).quadPoints && (annot as _Annotation).quadPoints!.length > 0) {
-            ret = ret.concat(Writer.QUADPOINTS)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeNumberArray((annot as _Annotation).quadPoints!))
-            ret.push(Writer.SPACE)
-        }
-
-        if ((annot as _Annotation).vertices) {
-            ret = ret.concat(Writer.VERTICES)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeNumberArray((annot as _Annotation).vertices!))
-            ret.push(Writer.SPACE)
-        }
-
-        if ((annot as _Annotation).stampType) {
-            ret = ret.concat(Writer.NAME)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(Writer.DRAFT)
-            ret.push(Writer.SPACE)
-        }
-
-        if ((annot as _Annotation).caretSymbol) {
-            ret = ret.concat(Writer.SY)
-            ret.push(Writer.SPACE)
-            ret.push(Writer.P)
-            ret.push(Writer.SPACE)
-        }
-
-        if ((annot as _Annotation).inkList) {
-            ret = ret.concat(Writer.INKLIST)
-            ret.push(Writer.SPACE)
-            ret = ret.concat(WriterUtil.writeNestedNumberArray((annot as _Annotation).inkList!))
-            ret.push(Writer.SPACE)
-        }
-
-        ret = ret.concat(Writer.DICT_END)
-        ret.push(Writer.SPACE)
-        ret = ret.concat(Writer.ENDOBJ)
-        ret.push(Writer.CR)
-        ret.push(Writer.LF)
-
-        return { ptr: annot.object_id, data: ret }
+        return { ptr: annot.object_id!, data: ret }
     }
 
     /**
@@ -627,9 +296,9 @@ export class Writer {
      * Writes the crossite reference table
      * */
     writeCrossSiteReferenceTable(): number[] {
-        let ret: number[] = Writer.XREF
-        ret.push(Writer.CR)
-        ret.push(Writer.LF)
+        let ret: number[] = WriterUtil.XREF
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
 
         this.xrefs = this.applyObjectFreeing(this.xrefs)
 
@@ -638,26 +307,26 @@ export class Writer {
         for (let sequence of ordered_sequences) {
             let head = sequence[0]
             ret = ret.concat(Util.convertNumberToCharArray(head.id))
-            ret.push(Writer.SPACE)
+            ret.push(WriterUtil.SPACE)
             ret = ret.concat(Util.convertNumberToCharArray(sequence.length))
-            ret.push(Writer.CR)
-            ret.push(Writer.LF)
+            ret.push(WriterUtil.CR)
+            ret.push(WriterUtil.LF)
 
             for (let i = 0; i < sequence.length; ++i) {
                 let _ret: number[] = []
                 _ret = _ret.concat(WriterUtil.pad(10, sequence[i].pointer))
-                _ret.push(Writer.SPACE)
+                _ret.push(WriterUtil.SPACE)
                 _ret = _ret.concat(WriterUtil.pad(5, sequence[i].generation))
-                _ret.push(Writer.SPACE)
+                _ret.push(WriterUtil.SPACE)
 
                 if (sequence[i].free)
-                    _ret.push(Writer.F)
+                    _ret.push(WriterUtil.F)
 
                 if (sequence[i].update)
-                    _ret.push(Writer.N)
+                    _ret.push(WriterUtil.N)
 
-                _ret.push(Writer.CR)
-                _ret.push(Writer.LF)
+                _ret.push(WriterUtil.CR)
+                _ret.push(WriterUtil.LF)
 
                 if (_ret.length < 20)
                     throw Error("XRef entry < 20 bytes")
@@ -673,71 +342,71 @@ export class Writer {
      * Writes the trailer
      * */
     writeTrailer(posXref: number): number[] {
-        let ret: number[] = Writer.TRAILER
-        ret.push(Writer.CR)
-        ret.push(Writer.LF)
+        let ret: number[] = WriterUtil.TRAILER
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
 
-        ret = ret.concat(Writer.DICT_START)
-        ret = ret.concat(Writer.SIZE)
-        ret.push(Writer.SPACE)
+        ret = ret.concat(WriterUtil.DICT_START)
+        ret = ret.concat(WriterUtil.SIZE)
+        ret.push(WriterUtil.SPACE)
         ret = ret.concat(Util.convertNumberToCharArray(this.parser.documentHistory.trailerSize))
-        ret.push(Writer.SPACE)
+        ret.push(WriterUtil.SPACE)
 
         if (this.parser.documentHistory.isEncrypted()) {
-            ret = ret.concat(Writer.ENCRYPT)
-            ret.push(Writer.SPACE)
+            ret = ret.concat(WriterUtil.ENCRYPT)
+            ret.push(WriterUtil.SPACE)
             let enc_ref = this.parser.getCryptoInterface().getEncryptionDictReference()
             if (!enc_ref)
                 throw Error("No reference pointer to encryption dictionary")
             ret = ret.concat(WriterUtil.writeReferencePointer(enc_ref, true))
-            ret.push(Writer.SPACE)
+            ret.push(WriterUtil.SPACE)
         }
 
         let trailer = this.parser.documentHistory.getRecentUpdate()
 
         if (trailer.id) {
-            ret = ret.concat(Writer.DOCUMENT_ID)
-            ret.push(Writer.SPACE)
-            ret.push(Writer.ARRAY_START)
+            ret = ret.concat(WriterUtil.DOCUMENT_ID)
+            ret.push(WriterUtil.SPACE)
+            ret.push(WriterUtil.ARRAY_START)
 
             for (let val of trailer.id) {
-                ret.push(Writer.SPACE)
-                ret = ret.concat(Writer.HEX_STRING_START)
+                ret.push(WriterUtil.SPACE)
+                ret = ret.concat(WriterUtil.HEX_STRING_START)
                 ret = ret.concat(Util.convertStringToAscii(Util.convertByteArrayToHexString(val)))
-                ret = ret.concat(Writer.HEX_STRING_END)
-                ret.push(Writer.SPACE)
+                ret = ret.concat(WriterUtil.HEX_STRING_END)
+                ret.push(WriterUtil.SPACE)
             }
-            ret.push(Writer.ARRAY_END)
-            ret.push(Writer.SPACE)
+            ret.push(WriterUtil.ARRAY_END)
+            ret.push(WriterUtil.SPACE)
         }
 
-        ret = ret.concat(Writer.ROOT)
-        ret.push(Writer.SPACE)
+        ret = ret.concat(WriterUtil.ROOT)
+        ret.push(WriterUtil.SPACE)
 
         if (!trailer.root)
             throw Error("No root object in trailer, although this is an cross reference table document")
 
         ret = ret.concat(WriterUtil.writeReferencePointer(trailer.root, true))
-        ret.push(Writer.SPACE)
+        ret.push(WriterUtil.SPACE)
 
-        ret = ret.concat(Writer.PREV)
-        ret.push(Writer.SPACE)
+        ret = ret.concat(WriterUtil.PREV)
+        ret.push(WriterUtil.SPACE)
         ret = ret.concat(Util.convertNumberToCharArray(this.parser.documentHistory.getRecentUpdate().start_pointer))
-        ret.push(Writer.SPACE)
-        ret = ret.concat(Writer.DICT_END)
-        ret.push(Writer.CR)
-        ret.push(Writer.LF)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.DICT_END)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
 
-        ret = ret.concat(Writer.STARTXREF)
-        ret.push(Writer.CR)
-        ret.push(Writer.LF)
+        ret = ret.concat(WriterUtil.STARTXREF)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
 
         ret = ret.concat(Util.convertNumberToCharArray(posXref))
-        ret.push(Writer.CR)
-        ret.push(Writer.LF)
-        ret = ret.concat(Writer.EOF)
-        ret.push(Writer.CR)
-        ret.push(Writer.LF)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
+        ret = ret.concat(WriterUtil.EOF)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
 
         return ret
     }
@@ -755,8 +424,8 @@ export class Writer {
 
         // Fix case that there is no linebreak after the end of the file
         if (this.data[ptr - 1] === 70) { // 70 = 'F' (from [%%EO]F
-            new_data.push(Writer.CR)
-            new_data.push(Writer.LF)
+            new_data.push(WriterUtil.CR)
+            new_data.push(WriterUtil.LF)
             ptr += 2
         }
 
@@ -887,23 +556,23 @@ export class Writer {
         let refArray_id: any = page.annotsPointer
 
         let ret: number[] = WriterUtil.writeReferencePointer(refArray_id)
-        ret.push(Writer.SPACE)
-        ret = ret.concat(Writer.OBJ)
-        ret.push(Writer.SPACE)
-        ret.push(Writer.ARRAY_START)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.OBJ)
+        ret.push(WriterUtil.SPACE)
+        ret.push(WriterUtil.ARRAY_START)
 
 
         for (let an of references) {
             ret = ret.concat(WriterUtil.writeReferencePointer(an, true))
-            ret.push(Writer.SPACE)
+            ret.push(WriterUtil.SPACE)
         }
 
-        ret.push(Writer.ARRAY_END)
-        ret.push(Writer.SPACE)
+        ret.push(WriterUtil.ARRAY_END)
+        ret.push(WriterUtil.SPACE)
 
-        ret = ret.concat(Writer.ENDOBJ)
-        ret.push(Writer.CR)
-        ret.push(Writer.LF)
+        ret = ret.concat(WriterUtil.ENDOBJ)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
 
         return { ptr: refArray_id, data: ret }
     }

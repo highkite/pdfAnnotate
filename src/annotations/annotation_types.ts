@@ -1,6 +1,7 @@
-import { Page, ReferencePointer } from '../parser';
+import { Page, ReferencePointer, CryptoInterface } from '../parser';
 import { Util } from '../util';
 import { ErrorList, InvalidOpacityError, InvalidRectError, InvalidDateError, InvalidReferencePointerError, ColorOutOfRangeError, InvalidColorError, InvalidIDError } from './annotation_errors';
+import { WriterUtil } from '../writer-util';
 
 export interface Color {
     r: number
@@ -61,24 +62,122 @@ export interface BaseAnnotation {
 }
 
 export class BaseAnnotationObj implements BaseAnnotation {
+    object_id: ReferencePointer | undefined = undefined// an unused object id
+    is_deleted: boolean = false// internal flag to determine whether the annotation was deleted
+
     page: number = -1
     pageReference: Page | undefined = undefined// The reference to the page object to which the annotation is added
-    object_id: ReferencePointer | undefined = undefined// an unused object id
     type: string = ""
+    type_encoded: number[] = []
     rect: number[] = []
-    contents: string | undefined
+    contents: string = ""
     id: string = ""// /NM
     updateDate: string | Date = ""// /M
     annotationFlags: AnnotationFlags | undefined // /F
-    appearanceStream: AppearanceStream | undefined // /AP
-    appearanceStreamSelector: string | undefined // /AS
     border: Border | undefined
     color: Color | undefined // /C
-    structParent: number | undefined // /StructParent
+
     optionalContent: OptionalContent | undefined // /OC
-    is_deleted: boolean = false// internal flag to determine whether the annotation was deleted
+    structParent: number | undefined // /StructParent
+    appearanceStream: AppearanceStream | undefined // /AP
+    appearanceStreamSelector: string | undefined // /AS
 
     constructor() { }
+
+    public writeAnnotationPreamble() : number[] {
+        let ret: number[] = WriterUtil.writeReferencePointer(this.object_id!)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.OBJ)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.DICT_START)
+
+        ret = ret.concat(WriterUtil.TYPE_ANNOT)
+        ret.push(WriterUtil.SPACE)
+
+        return ret
+    }
+
+    public writeAnnotationObject(cryptoInterface : CryptoInterface) : number[] {
+        let ret : number[] = []
+
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.PAGE_REFERENCE)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.writeReferencePointer(this.pageReference!.object_id!, true))
+        ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(WriterUtil.SUBTYPE)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(this.type_encoded)
+        ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(WriterUtil.RECT)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.writeNumberArray(this.rect))
+        ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(WriterUtil.CONTENTS)
+        ret.push(WriterUtil.SPACE)
+        ret.push(WriterUtil.BRACKET_START)
+        ret = ret.concat(Array.from(Util.escapeString(cryptoInterface.encrypt(new Uint8Array(Util.convertStringToAscii(this.contents)), this.object_id))))
+        ret.push(WriterUtil.BRACKET_END)
+        ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(WriterUtil.ID)
+        ret.push(WriterUtil.SPACE)
+        ret.push(WriterUtil.BRACKET_START)
+        ret = ret.concat(Array.from(Util.escapeString(cryptoInterface.encrypt(new Uint8Array(Util.convertStringToAscii(this.id)), this.object_id))))
+        ret.push(WriterUtil.BRACKET_END)
+        ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(WriterUtil.UPDATE_DATE)
+        ret.push(WriterUtil.SPACE)
+        ret.push(WriterUtil.BRACKET_START)
+        ret = ret.concat(Array.from(Util.escapeString(cryptoInterface.encrypt(new Uint8Array(Util.convertStringToAscii(this.updateDate as string)), this.object_id))))
+        ret.push(WriterUtil.BRACKET_END)
+        ret.push(WriterUtil.SPACE)
+
+        if (this.annotationFlags) {
+            let flags_value : number = this.encodeAnnotationFlags()
+            ret = ret.concat(WriterUtil.FLAG)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(flags_value))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.border) {
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(WriterUtil.BORDER)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(WriterUtil.writeNumberArray([this.border.horizontal_corner_radius || 0, this.border.vertical_corner_radius || 0, this.border.border_width || 1]))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.color) {
+            if (this.color.r > 1) this.color.r /= 255
+            if (this.color.g > 1) this.color.g /= 255
+            if (this.color.b > 1) this.color.b /= 255
+
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(WriterUtil.COLOR)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(WriterUtil.writeNumberArray([this.color.r, this.color.g, this.color.b]))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        return ret
+    }
+
+    public writeAnnotationPostamble() : number[] {
+        let ret : number[] = WriterUtil.DICT_END
+
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.ENDOBJ)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
+
+        return ret
+    }
 
     public encodeAnnotationFlags() : number {
         if (!this.annotationFlags) {
@@ -251,6 +350,53 @@ export class MarkupAnnotationObj extends BaseAnnotationObj implements MarkupAnno
 
     constructor() {
         super()
+    }
+
+    public writeAnnotationObject(cryptoInterface : CryptoInterface) : number[] {
+        let ret : number[] = super.writeAnnotationObject(cryptoInterface)
+
+        ret = ret.concat(WriterUtil.AUTHOR)
+        ret.push(WriterUtil.SPACE)
+        ret.push(WriterUtil.BRACKET_START)
+        ret = ret.concat(Array.from(Util.escapeString(cryptoInterface.encrypt(new Uint8Array(Util.convertStringToAscii(this.author)), this.object_id))))
+        ret.push(WriterUtil.BRACKET_END)
+        ret.push(WriterUtil.SPACE)
+
+        if (this.opacity) {
+            ret = ret.concat(WriterUtil.OPACITY)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.opacity))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.creationDate) {
+            ret = ret.concat(WriterUtil.CREATION_DATE)
+            ret.push(WriterUtil.SPACE)
+            ret.push(WriterUtil.BRACKET_START)
+            ret = ret.concat(Array.from(Util.escapeString(cryptoInterface.encrypt(new Uint8Array(Util.convertStringToAscii(this.creationDate as string)), this.object_id))))
+            ret.push(WriterUtil.BRACKET_END)
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.subject !== "") {
+            ret = ret.concat(WriterUtil.SUBJ)
+            ret.push(WriterUtil.SPACE)
+            ret.push(WriterUtil.BRACKET_START)
+            ret = ret.concat(Array.from(Util.escapeString(cryptoInterface.encrypt(new Uint8Array(Util.convertStringToAscii(this.subject)), this.object_id))))
+            ret.push(WriterUtil.BRACKET_END)
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.richtextString) {
+            ret = ret.concat(WriterUtil.RC)
+            ret.push(WriterUtil.SPACE)
+            ret.push(WriterUtil.BRACKET_START)
+            ret = ret.concat(Array.from(Util.escapeString(cryptoInterface.encrypt(new Uint8Array(Util.convertStringToAscii(this.richtextString!)), this.object_id))))
+            ret.push(WriterUtil.BRACKET_END)
+            ret.push(WriterUtil.SPACE)
+        }
+
+        return ret
     }
 
     public validate(enact : boolean = true) : ErrorList {

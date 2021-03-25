@@ -197,7 +197,7 @@ Markup annotations are: `Text, FreeText, Line, Square, Circle, Polygon, PolyLine
 Individual configuration options are discussed in the corresponding documentation sections.
 
 ### <a name="backwardCompatibility"></a>Backward Compatibility
-There exists a lot of parameters and options to control the behavior and appearance of annotations. In fact, there exists so many, that it is not feasible to add them to the parameter lists in the annotation creation function headers. Instead we decided to provide dictionaries to the creation functions. The dictionaries are required to contain a number of mandatory parameters, as for instance the page number, the coordinate rectangle or the content text and other optional parameters. The user can decide, what optional parameters she is going to use. For compatibility reasons, we also support the former variant. However, in this case the optional parameters must be provided within a dictionary as a last parameter.
+There exists a lot of parameters and options to control the behavior and appearance of annotations. In fact, there exists so many, that it is not feasible to add them to the parameter lists in the annotation creation function headers. Instead we decided to provide dictionaries to the creation functions. The dictionaries are required to contain a number of mandatory parameters, as for instance the page number, the coordinate rectangle or the content text and other optional parameters. The user can decide, what optional parameters to use. For compatibility reasons, we also support the former variant. However, in this case the optional parameters must be provided within a dictionary as a last parameter.
 
 For clarification: The example in the former notation
 ```

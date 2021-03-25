@@ -1,5 +1,8 @@
 import { MarkupAnnotation, MarkupAnnotationObj } from './annotation_types';
+import { CryptoInterface } from '../parser';
 import { ErrorList, InvalidAnnotationTypeError, InvalidStateError } from './annotation_errors';
+import { WriterUtil } from '../writer-util';
+import { Util } from '../util'
 
 export enum AnnotationIcon {
     Comment, Key, Note, Help, NewParagraph, Paragraph, Insert
@@ -29,8 +32,100 @@ export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnota
     constructor() {
         super()
         this.type = "/Text"
+        this.type_encoded = [47, 84, 101, 120, 116] // = '/Text'
         // demanded by PDF specification (p. 394 - 12.5.6.4 Text Annotations)
         this.annotationFlags = {noZoom: true, noRotate: true}
+    }
+
+    convertAnnotationIcon(icon : AnnotationIcon) : number[] {
+        switch(icon) {
+            case AnnotationIcon.Comment:
+                return [47, 67, 111, 109, 109, 101, 110, 116] // = '/Comment'
+            case AnnotationIcon.Key:
+                return [47, 75, 101, 121] // = '/Key'
+            case AnnotationIcon.Note:
+                return [47, 78, 111, 116, 101] // = '/Note'
+            case AnnotationIcon.Help:
+                return [47, 72, 101, 108, 112] // = '/Help'
+            case AnnotationIcon.NewParagraph:
+                return [47, 78, 101, 119, 80, 97, 114, 97, 103, 114, 97, 112, 104] // = '/NewParagraph'
+            case AnnotationIcon.Paragraph:
+                return [47, 80, 97, 114, 97, 103, 114, 97, 112, 104] // = '/Paragraph'
+            case AnnotationIcon.Insert:
+                return [47, 73, 110, 115, 101, 114, 116] // = '/Insert'
+        }
+
+        return []
+    }
+
+    convertState(state : AnnotationState) : number[] {
+        switch(state) {
+            case AnnotationState.Marked:
+                return Util.convertStringToAscii("Marked")
+            case AnnotationState.Unmarked:
+                return Util.convertStringToAscii("Unmarked")
+            case AnnotationState.Accepted:
+                return Util.convertStringToAscii("Accepted")
+            case AnnotationState.Rejected:
+                return Util.convertStringToAscii("Rejected")
+            case AnnotationState.Cancelled:
+                return Util.convertStringToAscii("Cancelled")
+            case AnnotationState.Completed:
+                return Util.convertStringToAscii("Completed")
+            case AnnotationState.None:
+                return Util.convertStringToAscii("None")
+        }
+        return []
+    }
+
+    convertStateModel(stateModel : AnnotationStateModel) : number[] {
+        switch(stateModel) {
+            case AnnotationStateModel.Marked:
+                return Util.convertStringToAscii("Marked")
+            case AnnotationStateModel.Review:
+                return Util.convertStringToAscii("Review")
+        }
+
+        return []
+    }
+
+
+    public writeAnnotationObject(cryptoInterface : CryptoInterface) : number[] {
+        let ret : number[] = super.writeAnnotationObject(cryptoInterface)
+
+        if (this.open) {
+            ret = ret.concat(WriterUtil.OPEN)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(WriterUtil.TRUE)
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.icon) {
+            ret = ret.concat(WriterUtil.NAME)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(this.convertAnnotationIcon(this.icon))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.state) {
+            ret = ret.concat(WriterUtil.STATE)
+            ret.push(WriterUtil.SPACE)
+            ret.push(WriterUtil.BRACKET_START)
+            ret = ret.concat(this.convertState(this.state))
+            ret.push(WriterUtil.BRACKET_END)
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.stateModel) {
+            ret = ret.concat(WriterUtil.STATEMODEL)
+            ret.push(WriterUtil.SPACE)
+            ret.push(WriterUtil.BRACKET_START)
+            ret = ret.concat(this.convertStateModel(this.stateModel))
+            ret.push(WriterUtil.BRACKET_END)
+            ret.push(WriterUtil.SPACE)
+        }
+
+        return ret
     }
 
     public validate(enact : boolean = true) : ErrorList {

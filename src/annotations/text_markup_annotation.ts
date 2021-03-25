@@ -1,5 +1,7 @@
 import { MarkupAnnotation, MarkupAnnotationObj } from './annotation_types';
+import { CryptoInterface } from '../parser';
 import { ErrorList, InvalidRectError, InvalidAnnotationTypeError, InvalidQuadPointError } from './annotation_errors';
+import { WriterUtil } from '../writer-util';
 
 export interface TextMarkupAnnotation extends MarkupAnnotation {
     quadPoints: number[] // specifies how the annotation goes arround the text
@@ -7,6 +9,17 @@ export interface TextMarkupAnnotation extends MarkupAnnotation {
 
 export class TextMarkupAnnotationObj extends MarkupAnnotationObj implements TextMarkupAnnotation {
     quadPoints: number[] = []
+
+    public writeAnnotationObject(cryptoInterface : CryptoInterface) : number[] {
+        let ret : number[] = super.writeAnnotationObject(cryptoInterface)
+
+        ret = ret.concat(WriterUtil.QUADPOINTS)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.writeNumberArray(this.quadPoints))
+        ret.push(WriterUtil.SPACE)
+
+        return ret
+    }
 
     public validate(enact : boolean = true) : ErrorList {
         let errorList : ErrorList = super.validate(false)
@@ -67,6 +80,7 @@ export class HighlightAnnotationObj extends TextMarkupAnnotationObj {
     constructor() {
         super()
         this.type = "/Highlight"
+        this.type_encoded = [47, 72, 105, 103, 104, 108, 105, 103, 104, 116] // = '/Highlight'
     }
 
     public validate(enact : boolean = true) : ErrorList {
@@ -91,6 +105,7 @@ export class UnderlineAnnotationObj extends TextMarkupAnnotationObj {
     constructor() {
         super()
         this.type = "/Underline"
+        this.type_encoded = [47, 85, 110, 100, 101, 114, 108, 105, 110, 101] // = '/Underline'
     }
 
     public validate(enact : boolean = true) : ErrorList {
@@ -115,6 +130,7 @@ export class SquigglyAnnotationObj extends TextMarkupAnnotationObj {
     constructor() {
         super()
         this.type = "/Squiggly"
+        this.type_encoded = [47, 83, 113, 117, 105, 103, 103, 108, 121] // = '/Squiggly'
     }
 
     public validate(enact : boolean = true) : ErrorList {
@@ -139,6 +155,7 @@ export class StrikeOutAnnotationObj extends TextMarkupAnnotationObj {
     constructor() {
         super()
         this.type = "/StrikeOut"
+        this.type_encoded = [47, 83, 116, 114, 105, 107, 101, 79, 117, 116] // = '/StrikeOut'
     }
 
     public validate(enact : boolean = true) : ErrorList {
