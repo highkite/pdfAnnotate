@@ -154,8 +154,6 @@
                         document.querySelector('#addStrikeOutAnnotation').addEventListener('click', (evt) => {
                                 setStatus("Added StrikeOut Annotation")
                                 let parameters = getParameters()
-                                let sc = selectionCoordinates()
-
                                 pdfFactory.createStrikeOutAnnotation(pdfViewer.currentPageNumber - 1, selectionCoordinates(), parameters[2], parameters[3], {r : 0, g : 0, b : 0})
                                 coordinates = []
                                 updateCoordinates()
@@ -164,8 +162,6 @@
                         document.querySelector('#addSquigglyAnnotation').addEventListener('click', (evt) => {
                                 setStatus("Added Squiggly Annotation")
                                 let parameters = getParameters()
-                                let sc = selectionCoordinates()
-
                                 pdfFactory.createSquigglyAnnotation(pdfViewer.currentPageNumber - 1, selectionCoordinates(), parameters[2], parameters[3], {r : 255, g : 0, b : 0})
                                 coordinates = []
                                 updateCoordinates()
@@ -174,8 +170,6 @@
                         document.querySelector('#addUnderlineAnnotation').addEventListener('click', (evt) => {
                                 setStatus("Added Underline Annotation")
                                 let parameters = getParameters()
-                                let sc = selectionCoordinates()
-
                                 pdfFactory.createUnderlineAnnotation(pdfViewer.currentPageNumber - 1, selectionCoordinates(), parameters[2], parameters[3], {r : 0, g : 0, b : 0})
                                 coordinates = []
                                 updateCoordinates()
@@ -184,8 +178,6 @@
                         document.querySelector('#addHighlightAnnotation').addEventListener('click', (evt) => {
                                 setStatus("Added Highlight Annotation")
                                 let parameters = getParameters()
-                                let sc = selectionCoordinates()
-
                                 pdfFactory.createHighlightAnnotation(pdfViewer.currentPageNumber - 1, selectionCoordinates(), parameters[2], parameters[3])
                                 coordinates = []
                                 updateCoordinates()
