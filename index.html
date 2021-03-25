@@ -82,6 +82,52 @@
                 <div class="buttonClass"><button id="addSquigglyAnnotation" type="button">Create Squiggly Annotation</button></div>
                 <div class="buttonClass"><button id="addStrikeOutAnnotation" type="button">Create StrikeOut Annotation</button></div>
                 <hr>
+                <p>
+                Text justification:
+                <fieldset>
+                        <input type="radio" id="left" name="freetext_text_justification" checked>
+                        <label for="left">Left</label>
+                        <input type="radio" id="center" name="freetext_text_justification">
+                        <label for="center">Center</label>
+                        <input type="radio" id="right" name="freetext_text_justification">
+                        <label for="right">Right</label>
+                </fieldset>
+                </p>
+                <p>
+                Freetext type:
+                <fieldset>
+                        <input type="radio" id="freetext" name="freetext_type" checked>
+                        <label for="freetext">Freetext</label>
+                        <input type="radio" id="freetext_callout" name="freetext_type">
+                        <label for="freetext_callout">FreeTextCallout</label>
+                        <input type="radio" id="freetext_typewriter" name="freetext_type">
+                        <label for="freetext_typewriter">FreeTextTypeWriter</label>
+                </fieldset>
+                </p>
+                Callout line ending:
+                <fieldset>
+                        <input type="radio" id="square" name="freetext_callout_line_ending">
+                        <label for="square">Square</label>
+                        <input type="radio" id="circle" name="freetext_callout_line_ending">
+                        <label for="circle">Circle</label>
+                        <input type="radio" id="diamond" name="freetext_callout_line_ending">
+                        <label for="diamond">Diamond</label>
+                        <input type="radio" id="open_arrow" name="freetext_callout_line_ending">
+                        <label for="open_arrow">OpenArrow</label>
+                        <input type="radio" id="closed_arrow" name="freetext_callout_line_ending">
+                        <label for="closed_arrow">ClosedArrow</label>
+                        <input type="radio" id="none" name="freetext_callout_line_ending" checked>
+                        <label for="none">None</label>
+                        <input type="radio" id="butt" name="freetext_callout_line_ending">
+                        <label for="butt">Butt</label>
+                        <input type="radio" id="r_open_arrow" name="freetext_callout_line_ending">
+                        <label for="r_open_arrow">ROpenArrow</label>
+                        <input type="radio" id="r_closed_arrow" name="freetext_callout_line_ending">
+                        <label for="r_closed_arrow">RClosedArrow</label>
+                        <input type="radio" id="slash" name="freetext_callout_line_ending">
+                        <label for="slash">Slash</label>
+                </fieldset>
+                </p>
                 <div class="buttonClass"><button id="addFreeTextAnnotation" type="button">Create FreeText Annotation</button></div>
                 <div class="buttonClass"><button id="addLineAnnotation" type="button">Create Line Annotation</button></div>
                 <hr>
@@ -314,7 +360,65 @@
                         })
 
                         document.querySelector('#addFreeTextAnnotation').addEventListener('click', (evt) => {
-                                pdfFactory.createFreeTextAnnotation(0, [30, 30, 50, 50], "Test123", "John")
+                                let textJustification = pdfAnnotate.TextJustification.Left
+                                let radios = document.getElementsByName("freetext_text_justification")
+
+
+                                if (radios[0].checked) {
+                                        textJustification = pdfAnnotate.TextJustification.Left
+                                } else if (radios[1].checked) {
+                                        textJustification = pdfAnnotate.TextJustification.Center
+                                } else if (radios[2].checked) {
+                                        textJustification = pdfAnnotate.TextJustification.Right
+                                }
+
+                                let freeTextType = pdfAnnotate.FreeTextType.FreeText
+
+                                radios = document.getElementsByName("freetext_type")
+
+                                if (radios[0].checked) {
+                                        freeTextType = pdfAnnotate.FreeTextType.FreeText
+                                } else if (radios[1].checked) {
+                                        freeTextType = pdfAnnotate.FreeTextType.FreeTextCallout
+                                } else if (radios[2].checked) {
+                                        freeTextType = pdfAnnotate.FreeTextType.FreeTextTypeWriter
+                                }
+
+                                let lineEndingStyle = pdfAnnotate.LineEndingStyle.None
+
+                                radios = document.getElementsByName("freetext_callout_line_ending")
+
+                                if (radios[0].checked) {
+                                        lineEndingStyle = pdfAnnotate.LineEndingStyle.Square
+                                } else if (radios[1].checked) {
+                                        lineEndingStyle = pdfAnnotate.LineEndingStyle.Circle
+                                } else if (radios[2].checked) {
+                                        lineEndingStyle = pdfAnnotate.LineEndingStyle.Diamond
+                                } else if (radios[3].checked) {
+                                        lineEndingStyle = pdfAnnotate.LineEndingStyle.OpenArrow
+                                } else if (radios[4].checked) {
+                                        lineEndingStyle = pdfAnnotate.LineEndingStyle.ClosedArrow
+                                } else if (radios[5].checked) {
+                                        lineEndingStyle = pdfAnnotate.LineEndingStyle.None
+                                } else if (radios[6].checked) {
+                                        lineEndingStyle = pdfAnnotate.LineEndingStyle.Butt
+                                } else if (radios[7].checked) {
+                                        lineEndingStyle = pdfAnnotate.LineEndingStyle.ROpenArrow
+                                } else if (radios[8].checked) {Ä
+                                        lineEndingStyle = pdfAnnotate.LineEndingStyle.RClosedArrow
+                                } else if (radios[9].checked) {Ä
+                                        lineEndingStyle = pdfAnnotate.LineEndingStyle.Slash
+                                }
+
+                                pdfFactory.createFreeTextAnnotation({
+                                        page: 0,
+                                        rect: [30, 30, 50, 50],
+                                        contents: "Test123",
+                                        author: "John",
+                                        textJustification: textJustification,
+                                        freeTextType: freeTextType,
+                                        lineEndingStyle: lineEndingStyle
+                                })
                         })
 
                         document.querySelector('#addLineAnnotation').addEventListener('click', (evt) => {
