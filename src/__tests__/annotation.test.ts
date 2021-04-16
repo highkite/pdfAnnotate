@@ -1,4 +1,6 @@
-import { ParameterParser } from '../annotation';
+import { ParameterParser, AnnotationFactory } from '../annotation';
+import { testDocument } from './Data'
+import { AnnotationIcon } from '../annotations/text_annotation';
 
 test('testParseParameters', () => {
     let params : any = [0, [50, 50, 80, 80], "Test123", "John"]
@@ -45,4 +47,22 @@ test('testParseParameters', () => {
     expect(res.author).toBe("John")
     expect(res.color).toEqual({r: 1, g: 1, b: 0})
     expect(res.quadPoints).toEqual([100, 130, 150, 130, 100, 100, 150, 100 /*rectangle one*/, 150, 180, 200, 180, 150, 150, 200, 150 /*rectangle two*/])
+})
+test('deleteAnnotation',async ()=>{
+    let data = new Uint8Array(testDocument)
+    let factory = new AnnotationFactory(data)
+    factory.createTextAnnotation({
+        page: 0,
+        rect: [50, 50, 80, 80],
+        contents: "Pop up note",
+        author: "Max",
+        color: {r: 128, g: 128, b: 128},
+        open: false,
+        icon: AnnotationIcon.Help,
+        opacity: 0.5
+        })
+    let annotations=await factory.getAnnotations()
+    await factory.deleteAnnotation(annotations[0][2].id)
+    expect(factory.getAnnotationCount()).toEqual(0)
+    
 })
