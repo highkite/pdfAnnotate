@@ -493,11 +493,11 @@ export class AnnotationFactory {
             // delete if it was just created but is not in the pdf document
             for (let i = 0; i < this.annotations.length; ++i) {
                 if ('string' === typeof id && this.annotations[i].id === id) {
-                    this.annotations = this.annotations.slice(i, 1)
+                    this.annotations = this.annotations = [...this.annotations.slice(0, i), ...this.annotations.slice(i+1)]
                     resolve(this.toDelete)
                     return
                 } else if (id.obj && this.annotations[i].object_id && id.obj === (<any>this.annotations[i].object_id).obj && id.generation && id.generation === (<any>this.annotations[i].object_id).generation) {
-                    this.annotations = this.annotations.slice(i, 1)
+                    this.annotations = this.annotations = [...this.annotations.slice(0, i), ...this.annotations.slice(i+1)]
                     resolve(this.toDelete)
                     return
                 }
