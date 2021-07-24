@@ -9,6 +9,7 @@ import { FreeTextAnnotationObj } from './annotations/freetext_annotation';
 import { SquareAnnotationObj, CircleAnnotationObj } from './annotations/circle_square_annotation';
 import { PolygonAnnotationObj, PolyLineAnnotationObj } from './annotations/polygon_polyline_annotation';
 import { InkAnnotationObj } from './annotations/ink_annotation';
+import { AppearanceStream, XObject, XObjectObj, OnOffAppearanceStream } from './appearance-stream';
 
 /**
  * Note that this parser does not parses the PDF file completely. It lookups those
@@ -29,6 +30,55 @@ export interface ReferencePointer {
     reused?: boolean | undefined
 }
 
+/**
+ * Parses the appearance stream object. But if it is a reference it will not resolve the object and just provide
+ * the reference.
+ * */
+export class AppearanceStreamParser {
+    private static parseXObject(to_parse : any) : XObject {
+        return new XObjectObj()
+    }
+
+    private static parseAppearanceStream(key: string, to_parse : any) : XObject | OnOffAppearanceStream | ReferencePointer {
+        if(Util.isReferencePointer(to_parse[key])) {
+            return to_parse[key]
+        } else if (to_parse[key]["/Off"] && to_parse[key]["/ON"]) {
+            if (Util.isReferencePointer(to_parse[key]["/Off"])) {
+                return to_parse[key]["/Off"]
+            } else {
+                return AppearanceStreamParser.parseXObject(to_parse[key]["/Off"])
+            }
+
+            if (Util.isReferencePointer(to_parse[key]["/On"])) {
+                return to_parse[key]["/On"]
+            } else {
+                return AppearanceStreamParser.parseXObject(to_parse[key]["/On"])
+            }
+        } else {
+            return AppearanceStreamParser.parseXObject(to_parse[key])
+        }
+    }
+
+    public static parse(to_parse : any) : AppearanceStream {
+        if (!to_parse["/N"]) {
+            throw Error("/N flag is required in appearance stream")
+        }
+
+        let appStream : AppearanceStream = {"N": AppearanceStreamParser.parseAppearanceStream("/N", to_parse)}
+
+        if (to_parse["/R"]) {
+            appStream["R"] = AppearanceStreamParser.parseAppearanceStream("/R", to_parse)
+        }
+
+        if (to_parse["/D"]) {
+            appStream["D"] = AppearanceStreamParser.parseAppearanceStream("/D", to_parse)
+        }
+
+
+        return appStream
+    }
+}
+
 export type Annotation = _Annotation | TextAnnotationObj | HighlightAnnotationObj | FreeTextAnnotationObj | SquareAnnotationObj | CircleAnnotationObj | PolygonAnnotationObj | PolyLineAnnotationObj | InkAnnotationObj
 
 export class _Annotation {
@@ -43,6 +93,7 @@ export class _Annotation {
     contents?: string // Text that shall be displayed for the annotation
     annotationFlags?: AnnotationFlags// See PDF spcecification 'Annotation Flag'
     appearance_dictionary?: any // control the appearance of the annotation
+    appearanceStream? : AppearanceStream | undefined
     appearance_state?: any // change the appearance according to states
     border?: Border | undefined = undefined// define the border
     color?: Color | undefined = undefined// the color set
@@ -170,6 +221,9 @@ export class _Annotation {
 
         if (annot_obj["/Inklist"])
             this.inkList = annot_obj["/Inklist"]
+
+        if (annot_obj["/AP"])
+            this.appearanceStream = AppearanceStreamParser.parse(annot_obj["/AP"])
     }
 }
 

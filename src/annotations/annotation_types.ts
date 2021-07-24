@@ -1,4 +1,5 @@
 import { Page, ReferencePointer, CryptoInterface } from '../parser';
+import { AppearanceStream } from '../appearance-stream';
 import { Util } from '../util';
 import { ErrorList, InvalidOpacityError, InvalidRectError, InvalidDateError, InvalidReferencePointerError, ColorOutOfRangeError, InvalidColorError, InvalidIDError } from './annotation_errors';
 import { WriterUtil } from '../writer-util';
@@ -38,9 +39,6 @@ export interface AnnotationFlags {
     locked?: boolean
     toggleNoView?: boolean
     lockedContents?: boolean
-}
-
-export interface AppearanceStream {
 }
 
 export interface OptionalContent {

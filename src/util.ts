@@ -680,4 +680,11 @@ export class Util {
 
         return new Uint8Array(ret_val)
     }
+
+    /**
+     * Returns true, if the object corresponds to the interface of a reference pointer.
+     * */
+    public static isReferencePointer (obj : any) : boolean {
+        return ("obj" in obj && "generation" in obj && Object.keys(obj).length == 2)
+    }
 }
