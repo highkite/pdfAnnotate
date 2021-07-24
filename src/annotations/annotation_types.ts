@@ -1,7 +1,7 @@
-import { Page, ReferencePointer, CryptoInterface } from '../parser';
+import { _Annotation, Page, ReferencePointer, CryptoInterface } from '../parser';
 import { AppearanceStream } from '../appearance-stream';
 import { Util } from '../util';
-import { ErrorList, InvalidOpacityError, InvalidRectError, InvalidDateError, InvalidReferencePointerError, ColorOutOfRangeError, InvalidColorError, InvalidIDError } from './annotation_errors';
+import { ErrorList, InvalidOpacityError, InvalidRectError, InvalidDateError, InvalidReferencePointerError, ColorOutOfRangeError, InvalidColorError, InvalidIDError, InvalidAnnotationReference } from './annotation_errors';
 import { WriterUtil } from '../writer-util';
 
 export enum LineEndingStyle {
@@ -60,7 +60,9 @@ export interface BaseAnnotation {
     color?: Color | undefined // /C
     structParent?: number | undefined // /StructParent
     optionalContent?: OptionalContent | undefined // /OC
+    takeAppearanceStreamFrom?: _Annotation | string | undefined // use the appearance stream from another annotation
     is_deleted?: boolean // internal flag to determine whether the annotation was deleted
+    factory: any // Reference to the factory instance
 }
 
 export class BaseAnnotationObj implements BaseAnnotation {
@@ -85,6 +87,8 @@ export class BaseAnnotationObj implements BaseAnnotation {
     structParent: number | undefined // /StructParent
     appearanceStream: AppearanceStream | undefined // /AP
     appearanceStreamSelector: string | undefined // /AS
+    takeAppearanceStreamFrom: _Annotation | string | undefined = undefined
+    factory: any = undefined
 
     constructor() { }
 
@@ -283,6 +287,22 @@ export class BaseAnnotationObj implements BaseAnnotation {
 
         if (!this.id || this.id === "") {
             errorList.push(new InvalidIDError("Invalid ID provided"))
+        }
+
+        // Check referenced appearance streams
+        if (this.takeAppearanceStreamFrom) {
+            if (typeof this.takeAppearanceStreamFrom === 'string') { // lookup appearance stream
+                let res : _Annotation[] = []
+                this.factory._getAnnotations().forEach((annots : any) => {
+                    res = annots.filter((value : any) => value.id === this.takeAppearanceStreamFrom)
+                })
+
+                if (res.length === 0 || res.length > 1) {
+                    errorList.push(new InvalidAnnotationReference("The provided string referencing the annotation to take the appearance stream from is not valid."))
+                }
+
+                this.takeAppearanceStreamFrom = res[1]
+            }
         }
 
         if (enact) {

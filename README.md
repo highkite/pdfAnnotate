@@ -180,6 +180,7 @@ These are the options that are supported by every annotation:
                 cloud_intensity: number // Intensity of the smearing
         }
         color: {r : number, g : number, b : number} // Specify the color can be the background color, the title bar color, the border color, depending on the annotation type
+        takeAppearanceStreamFrom?: _Annotation | string | undefined // Specify an existing annotation or its id to take the appearance stream object from this annotation. This requires that the appearance stream of the corresponding annotation exists.
 }
 ```
 We now show options, that are only supported by *Markup* annotations.

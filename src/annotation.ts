@@ -191,7 +191,7 @@ export class AnnotationFactory {
             pageReference: this.parser.getPage(page),
             updateDate: Util.convertDateToPDFDate(new Date()),
             border: this.createDefaultBorder(),
-            page: page, rect: []
+            page: page, rect: [], factory: this
         }
 
         return annot
@@ -522,6 +522,15 @@ export class AnnotationFactory {
         })
     }
 
+    _getAnnotations(): Annotation[][] {
+        let existingAnnots = this.parser.extractAnnotations()
+        for (let newAnnot of this.annotations) {
+            existingAnnots[newAnnot.page].push(newAnnot)
+        }
+
+        return existingAnnots
+    }
+
     /**
      * Returns a promise with all the annotations that are part of the document. This
      * comprises annotations, that are already part of the parsed document and those that were created using this library and
@@ -529,11 +538,7 @@ export class AnnotationFactory {
      * */
     getAnnotations(): Promise<Annotation[][]> {
         return new Promise((resolve) => {
-            let existingAnnots = this.parser.extractAnnotations()
-            for (let newAnnot of this.annotations) {
-                existingAnnots[newAnnot.page].push(newAnnot)
-            }
-            resolve(existingAnnots)
+            resolve(this._getAnnotations())
         })
     }
 

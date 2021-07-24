@@ -75,4 +75,11 @@ export class InvalidVerticesError extends Error {
     }
 }
 
-export type ErrorList = (Error | ColorOutOfRangeError | InvalidReferencePointerError | InvalidDateError | InvalidRectError | InvalidIDError | InvalidColorError | InvalidOpacityError | InvalidAnnotationTypeError | InvalidStateError | InvalidQuadPointError | InvalidVerticesError)[]
+export class InvalidAnnotationReference extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "InvalidAnnotationError"
+    }
+}
+
+export type ErrorList = (Error | ColorOutOfRangeError | InvalidReferencePointerError | InvalidDateError | InvalidRectError | InvalidIDError | InvalidColorError | InvalidOpacityError | InvalidAnnotationTypeError | InvalidStateError | InvalidQuadPointError | InvalidVerticesError | InvalidAnnotationReference)[]
