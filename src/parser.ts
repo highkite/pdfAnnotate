@@ -194,6 +194,34 @@ export class _Annotation {
 
         annot_obj = annot_obj.value
 
+        switch(annot_obj["/Subtype"]) {
+            case "/Circle":
+                break
+            case "/Square":
+                break
+            case "/FreeText":
+                break
+            case "/Ink":
+                break
+            case "/PolyLine":
+                break
+            case "/Polygon":
+                break
+            case "/Text":
+                break
+            case "/Highlight":
+                break
+            case "/Underline":
+                break
+            case "/Squiggly":
+                break
+            case "/StrikeOut":
+                break
+            case "/Form":
+                break
+            default:
+        }
+
         this.type = annot_obj["/Subtype"]
         this.rect = annot_obj["/Rect"]
         this.pageReference = page

@@ -1,5 +1,5 @@
 import { _Annotation, Page, ReferencePointer, CryptoInterface } from '../parser';
-import { AppearanceStream } from '../appearance-stream';
+import { AppStream } from '../appearance-stream';
 import { Util } from '../util';
 import { ErrorList, InvalidOpacityError, InvalidRectError, InvalidDateError, InvalidReferencePointerError, ColorOutOfRangeError, InvalidColorError, InvalidIDError, InvalidAnnotationReference } from './annotation_errors';
 import { WriterUtil } from '../writer-util';
@@ -54,7 +54,7 @@ export interface BaseAnnotation {
     id: string // /NM
     updateDate: string | Date// /M
     annotationFlags?: AnnotationFlags | undefined // /F
-    appearanceStream?: AppearanceStream | undefined // /AP
+    appearanceStream?: AppStream | undefined // /AP
     appearanceStreamSelector?: string | undefined // /AS
     border?: Border | undefined
     color?: Color | undefined // /C
@@ -85,7 +85,7 @@ export class BaseAnnotationObj implements BaseAnnotation {
 
     optionalContent: OptionalContent | undefined // /OC
     structParent: number | undefined // /StructParent
-    appearanceStream: AppearanceStream | undefined // /AP
+    appearanceStream: AppStream | undefined // /AP
     appearanceStreamSelector: string | undefined // /AS
     takeAppearanceStreamFrom: _Annotation | string | undefined = undefined
     factory: any = undefined
@@ -146,6 +146,13 @@ export class BaseAnnotationObj implements BaseAnnotation {
         ret.push(WriterUtil.BRACKET_END)
         ret.push(WriterUtil.SPACE)
 
+        if (this.appearanceStream) {
+            ret = ret.concat(WriterUtil.AP)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(this.appearanceStream.writeAppearanceStream())
+            ret.push(WriterUtil.SPACE)
+        }
+
         if (this.annotationFlags) {
             let flags_value : number = this.encodeAnnotationFlags()
             ret = ret.concat(WriterUtil.FLAG)
@@ -161,6 +168,7 @@ export class BaseAnnotationObj implements BaseAnnotation {
             ret = ret.concat(WriterUtil.writeNumberArray([this.border.horizontal_corner_radius || 0, this.border.vertical_corner_radius || 0, this.border.border_width || 1]))
             ret.push(WriterUtil.SPACE)
         }
+
 
         if (this.color) {
             if (this.color.r > 1) this.color.r /= 255

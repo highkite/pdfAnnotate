@@ -8,6 +8,7 @@ export class WriterUtil {
     public static SPACE: number = 32
     public static CR: number = 13
     public static LF: number = 10
+    public static AP: number[] = [47, 65, 80] // = '/AP'
     public static OBJ: number[] = [111, 98, 106]
     public static ENDOBJ: number[] = [101, 110, 100, 111, 98, 106]
     public static ENCRYPT: number[] = [47, 69, 110, 99, 114, 121, 112, 116]

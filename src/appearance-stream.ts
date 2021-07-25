@@ -9,9 +9,23 @@ export interface OnOffAppearanceStream {
 }
 
 export interface AppearanceStream {
-    N: XObject | OnOffAppearanceStream | ReferencePointer
+    N: XObject | OnOffAppearanceStream | ReferencePointer | undefined
     R?: XObject | OnOffAppearanceStream | ReferencePointer | undefined
     D?: XObject | OnOffAppearanceStream | ReferencePointer | undefined
+}
+
+export class AppStream implements AppearanceStream {
+    N: XObject | OnOffAppearanceStream | ReferencePointer | undefined = undefined
+
+    constructor() { }
+
+    /**
+     * Writes the appearance stream
+     * */
+    writeAppearanceStream() : number[] {
+        console.log("Write appearance stream")
+        return []
+    }
 }
 
 export interface XObject {
@@ -39,6 +53,5 @@ export class XObjectObj implements XObject {
     name : string = ""
 
     // note that Type is /XObject instead of /Annot in annotation objects
-    constructor() {
-    }
+    constructor() { }
 }
