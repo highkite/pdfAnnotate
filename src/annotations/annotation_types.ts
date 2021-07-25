@@ -1,4 +1,4 @@
-import { _Annotation, Page, ReferencePointer, CryptoInterface } from '../parser';
+import { Annotation, Page, ReferencePointer, CryptoInterface } from '../parser';
 import { AppStream } from '../appearance-stream';
 import { Util } from '../util';
 import { ErrorList, InvalidOpacityError, InvalidRectError, InvalidDateError, InvalidReferencePointerError, ColorOutOfRangeError, InvalidColorError, InvalidIDError, InvalidAnnotationReference } from './annotation_errors';
@@ -60,7 +60,7 @@ export interface BaseAnnotation {
     color?: Color | undefined // /C
     structParent?: number | undefined // /StructParent
     optionalContent?: OptionalContent | undefined // /OC
-    takeAppearanceStreamFrom?: _Annotation | string | undefined // use the appearance stream from another annotation
+    takeAppearanceStreamFrom?: Annotation | string | undefined // use the appearance stream from another annotation
     is_deleted?: boolean // internal flag to determine whether the annotation was deleted
     factory: any // Reference to the factory instance
 }
@@ -87,7 +87,7 @@ export class BaseAnnotationObj implements BaseAnnotation {
     structParent: number | undefined // /StructParent
     appearanceStream: AppStream | undefined // /AP
     appearanceStreamSelector: string | undefined // /AS
-    takeAppearanceStreamFrom: _Annotation | string | undefined = undefined
+    takeAppearanceStreamFrom: Annotation | string | undefined = undefined
     factory: any = undefined
 
     constructor() { }
@@ -300,7 +300,7 @@ export class BaseAnnotationObj implements BaseAnnotation {
         // Check referenced appearance streams
         if (this.takeAppearanceStreamFrom) {
             if (typeof this.takeAppearanceStreamFrom === 'string') { // lookup appearance stream
-                let res : _Annotation[] = []
+                let res : Annotation[] = []
                 this.factory._getAnnotations().forEach((annots : any) => {
                     res = annots.filter((value : any) => value.id === this.takeAppearanceStreamFrom)
                 })
@@ -390,6 +390,18 @@ export class BaseAnnotationObj implements BaseAnnotation {
 
         return errorList
     }
+
+    /**
+     * Extracts the information of the raw annotation obj that is provided by the PDF document parser
+     * */
+    public extract(annot_obj : any) {
+    }
+}
+
+/**
+ * A helper class that is only used if a parsed annotation type cannot be identified and translated into a supported annotation type
+ * */
+export class RawAnnotationObj extends BaseAnnotationObj {
 }
 
 export enum ReplyTypes {

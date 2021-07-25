@@ -2,9 +2,9 @@ import { Util, PDFVersion } from './util';
 import { ObjectUtil } from './object-util';
 import { DocumentHistory, ObjectLookupTable, XRef } from './document-history';
 import { CryptoEngine, IdentityEngine, CryptoConfiguration, RC4CryptoEngine, RC4_40_BIT} from './crypto';
-import { AnnotationFlags, Border, Color } from './annotations/annotation_types';
+import { BaseAnnotationObj, RawAnnotationObj, AnnotationFlags, Border, Color } from './annotations/annotation_types';
 import { TextAnnotationObj } from './annotations/text_annotation';
-import { HighlightAnnotationObj } from './annotations/text_markup_annotation';
+import { HighlightAnnotationObj, StrikeOutAnnotationObj, UnderlineAnnotationObj, SquigglyAnnotationObj } from './annotations/text_markup_annotation';
 import { FreeTextAnnotationObj } from './annotations/freetext_annotation';
 import { SquareAnnotationObj, CircleAnnotationObj } from './annotations/circle_square_annotation';
 import { PolygonAnnotationObj, PolyLineAnnotationObj } from './annotations/polygon_polyline_annotation';
@@ -79,9 +79,78 @@ export class AppearanceStreamParser {
     }
 }
 
-export type Annotation = _Annotation | TextAnnotationObj | HighlightAnnotationObj | FreeTextAnnotationObj | SquareAnnotationObj | CircleAnnotationObj | PolygonAnnotationObj | PolyLineAnnotationObj | InkAnnotationObj
+export type Annotation = RawAnnotationObj | TextAnnotationObj | HighlightAnnotationObj | FreeTextAnnotationObj | SquareAnnotationObj | CircleAnnotationObj | PolygonAnnotationObj | PolyLineAnnotationObj | InkAnnotationObj
 
-export class _Annotation {
+/**
+ * Parses an annotation from the document and translates this into the pdfAnnotate datastructure
+ * */
+export class AnnotationParser {
+
+    /**
+     * Extract the annotation object it also assigns the raw data, i.e., potentially unknown/ additional attributes
+     * */
+    public static extract(data: Uint8Array, xref: XRef, page: Page, objectLookupTable: ObjectLookupTable) : Annotation {
+        let annot_obj = ObjectUtil.extractObject(data, xref, objectLookupTable)
+
+        annot_obj = annot_obj.value
+
+        let ret_obj : Annotation
+
+        switch(annot_obj["/Subtype"]) {
+            case "/Circle":
+                ret_obj = new CircleAnnotationObj()
+                ret_obj.extract(annot_obj)
+                break
+            case "/Square":
+                ret_obj = new SquareAnnotationObj()
+                ret_obj.extract(annot_obj)
+                break
+            case "/FreeText":
+                ret_obj = new FreeTextAnnotationObj()
+                ret_obj.extract(annot_obj)
+                break
+            case "/Ink":
+                ret_obj = new InkAnnotationObj()
+                ret_obj.extract(annot_obj)
+                break
+            case "/PolyLine":
+                ret_obj = new PolyLineAnnotationObj()
+                ret_obj.extract(annot_obj)
+                break
+            case "/Polygon":
+                ret_obj = new PolygonAnnotationObj()
+                ret_obj.extract(annot_obj)
+                break
+            case "/Text":
+                ret_obj = new TextAnnotationObj()
+                ret_obj.extract(annot_obj)
+                break
+            case "/Highlight":
+                ret_obj = new HighlightAnnotationObj()
+                ret_obj.extract(annot_obj)
+                break
+            case "/Underline":
+                ret_obj = new UnderlineAnnotationObj()
+                ret_obj.extract(annot_obj)
+                break
+            case "/Squiggly":
+                ret_obj = new SquigglyAnnotationObj()
+                ret_obj.extract(annot_obj)
+                break
+            case "/StrikeOut":
+                ret_obj = new StrikeOutAnnotationObj()
+                ret_obj.extract(annot_obj)
+                break
+            default:
+                ret_obj = new RawAnnotationObj()
+                ret_obj.extract(annot_obj)
+        }
+
+        return ret_obj
+    }
+}
+
+export class __Annotation {
     page: number = -1// the target page of the annotation
     type: string = ""// the sub type of the array (Text, Highlight, ...)
     object_id: ReferencePointer | undefined = undefined// an unused object id
@@ -194,33 +263,6 @@ export class _Annotation {
 
         annot_obj = annot_obj.value
 
-        switch(annot_obj["/Subtype"]) {
-            case "/Circle":
-                break
-            case "/Square":
-                break
-            case "/FreeText":
-                break
-            case "/Ink":
-                break
-            case "/PolyLine":
-                break
-            case "/Polygon":
-                break
-            case "/Text":
-                break
-            case "/Highlight":
-                break
-            case "/Underline":
-                break
-            case "/Squiggly":
-                break
-            case "/StrikeOut":
-                break
-            case "/Form":
-                break
-            default:
-        }
 
         this.type = annot_obj["/Subtype"]
         this.rect = annot_obj["/Rect"]
@@ -670,8 +712,7 @@ export class PDFDocumentParser {
             let pageAnnots: Annotation[] = []
 
             for (let refPtr of annotationReferences) {
-                let a = new _Annotation(this.data, this.cryptoInterface)
-                a.extract(obj_table[refPtr.obj], page, obj_table)
+                let a = AnnotationParser.extract(this.data, obj_table[refPtr.obj], page, obj_table)
                 a.page = i
                 pageAnnots.push(a)
             }

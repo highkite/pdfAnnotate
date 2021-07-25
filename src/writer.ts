@@ -1,6 +1,6 @@
 import { Util } from './util'
 import { ObjectUtil } from './object-util'
-import { _Annotation, Annotation, ReferencePointer, PDFDocumentParser, Page, CryptoInterface } from './parser'
+import { Annotation, ReferencePointer, PDFDocumentParser, Page, CryptoInterface } from './parser'
 import { AnnotationState, AnnotationStateModel, AnnotationIcon, TextAnnotationObj } from './annotations/text_annotation';
 import { Color, MarkupAnnotationObj } from './annotations/annotation_types';
 import { XRef } from './document-history'
