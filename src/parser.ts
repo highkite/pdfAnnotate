@@ -9,7 +9,7 @@ import { FreeTextAnnotationObj } from './annotations/freetext_annotation';
 import { SquareAnnotationObj, CircleAnnotationObj } from './annotations/circle_square_annotation';
 import { PolygonAnnotationObj, PolyLineAnnotationObj } from './annotations/polygon_polyline_annotation';
 import { InkAnnotationObj } from './annotations/ink_annotation';
-import { AppearanceStream, XObject, XObjectObj, OnOffAppearanceStream } from './appearance-stream';
+import { AppearanceStream, AppStream, XObject, XObjectObj, OnOffAppearanceStream } from './appearance-stream';
 
 /**
  * Note that this parser does not parses the PDF file completely. It lookups those
@@ -59,19 +59,21 @@ export class AppearanceStreamParser {
         }
     }
 
-    public static parse(to_parse : any) : AppearanceStream {
+    public static parse(to_parse : any) : AppStream {
         if (!to_parse["/N"]) {
             throw Error("/N flag is required in appearance stream")
         }
 
-        let appStream : AppearanceStream = {"N": AppearanceStreamParser.parseAppearanceStream("/N", to_parse)}
+        let appStream : AppStream = new AppStream()
+
+        appStream.N = AppearanceStreamParser.parseAppearanceStream("/N", to_parse)
 
         if (to_parse["/R"]) {
-            appStream["R"] = AppearanceStreamParser.parseAppearanceStream("/R", to_parse)
+            appStream.R = AppearanceStreamParser.parseAppearanceStream("/R", to_parse)
         }
 
         if (to_parse["/D"]) {
-            appStream["D"] = AppearanceStreamParser.parseAppearanceStream("/D", to_parse)
+            appStream.D = AppearanceStreamParser.parseAppearanceStream("/D", to_parse)
         }
 
 
@@ -89,7 +91,7 @@ export class AnnotationParser {
     /**
      * Extract the annotation object it also assigns the raw data, i.e., potentially unknown/ additional attributes
      * */
-    public static extract(data: Uint8Array, xref: XRef, page: Page, objectLookupTable: ObjectLookupTable) : Annotation {
+    public static extract(data: Uint8Array, xref: XRef, page: Page, objectLookupTable: ObjectLookupTable, cryptoInterface : CryptoInterface) : Annotation {
         let annot_obj = ObjectUtil.extractObject(data, xref, objectLookupTable)
 
         annot_obj = annot_obj.value
@@ -99,51 +101,51 @@ export class AnnotationParser {
         switch(annot_obj["/Subtype"]) {
             case "/Circle":
                 ret_obj = new CircleAnnotationObj()
-                ret_obj.extract(annot_obj)
+                ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/Square":
                 ret_obj = new SquareAnnotationObj()
-                ret_obj.extract(annot_obj)
+                ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/FreeText":
                 ret_obj = new FreeTextAnnotationObj()
-                ret_obj.extract(annot_obj)
+                ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/Ink":
                 ret_obj = new InkAnnotationObj()
-                ret_obj.extract(annot_obj)
+                ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/PolyLine":
                 ret_obj = new PolyLineAnnotationObj()
-                ret_obj.extract(annot_obj)
+                ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/Polygon":
                 ret_obj = new PolygonAnnotationObj()
-                ret_obj.extract(annot_obj)
+                ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/Text":
                 ret_obj = new TextAnnotationObj()
-                ret_obj.extract(annot_obj)
+                ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/Highlight":
                 ret_obj = new HighlightAnnotationObj()
-                ret_obj.extract(annot_obj)
+                ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/Underline":
                 ret_obj = new UnderlineAnnotationObj()
-                ret_obj.extract(annot_obj)
+                ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/Squiggly":
                 ret_obj = new SquigglyAnnotationObj()
-                ret_obj.extract(annot_obj)
+                ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/StrikeOut":
                 ret_obj = new StrikeOutAnnotationObj()
-                ret_obj.extract(annot_obj)
+                ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             default:
                 ret_obj = new RawAnnotationObj()
-                ret_obj.extract(annot_obj)
+                ret_obj.extract(annot_obj, page, cryptoInterface)
         }
 
         return ret_obj
@@ -712,7 +714,7 @@ export class PDFDocumentParser {
             let pageAnnots: Annotation[] = []
 
             for (let refPtr of annotationReferences) {
-                let a = AnnotationParser.extract(this.data, obj_table[refPtr.obj], page, obj_table)
+                let a = AnnotationParser.extract(this.data, obj_table[refPtr.obj], page, obj_table, this.cryptoInterface)
                 a.page = i
                 pageAnnots.push(a)
             }

@@ -16,6 +16,8 @@ export interface AppearanceStream {
 
 export class AppStream implements AppearanceStream {
     N: XObject | OnOffAppearanceStream | ReferencePointer | undefined = undefined
+    R: XObject | OnOffAppearanceStream | ReferencePointer | undefined = undefined
+    D: XObject | OnOffAppearanceStream | ReferencePointer | undefined = undefined
 
     constructor() { }
 

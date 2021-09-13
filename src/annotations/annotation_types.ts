@@ -1,4 +1,4 @@
-import { Annotation, Page, ReferencePointer, CryptoInterface } from '../parser';
+import { Annotation, Page, ReferencePointer, CryptoInterface, AppearanceStreamParser } from '../parser';
 import { AppStream } from '../appearance-stream';
 import { Util } from '../util';
 import { ErrorList, InvalidOpacityError, InvalidRectError, InvalidDateError, InvalidReferencePointerError, ColorOutOfRangeError, InvalidColorError, InvalidIDError, InvalidAnnotationReference } from './annotation_errors';
@@ -394,7 +394,30 @@ export class BaseAnnotationObj implements BaseAnnotation {
     /**
      * Extracts the information of the raw annotation obj that is provided by the PDF document parser
      * */
-    public extract(annot_obj : any) {
+    public extract(annot_obj : any, page : any, cryptoInterface : CryptoInterface) {
+        this.object_id = annot_obj.id
+
+        this.pageReference = page
+        this.type = annot_obj["/Subtype"]
+        this.rect = annot_obj["/Rect"]
+
+        if (annot_obj["/M"])
+            this.updateDate = Util.convertUnicodeToString(cryptoInterface.decrypt(annot_obj["/M"], this.object_id))
+
+        if (annot_obj["/Border"])
+            this.border = annot_obj["/Border"]
+
+        if (annot_obj["/C"])
+            this.color = annot_obj["/C"]
+
+        if (annot_obj["/NM"])
+            this.id = Util.convertUnicodeToString(cryptoInterface.decrypt(annot_obj["/NM"], this.object_id))
+
+        if (annot_obj["/Contents"])
+            this.contents = Util.convertUnicodeToString(cryptoInterface.decrypt(annot_obj["/Contents"], this.object_id))
+
+        if (annot_obj["/AP"])
+            this.appearanceStream = AppearanceStreamParser.parse(annot_obj["/AP"])
     }
 }
 
@@ -507,5 +530,12 @@ export class MarkupAnnotationObj extends BaseAnnotationObj implements MarkupAnno
         }
 
         return errorList
+    }
+
+    public extract(annot_obj : any, page : any, cryptoInterface : CryptoInterface) {
+        super.extract(annot_obj, page, cryptoInterface)
+
+        if (annot_obj["/T"])
+            this.author = Util.convertUnicodeToString(cryptoInterface.decrypt(annot_obj["/T"], this.object_id))
     }
 }
