@@ -2,6 +2,7 @@ import { MarkupAnnotation, MarkupAnnotationObj } from './annotation_types';
 import { CryptoInterface } from '../parser';
 import { ErrorList, InvalidRectError, InvalidAnnotationTypeError, InvalidQuadPointError } from './annotation_errors';
 import { WriterUtil } from '../writer-util';
+import { DefaultUnderlineAppearanceStream } from '../appearance-stream';
 
 export interface TextMarkupAnnotation extends MarkupAnnotation {
     quadPoints: number[] // specifies how the annotation goes arround the text
@@ -122,6 +123,13 @@ export class UnderlineAnnotationObj extends TextMarkupAnnotationObj {
         }
 
         return errorList
+    }
+
+    /**
+     * Creates a default appearance stream for the given annotation type and assigns it to the annotation
+     * */
+    public createDefaultAppearanceStream() {
+        this.appearanceStream = new DefaultUnderlineAppearanceStream(this.quadPoints)
     }
 }
 

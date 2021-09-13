@@ -594,14 +594,21 @@
                                                                                 pdfFactory.getAnnotations().then( (data) => {
                                                                                                                 console.log(data)
                                                                                                                 document.querySelector('#app').innerHTML = data[0].map(d => d.type)
-                                                                                                                pdfFactory.createFreeTextAnnotation({
+                                                                                                                let fta = pdfFactory.createUnderlineAnnotation({
                                                                                                                                                 page: 0,
-                                                                                                                                                rect: [30, 30, 50, 50],
+                                                                                                                                                rect: [50, 50, 80, 80],
                                                                                                                                                 contents: "Test123",
                                                                                                                                                 author: "John",
-                                                                                                                                                //takeAppearanceStreamFrom: data[18]
-                                                                                                                                                takeAppearanceStreamFrom: "01F76F5Q9ET44TQGBF85MTA6HE"
+                                                                                                                                                color: highlightAnnotColor,
+                                                                                                                                                opacity: document.getElementById("highlightAnnotOpacity").value,
                                                                                                                                         })
+                                                                                                                //                       let fta = pdfFactory.createFreeTextAnnotation({
+                                                                                                                //                                                       page: 0,
+                                                                                                                //                                                       rect: [30, 30, 50, 50],
+                                                                                                                //                                                       contents: "Test123",
+                                                                                                                //                                                       author: "John"
+                                                                                                                //                                               })
+                                                                                                                fta.createDefaultAppearanceStream()
                                                                                                         })
                                                                         })
 

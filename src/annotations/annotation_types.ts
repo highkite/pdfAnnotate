@@ -92,6 +92,11 @@ export class BaseAnnotationObj implements BaseAnnotation {
 
     constructor() { }
 
+    /**
+     * Creates a default appearance stream for the given annotation type and assigns it to the annotation
+     * */
+    public createDefaultAppearanceStream() { }
+
     public writeAnnotationPreamble() : number[] {
         let ret: number[] = WriterUtil.writeReferencePointer(this.object_id!)
         ret.push(WriterUtil.SPACE)

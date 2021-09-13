@@ -92,8 +92,38 @@ export class XObjectObj implements XObject {
     type: string = "/Form"
     type_encoded: number[] = [47, 70, 111, 114, 109] // = '/Form'
     bBox : number[] = []
-    name : string = ""
+    name : string = "/ARM"
+    matrix : number[] = [1, 0, 0, 1, 0, 0]
+    formType : number = 1
+    contentStream : string[] = []
 
     // note that Type is /XObject instead of /Annot in annotation objects
     constructor() { }
+
+    public addOperator(operator : string) {
+        this.contentStream.push(operator)
+    }
+}
+
+export class DefaultFreeTextAppearanceStream extends AppStream {
+    constructor() {
+        super()
+
+        this.N = new XObjectObj()
+    }
+}
+
+export class DefaultUnderlineAppearanceStream extends AppStream {
+    constructor(bBox : number[]) {
+        super()
+
+        let xobj = new XObjectObj()
+        this.N = xobj
+        xobj.bBox = bBox
+
+        xobj.addOperator("1 0 0 RG") // stroke color red
+        xobj.addOperator("2 w") // linewidth 2
+        xobj.addOperator(`${bBox[0]} ${bBox[1]} m`)
+        xobj.addOperator(`${bBox[2]} ${bBox[3]} l`)
+    }
 }

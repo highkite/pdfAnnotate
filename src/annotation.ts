@@ -249,7 +249,7 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * quadPoints : regions to mark with the highlight
      * */
-    createUnderlineAnnotation(...values : any[]) {
+    createUnderlineAnnotation(...values : any[]) : UnderlineAnnotationObj {
         let params = ParameterParser.parseParameters(values)
 
         let annot : UnderlineAnnotationObj = new UnderlineAnnotationObj()
@@ -259,6 +259,8 @@ export class AnnotationFactory {
         annot.validate()
 
         this.annotations.push(annot)
+
+        return annot
     }
 
     /**
@@ -311,7 +313,7 @@ export class AnnotationFactory {
      * author : the author of the annotation
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createFreeTextAnnotation(...values : any[]) {
+    createFreeTextAnnotation(...values : any[]) : FreeTextAnnotationObj {
         let params = ParameterParser.parseParameters(values)
 
         let annot : FreeTextAnnotationObj = new FreeTextAnnotationObj()
@@ -321,6 +323,8 @@ export class AnnotationFactory {
         annot.validate()
 
         this.annotations.push(annot)
+
+        return annot
     }
 
     createLineAnnotation() {
