@@ -1,7 +1,7 @@
 import { Annotation, Page, ReferencePointer, CryptoInterface, AppearanceStreamParser } from '../parser';
 import { AppStream } from '../appearance-stream';
 import { Util } from '../util';
-import { ErrorList, InvalidOpacityError, InvalidRectError, InvalidDateError, InvalidReferencePointerError, ColorOutOfRangeError, InvalidColorError, InvalidIDError, InvalidAnnotationReference } from './annotation_errors';
+import { ErrorList, InvalidOpacityError, InvalidRectError, InvalidDateError, InvalidReferencePointerError, ColorOutOfRangeError, InvalidColorError, InvalidIDError, InvalidAnnotationReference, InvalidAppearanceStreamError } from './annotation_errors';
 import { WriterUtil } from '../writer-util';
 
 export enum LineEndingStyle {
@@ -309,7 +309,11 @@ export class BaseAnnotationObj implements BaseAnnotation {
                     errorList.push(new InvalidAnnotationReference("The provided string referencing the annotation to take the appearance stream from is not valid."))
                 }
 
-                this.takeAppearanceStreamFrom = res[1]
+                if (!res[0].appearanceStream) {
+                    errorList.push(new InvalidAppearanceStreamError("The referenced annotation has no specified appearance stream."))
+                }
+
+                this.appearanceStream = res[0].appearanceStream
             }
         }
 

@@ -82,4 +82,11 @@ export class InvalidAnnotationReference extends Error {
     }
 }
 
-export type ErrorList = (Error | ColorOutOfRangeError | InvalidReferencePointerError | InvalidDateError | InvalidRectError | InvalidIDError | InvalidColorError | InvalidOpacityError | InvalidAnnotationTypeError | InvalidStateError | InvalidQuadPointError | InvalidVerticesError | InvalidAnnotationReference)[]
+export class InvalidAppearanceStreamError extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "InvalidAppearanceStreamError"
+    }
+}
+
+export type ErrorList = (Error | ColorOutOfRangeError | InvalidReferencePointerError | InvalidDateError | InvalidRectError | InvalidIDError | InvalidColorError | InvalidOpacityError | InvalidAnnotationTypeError | InvalidStateError | InvalidQuadPointError | InvalidVerticesError | InvalidAnnotationReference | InvalidAppearanceStreamError)[]

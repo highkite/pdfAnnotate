@@ -5,6 +5,9 @@ export class WriterUtil {
     public static N: number = 110
     public static F: number = 102
 
+    public static AP_N: number[] = [47, 78] // = '/N'
+    public static AP_D: number[] = [47, 68] // = '/D'
+    public static AP_R: number[] = [47, 82] // = '/R'
     public static SPACE: number = 32
     public static CR: number = 13
     public static LF: number = 10

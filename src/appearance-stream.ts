@@ -1,4 +1,6 @@
 import { ReferencePointer } from './parser';
+import { WriterUtil } from './writer-util';
+import { Util } from './util';
 
 export interface Resources {
 }
@@ -21,12 +23,50 @@ export class AppStream implements AppearanceStream {
 
     constructor() { }
 
+    writeAppearanceStreamObj(ap : XObject | OnOffAppearanceStream | ReferencePointer) : number[] {
+        let ret : number[] = []
+
+        if (Util.isReferencePointer(ap)) {
+            ret = ret.concat(WriterUtil.writeReferencePointer(ap as ReferencePointer, true))
+        } else {
+            throw Error("Invalid appearance stream object")
+        }
+
+        return ret
+    }
+
     /**
      * Writes the appearance stream
      * */
     writeAppearanceStream() : number[] {
-        console.log("Write appearance stream")
-        return []
+        let ret : number[] = []
+
+        ret = ret.concat(WriterUtil.DICT_START)
+
+        if (this.N) {
+            ret = ret.concat(WriterUtil.AP_N)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(this.writeAppearanceStreamObj(this.N))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.R) {
+            ret = ret.concat(WriterUtil.AP_R)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(this.writeAppearanceStreamObj(this.R))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.D) {
+            ret = ret.concat(WriterUtil.AP_D)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(this.writeAppearanceStreamObj(this.D))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        ret = ret.concat(WriterUtil.DICT_END)
+
+        return ret
     }
 }
 
