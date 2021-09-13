@@ -314,6 +314,8 @@ export class BaseAnnotationObj implements BaseAnnotation {
                 }
 
                 this.appearanceStream = res[0].appearanceStream
+            } else if (this.takeAppearanceStreamFrom instanceof BaseAnnotationObj) {
+                this.appearanceStream = this.takeAppearanceStreamFrom.appearanceStream
             }
         }
 
