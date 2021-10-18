@@ -428,7 +428,7 @@ export class BaseAnnotationObj implements BaseAnnotation {
             this.contents = Util.convertUnicodeToString(cryptoInterface.decrypt(annot_obj["/Contents"], this.object_id))
 
         if (annot_obj["/AP"])
-            this.appearanceStream = AppearanceStreamParser.parse(annot_obj["/AP"])
+            this.appearanceStream = AppearanceStreamParser.parse(this, annot_obj["/AP"])
     }
 }
 

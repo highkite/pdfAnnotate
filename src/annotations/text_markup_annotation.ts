@@ -129,7 +129,7 @@ export class UnderlineAnnotationObj extends TextMarkupAnnotationObj {
      * Creates a default appearance stream for the given annotation type and assigns it to the annotation
      * */
     public createDefaultAppearanceStream() {
-        this.appearanceStream = new DefaultUnderlineAppearanceStream(this.quadPoints)
+        this.appearanceStream = new DefaultUnderlineAppearanceStream(this, this.quadPoints)
     }
 }
 

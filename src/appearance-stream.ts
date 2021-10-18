@@ -1,4 +1,4 @@
-import { ReferencePointer } from './parser';
+import { ReferencePointer, Annotation } from './parser';
 import { WriterUtil } from './writer-util';
 import { Util } from './util';
 
@@ -21,7 +21,19 @@ export class AppStream implements AppearanceStream {
     R: XObject | OnOffAppearanceStream | ReferencePointer | undefined = undefined
     D: XObject | OnOffAppearanceStream | ReferencePointer | undefined = undefined
 
-    constructor() { }
+    annot: Annotation // Annotation the appearance stream belongs to
+
+    constructor(annot : Annotation) {
+        this.annot = annot
+    }
+
+    /**
+     * Lookups the N content stream. If it is only provided by a reference pointer it will parse
+     * the corresponding Xobject
+     * */
+    lookupNContentStream() {
+        console.log("Lookup N content stream")
+    }
 
     writeAppearanceStreamObj(ap : XObject | OnOffAppearanceStream | ReferencePointer) : number[] {
         let ret : number[] = []
@@ -106,16 +118,16 @@ export class XObjectObj implements XObject {
 }
 
 export class DefaultFreeTextAppearanceStream extends AppStream {
-    constructor() {
-        super()
+    constructor(annot: Annotation) {
+        super(annot)
 
         this.N = new XObjectObj()
     }
 }
 
 export class DefaultUnderlineAppearanceStream extends AppStream {
-    constructor(bBox : number[]) {
-        super()
+    constructor(annot: Annotation, bBox : number[]) {
+        super(annot)
 
         let xobj = new XObjectObj()
         this.N = xobj

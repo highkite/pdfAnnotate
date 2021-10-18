@@ -145,6 +145,6 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
      * Creates a default appearance stream for the given annotation type and assigns it to the annotation
      * */
     public createDefaultAppearanceStream() {
-        this.appearanceStream = new DefaultFreeTextAppearanceStream()
+        this.appearanceStream = new DefaultFreeTextAppearanceStream(this)
     }
 }

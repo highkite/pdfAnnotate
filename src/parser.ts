@@ -59,12 +59,12 @@ export class AppearanceStreamParser {
         }
     }
 
-    public static parse(to_parse : any) : AppStream {
+    public static parse(annot: Annotation, to_parse : any) : AppStream {
         if (!to_parse["/N"]) {
             throw Error("/N flag is required in appearance stream")
         }
 
-        let appStream : AppStream = new AppStream()
+        let appStream : AppStream = new AppStream(annot)
 
         appStream.N = AppearanceStreamParser.parseAppearanceStream("/N", to_parse)
 
@@ -295,7 +295,7 @@ export class __Annotation {
             this.inkList = annot_obj["/Inklist"]
 
         if (annot_obj["/AP"])
-            this.appearanceStream = AppearanceStreamParser.parse(annot_obj["/AP"])
+            this.appearanceStream = AppearanceStreamParser.parse(annot_obj, annot_obj["/AP"])
     }
 }
 
