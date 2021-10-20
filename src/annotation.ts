@@ -527,7 +527,7 @@ export class AnnotationFactory {
     }
 
     _getAnnotations(): Annotation[][] {
-        let existingAnnots = this.parser.extractAnnotations()
+        let existingAnnots = this.parser.extractAnnotations(this)
         for (let newAnnot of this.annotations) {
             existingAnnots[newAnnot.page].push(newAnnot)
         }

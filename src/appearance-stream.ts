@@ -1,6 +1,7 @@
 import { ReferencePointer, Annotation } from './parser';
 import { WriterUtil } from './writer-util';
 import { Util } from './util';
+import { Operator, ContentStream } from './content-stream';
 
 export interface Resources {
 }
@@ -32,7 +33,16 @@ export class AppStream implements AppearanceStream {
      * the corresponding Xobject
      * */
     lookupNContentStream() {
-        console.log("Lookup N content stream")
+        if (!this.N) {
+            console.warn("call lookupNContentStream without set content stream value")
+            return
+        } else if (Util.isReferencePointer(this.N)) {
+            this.N = this.annot.factory.parser.extractXObject(this.N as ReferencePointer)
+        } else if (this.N instanceof XObjectObj) {
+            return // already looked up
+        } else {
+            throw Error("Could not lookup N content stream")
+        }
     }
 
     writeAppearanceStreamObj(ap : XObject | OnOffAppearanceStream | ReferencePointer) : number[] {
@@ -107,12 +117,13 @@ export class XObjectObj implements XObject {
     name : string = "/ARM"
     matrix : number[] = [1, 0, 0, 1, 0, 0]
     formType : number = 1
-    contentStream : string[] = []
+    contentStream : ContentStream[] = []
+    resources : any = undefined
 
     // note that Type is /XObject instead of /Annot in annotation objects
     constructor() { }
 
-    public addOperator(operator : string) {
+    public addOperator(operator : Operator) {
         this.contentStream.push(operator)
     }
 }
@@ -133,9 +144,9 @@ export class DefaultUnderlineAppearanceStream extends AppStream {
         this.N = xobj
         xobj.bBox = bBox
 
-        xobj.addOperator("1 0 0 RG") // stroke color red
-        xobj.addOperator("2 w") // linewidth 2
-        xobj.addOperator(`${bBox[0]} ${bBox[1]} m`)
-        xobj.addOperator(`${bBox[2]} ${bBox[3]} l`)
+        //xobj.addOperator("1 0 0 RG") // stroke color red
+        //xobj.addOperator("2 w") // linewidth 2
+        //xobj.addOperator(`${bBox[0]} ${bBox[1]} m`)
+        //xobj.addOperator(`${bBox[2]} ${bBox[3]} l`)
     }
 }

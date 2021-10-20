@@ -42,7 +42,6 @@ export class ContentStreamParser {
     public static MARKED_CONTENT_END: string = "EMC"
 
     public static extract(data: Uint8Array) : ContentStream[] {
-        debugger;
         let ret_val : ContentStream[] = []
         let grouping_object : any[] = [ret_val]
 
@@ -115,9 +114,6 @@ export class XObjectParser {
     public static extract(data: Uint8Array, xref: XRef, objectLookupTable: ObjectLookupTable, cryptoInterface : CryptoInterface) : XObject {
         let res = ObjectUtil.extractObject(data, xref, objectLookupTable)
 
-        console.log(res)
-        console.log(Util.convertUnicodeToString(res.stream.data))
-
         if (res.value["/Type"] !== "/XObject" || res.value["/Subtype"] !== "/Form") {
             throw Error(`Xref {xref} is no valid XObject`)
         }
@@ -142,6 +138,7 @@ export class XObjectParser {
 
         // parse content stream
         if (res.stream && res.stream.data && res.stream.data.length > 0) {
+            ret_obj.contentStream = ContentStreamParser.extract(res.stream.data)
         }
 
         return ret_obj
