@@ -1,4 +1,5 @@
 import { Util, PDFVersion } from './util';
+import { AnnotationFactory } from './annotation';
 import { ObjectUtil } from './object-util';
 import { DocumentHistory, ObjectLookupTable, XRef } from './document-history';
 import { CryptoEngine, IdentityEngine, CryptoConfiguration, RC4CryptoEngine, RC4_40_BIT} from './crypto';
@@ -9,6 +10,7 @@ import { FreeTextAnnotationObj } from './annotations/freetext_annotation';
 import { SquareAnnotationObj, CircleAnnotationObj } from './annotations/circle_square_annotation';
 import { PolygonAnnotationObj, PolyLineAnnotationObj } from './annotations/polygon_polyline_annotation';
 import { InkAnnotationObj } from './annotations/ink_annotation';
+import { ContentStream, Operator, TextObject, MarkedContent } from './content-stream';
 import { AppearanceStream, AppStream, XObject, XObjectObj, OnOffAppearanceStream } from './appearance-stream';
 
 /**
@@ -28,6 +30,122 @@ export interface ReferencePointer {
     obj: number
     generation: number
     reused?: boolean | undefined
+}
+
+/**
+ * Parses the content stream of an XObject.
+ * */
+export class ContentStreamParser {
+    public static TEXT_OBJECT_START: string = "BT"
+    public static TEXT_OBJECT_END: string = "ET"
+    public static MARKED_CONTENT_START: string = "BMC"
+    public static MARKED_CONTENT_END: string = "EMC"
+
+    public static extract(data: Uint8Array) : ContentStream[] {
+        debugger;
+        let ret_val : ContentStream[] = []
+        let grouping_object : any[] = [ret_val]
+
+        let index = 0
+        let parameters : (number | string | ReferencePointer)[] = []
+        while( index < data.length) {
+            let word = Util.readNextWord(data, index)
+
+            let skipped_index = Util.skipSymbol(data, Util.SPACE, word.end_index + 1) // make it robust against traling spaces
+
+            if ((data[skipped_index] === Util.LF || data[skipped_index] === Util.COMMENT_START[0]) && word.result !== "") {
+                let op_name = Util.convertUnicodeToString(word.result)
+
+                if (op_name === ContentStreamParser.TEXT_OBJECT_START) {
+                    grouping_object.push([parameters])
+                } else if (op_name === ContentStreamParser.TEXT_OBJECT_END) {
+                    let new_ops = grouping_object.pop()
+                    let to = new TextObject()
+                    to.parameters = [...new_ops[0]]
+                    to.operators = new_ops.slice(1)
+                    grouping_object[grouping_object.length - 1].push(to)
+                } else if (op_name === ContentStreamParser.MARKED_CONTENT_START) {
+                    grouping_object.push([parameters])
+                } else if (op_name === ContentStreamParser.MARKED_CONTENT_END) {
+                    let new_ops = grouping_object.pop()
+                    let to = new MarkedContent()
+                    to.parameters = [...new_ops[0]]
+                    to.operators = new_ops.slice(1)
+                    grouping_object[grouping_object.length - 1].push(to)
+                } else {
+                    grouping_object[grouping_object.length - 1].push(new Operator(op_name, [...parameters]))
+                }
+
+                parameters = []
+                index = word.end_index + 1
+            } else {
+                if (!word.result) {
+                    index = word.end_index + 1
+                } else if (word.result[0] === Util.LITERAL_STRING_START[0]) {
+                    let res = Util.extractString(data, word.start_index)
+                    parameters.push(Util.convertUnicodeToString(res.result))
+                    index = res.end_index + 1
+                } else if (word.result[0] === Util.HEX_STRING_START[0]) {
+                    let res = Util.extractHexString(data, word.start_index)
+                    parameters.push(res.result)
+                    index = res.end_index + 1
+                } else if (word.result[0] === 47) {
+                    let res = Util.extractOptionValue(data, word.start_index)
+                    parameters.push("/" + res.result)
+                    index = res.end_index + 1
+                } else if (word.result[0] === Util.R[0]) {
+                    let ref_ptr = {obj: (parameters[parameters.length - 2] as number), generation: (parameters[parameters.length - 1] as number)}
+                    parameters = parameters.slice(0, parameters.length - 2)
+                    parameters.push(ref_ptr)
+                    index = word.end_index + 1
+                } else { // number
+                    let res = Util.extractNumber(data, word.start_index)
+                    parameters.push(res.result)
+                    index = res.end_index + 1
+                }
+            }
+
+        }
+
+        return ret_val
+    }
+}
+
+export class XObjectParser {
+    public static extract(data: Uint8Array, xref: XRef, objectLookupTable: ObjectLookupTable, cryptoInterface : CryptoInterface) : XObject {
+        let res = ObjectUtil.extractObject(data, xref, objectLookupTable)
+
+        console.log(res)
+        console.log(Util.convertUnicodeToString(res.stream.data))
+
+        if (res.value["/Type"] !== "/XObject" || res.value["/Subtype"] !== "/Form") {
+            throw Error(`Xref {xref} is no valid XObject`)
+        }
+
+        let ret_obj = new XObjectObj()
+
+
+        if (res.value["/Name"])
+            ret_obj.name = res.value["/Name"]
+
+        if (res.value["/Matrix"])
+            ret_obj.matrix = res.value["/Matrix"]
+
+        if (res.value["/FormType"])
+            ret_obj.formType = res.value["/FormType"]
+
+        if (res.value["/BBox"])
+            ret_obj.bBox = res.value["/BBox"]
+
+        if (res.value["/Resources"])
+            ret_obj.resources = res.value["/Resources"]
+
+        // parse content stream
+        if (res.stream && res.stream.data && res.stream.data.length > 0) {
+        }
+
+        return ret_obj
+    }
 }
 
 /**
@@ -91,7 +209,7 @@ export class AnnotationParser {
     /**
      * Extract the annotation object it also assigns the raw data, i.e., potentially unknown/ additional attributes
      * */
-    public static extract(data: Uint8Array, xref: XRef, page: Page, objectLookupTable: ObjectLookupTable, cryptoInterface : CryptoInterface) : Annotation {
+    public static extract(factory: AnnotationFactory, data: Uint8Array, xref: XRef, page: Page, objectLookupTable: ObjectLookupTable, cryptoInterface : CryptoInterface) : Annotation {
         let annot_obj = ObjectUtil.extractObject(data, xref, objectLookupTable)
 
         annot_obj = annot_obj.value
@@ -147,6 +265,8 @@ export class AnnotationParser {
                 ret_obj = new RawAnnotationObj()
                 ret_obj.extract(annot_obj, page, cryptoInterface)
         }
+
+        ret_obj.factory = factory;
 
         return ret_obj
     }
@@ -699,7 +819,7 @@ export class PDFDocumentParser {
     /**
      * Returns the annotations that exist in the document
      * */
-    extractAnnotations(): Annotation[][] {
+    extractAnnotations(factory: AnnotationFactory): Annotation[][] {
         let annots: Annotation[][] = []
         let pt: PageTree = this.getPageTree()
         let obj_table = this.documentHistory.createObjectLookupTable()
@@ -714,7 +834,7 @@ export class PDFDocumentParser {
             let pageAnnots: Annotation[] = []
 
             for (let refPtr of annotationReferences) {
-                let a = AnnotationParser.extract(this.data, obj_table[refPtr.obj], page, obj_table, this.cryptoInterface)
+                let a = AnnotationParser.extract(factory, this.data, obj_table[refPtr.obj], page, obj_table, this.cryptoInterface)
                 a.page = i
                 pageAnnots.push(a)
             }
@@ -722,6 +842,14 @@ export class PDFDocumentParser {
         }
 
         return annots
+    }
+
+    /**
+     * Extracts the XObject with the provided reference pointer
+     * */
+    extractXObject(p : ReferencePointer): XObject {
+        let obj_table = this.documentHistory.createObjectLookupTable()
+        return XObjectParser.extract(this.data, obj_table[p.obj], obj_table, this.cryptoInterface)
     }
 
 }

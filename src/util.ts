@@ -27,6 +27,7 @@ export interface PDFVersion {
 export class Util {
 
     public static VERSION: number[] = [37, 80, 68, 70, 45] // %PDF-
+    public static COMMENT_START: number[] = [37] // '%'
     public static NULL: number[] = [110, 117, 108, 108] // null
     public static DOT: number = 46
     public static CR: number = 13
@@ -126,6 +127,15 @@ export class Util {
      * */
     public static skipSpaces(data: Uint8Array | number[], index: number = 0): number {
         while (index < data.length && (data[index] === 10 || data[index] === 9 || data[index] === 13 || data[index] === 32))++index
+
+        return index
+    }
+
+    /**
+     * Skips the symbol specified by _symbol
+     * */
+    public static skipSymbol(data: Uint8Array | number[], _symbol: number, index: number = 0): number {
+        while (index < data.length && (data[index] === _symbol))++index
 
         return index
     }
