@@ -207,7 +207,7 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * options : dictionary containing additional configuration values, see documentation
      * */
-    createTextAnnotation(...values : any[]) {
+    createTextAnnotation(...values : any[]) : TextAnnotationObj {
         let params = ParameterParser.parseParameters(values)
 
         let annot : TextAnnotationObj = new TextAnnotationObj()
@@ -217,6 +217,8 @@ export class AnnotationFactory {
         annot.validate()
 
         this.annotations.push(annot)
+
+        return annot
     }
 
     /**
@@ -228,7 +230,7 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * quadPoints : regions to mark with the highlight
      * */
-    createHighlightAnnotation(...values : any[]) {
+    createHighlightAnnotation(...values : any[]) : HighlightAnnotationObj {
         let params = ParameterParser.parseParameters(values)
 
         let annot : HighlightAnnotationObj = new HighlightAnnotationObj()
@@ -238,6 +240,8 @@ export class AnnotationFactory {
         annot.validate()
 
         this.annotations.push(annot)
+
+        return annot
     }
 
     /**
@@ -272,7 +276,7 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * quadPoints : regions to mark with the highlight
      * */
-    createSquigglyAnnotation(...values : any[]) {
+    createSquigglyAnnotation(...values : any[]) : SquigglyAnnotationObj {
         let params = ParameterParser.parseParameters(values)
 
         let annot : SquigglyAnnotationObj = new SquigglyAnnotationObj()
@@ -282,6 +286,8 @@ export class AnnotationFactory {
         annot.validate()
 
         this.annotations.push(annot)
+
+        return annot
     }
 
     /**
@@ -293,7 +299,7 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * quadPoints : regions to mark with the highlight
      * */
-    createStrikeOutAnnotation(...values : any[]) {
+    createStrikeOutAnnotation(...values : any[]) : StrikeOutAnnotationObj {
         let params = ParameterParser.parseParameters(values)
 
         let annot : StrikeOutAnnotationObj = new StrikeOutAnnotationObj()
@@ -303,6 +309,8 @@ export class AnnotationFactory {
         annot.validate()
 
         this.annotations.push(annot)
+
+        return annot
     }
 
     /**
@@ -341,7 +349,7 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createSquareAnnotation(...values : any[]) {
+    createSquareAnnotation(...values : any[]) : SquareAnnotationObj {
         let params = ParameterParser.parseParameters(values)
 
         let annot : SquareAnnotationObj = new SquareAnnotationObj()
@@ -351,6 +359,8 @@ export class AnnotationFactory {
         annot.validate()
 
         this.annotations.push(annot)
+
+        return annot
     }
 
     /**
@@ -362,7 +372,7 @@ export class AnnotationFactory {
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * fill : the filling color of  the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createCircleAnnotation(...values : any[]) {
+    createCircleAnnotation(...values : any[]) : CircleAnnotationObj {
         let params = ParameterParser.parseParameters(values)
 
         let annot : CircleAnnotationObj = new CircleAnnotationObj()
@@ -372,6 +382,8 @@ export class AnnotationFactory {
         annot.validate()
 
         this.annotations.push(annot)
+
+        return annot
     }
 
     /**
@@ -383,7 +395,7 @@ export class AnnotationFactory {
      * vertices : the vertices defining the arrangement of the object
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createPolygonAnnotation(...values : any[]) {
+    createPolygonAnnotation(...values : any[]) : PolygonAnnotationObj {
         let params = ParameterParser.parseParameters(values)
 
         let annot : PolygonAnnotationObj = new PolygonAnnotationObj()
@@ -393,6 +405,8 @@ export class AnnotationFactory {
         annot.validate()
 
         this.annotations.push(annot)
+
+        return annot
     }
 
 
@@ -405,7 +419,7 @@ export class AnnotationFactory {
      * vertices : the vertices defining the arrangement of the object
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createPolyLineAnnotation(...values : any[]) {
+    createPolyLineAnnotation(...values : any[]) : PolyLineAnnotationObj {
         let params = ParameterParser.parseParameters(values)
 
         let annot : PolyLineAnnotationObj = new PolyLineAnnotationObj()
@@ -415,6 +429,8 @@ export class AnnotationFactory {
         annot.validate()
 
         this.annotations.push(annot)
+
+        return annot
     }
 
     /**
@@ -426,7 +442,7 @@ export class AnnotationFactory {
      * inkList : a list of list containing the points for drawing the lines
      * color : the color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1
      * */
-    createInkAnnotation(...values : any[]) {
+    createInkAnnotation(...values : any[]) : InkAnnotationObj {
         let params = ParameterParser.parseParameters(values)
 
         let annot : InkAnnotationObj = new InkAnnotationObj()
@@ -436,6 +452,8 @@ export class AnnotationFactory {
         annot.validate()
 
         this.annotations.push(annot)
+
+        return annot
     }
 
     /**
