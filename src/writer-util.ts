@@ -1,5 +1,6 @@
-import { Page, ReferencePointer } from './parser'
-import { Util } from './util'
+import { Page, ReferencePointer } from './parser';
+import { Util } from './util';
+import { Stream }  from './stream';
 
 export class WriterUtil {
     public static N: number = 110
@@ -42,6 +43,11 @@ export class WriterUtil {
     public static PAGE_REFERENCE: number[] = [47, 80] // = '/P'
     public static DEFAULT_APPEARANCE: number[] = [47, 68, 65] // = '/DA'
     public static INKLIST: number[] = [47, 73, 110, 107, 76, 105, 115, 116] // = '/InkList'
+    public static FILTER: number[] = [47, 70, 105, 108, 116, 101, 114] // = '/Filter'
+    public static FLATEDECODE: number[] = [47, 70, 108, 97, 116, 101, 68, 101, 99, 111, 100, 101] // = '/FlateDecode'
+    public static LENGTH: number[] = [47, 76, 101, 110, 103, 116, 104] // = '/Length'
+    public static STREAM: number[] = [115, 116, 114, 101, 97, 109] // = 'stream'
+    public static ENDSTREAM: number[] = [101, 110, 100, 115, 116, 114, 101, 97, 109] // = 'endstream'
 
     public static RC: number[] = [47, 82, 67] // = '/RC'
     public static CREATION_DATE: number[] = [47, 67, 114, 101, 97, 116, 105, 111, 110, 68, 97, 116, 101] // = '/CreationDate'
@@ -184,6 +190,49 @@ export class WriterUtil {
 
         ret.push(Util.CR)
         ret.push(Util.LF)
+
+        return ret
+    }
+
+    /**
+     * Writes the given object as stream object. Handels all the necessary stuff
+     * object_id: The reference pointer id and generation
+     * dict: dictionary fields that must be added to the stream object. Must be already encoded in bytes
+     * stream: The stream content
+     * */
+    public static writeStreamObject(object_id : ReferencePointer, dict : number[], stream : Stream) : number[] {
+        let ret: number[] = WriterUtil.writeReferencePointer(object_id)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.OBJ)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
+        ret = ret.concat(WriterUtil.DICT_START)
+
+        ret = ret.concat(WriterUtil.FILTER)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.FLATEDECODE)
+        ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(WriterUtil.LENGTH)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(Util.convertNumberToCharArray(stream.getLength()))
+        ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(dict)
+        ret = ret.concat(WriterUtil.DICT_END)
+        ret = ret.concat(WriterUtil.STREAM)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
+
+        ret = ret.concat(Array.from(stream.getData()))
+
+        ret = ret.concat(WriterUtil.ENDSTREAM)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
+
+        ret = ret.concat(WriterUtil.ENDOBJ)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
 
         return ret
     }

@@ -251,7 +251,7 @@ export class Writer {
      * Writes the crossite reference table
      * */
     writeCrossSiteReferenceTable(): number[] {
-        let ret: number[] = WriterUtil.XREF
+        let ret: number[] = [...WriterUtil.XREF]
         ret.push(WriterUtil.CR)
         ret.push(WriterUtil.LF)
 
@@ -297,7 +297,7 @@ export class Writer {
      * Writes the trailer
      * */
     writeTrailer(posXref: number): number[] {
-        let ret: number[] = WriterUtil.TRAILER
+        let ret: number[] = [...WriterUtil.TRAILER]
         ret.push(WriterUtil.CR)
         ret.push(WriterUtil.LF)
 

@@ -225,7 +225,8 @@ export class BaseAnnotationObj implements BaseAnnotation {
     }
 
     public writeAnnotationPostamble() : number[] {
-        let ret : number[] = WriterUtil.DICT_END
+        debugger;
+        let ret : number[] = [...WriterUtil.DICT_END]
         ret.push(WriterUtil.CR)
         ret.push(WriterUtil.LF)
 
