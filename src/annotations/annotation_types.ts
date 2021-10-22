@@ -152,9 +152,12 @@ export class BaseAnnotationObj implements BaseAnnotation {
         ret.push(WriterUtil.SPACE)
 
         if (this.appearanceStream) {
+            if (!this.appearanceStream.object_id) {
+                throw Error("AppearanceStream has no set object id")
+            }
             ret = ret.concat(WriterUtil.AP)
             ret.push(WriterUtil.SPACE)
-            ret = ret.concat(this.appearanceStream.writeAppearanceStream())
+            ret = ret.concat(WriterUtil.writeReferencePointer(this.appearanceStream.object_id!, true))
             ret.push(WriterUtil.SPACE)
         }
 

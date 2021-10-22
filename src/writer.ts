@@ -5,6 +5,7 @@ import { AnnotationState, AnnotationStateModel, AnnotationIcon, TextAnnotationOb
 import { Color, MarkupAnnotationObj } from './annotations/annotation_types';
 import { XRef } from './document-history'
 import { WriterUtil } from './writer-util'
+import { AppStream } from './appearance-stream';
 
 /**
  * Creats the byte array that must be attached to the end of the document
@@ -150,6 +151,10 @@ export class Writer {
         return { ptr: refArray_id, data: ret, pageReference: page.object_id, pageData: page_data }
     }
 
+    writeAppearanceStream(appstream: AppStream): { ptr: ReferencePointer, data: number[] } {
+        let ret : number[] = appstream.writeAppearanceStream()
+        return { ptr: appstream.object_id!, data: ret }
+    }
 
     /**
      * Writes an annotation object
@@ -418,6 +423,23 @@ export class Writer {
 
             // writes the actual annotation object
             for (let annot of pageAnnots) {
+                // write appearance stream object
+                if (annot.appearanceStream && annot.appearanceStream.new_object) {
+                    let appStream = this.writeAppearanceStream(annot.appearanceStream)
+
+                    this.xrefs.push({
+                        id: appStream.ptr.obj,
+                        pointer: ptr,
+                        generation: appStream.ptr.generation,
+                        free: false,
+                        update: true
+                    })
+
+                    new_data = new_data.concat(appStream.data)
+                    ptr += appStream.data.length
+                }
+
+
                 let annot_obj = this.writeAnnotationObject(annot)
                 this.xrefs.push({
                     id: annot_obj.ptr.obj,

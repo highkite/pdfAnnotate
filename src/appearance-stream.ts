@@ -18,6 +18,8 @@ export interface AppearanceStream {
 }
 
 export class AppStream implements AppearanceStream {
+    object_id: ReferencePointer | undefined = undefined
+    new_object: boolean = false // indicates to the factory that this object must be created when writing the document
     N: XObject | OnOffAppearanceStream | ReferencePointer | undefined = undefined
     R: XObject | OnOffAppearanceStream | ReferencePointer | undefined = undefined
     D: XObject | OnOffAppearanceStream | ReferencePointer | undefined = undefined
@@ -45,11 +47,19 @@ export class AppStream implements AppearanceStream {
         }
     }
 
-    writeAppearanceStreamObj(ap : XObject | OnOffAppearanceStream | ReferencePointer) : number[] {
+    /**
+     * Helper writer function of the references. Resolves different types
+     * */
+    private writeAppearanceStreamObj(ap : XObject | OnOffAppearanceStream | ReferencePointer) : number[] {
         let ret : number[] = []
 
         if (Util.isReferencePointer(ap)) {
             ret = ret.concat(WriterUtil.writeReferencePointer(ap as ReferencePointer, true))
+        } else if (ap instanceof XObjectObj) {
+            if (!(ap as XObjectObj).object_id) {
+                throw Error("No object id specified in XObject")
+            }
+            ret = ret.concat(WriterUtil.writeReferencePointer((ap as XObjectObj).object_id!, true))
         } else {
             throw Error("Invalid appearance stream object")
         }
@@ -58,11 +68,14 @@ export class AppStream implements AppearanceStream {
     }
 
     /**
-     * Writes the appearance stream
+     * Writes the appearance stream object
      * */
     writeAppearanceStream() : number[] {
-        let ret : number[] = []
-
+        let ret: number[] = WriterUtil.writeReferencePointer(this.object_id!)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.OBJ)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
         ret = ret.concat(WriterUtil.DICT_START)
 
         if (this.N) {
@@ -87,6 +100,16 @@ export class AppStream implements AppearanceStream {
         }
 
         ret = ret.concat(WriterUtil.DICT_END)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
+
+        ret = ret.concat(WriterUtil.ENDOBJ)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
+
+        if (this.N && (this.N instanceof XObjectObj) && this.N.new_object) {
+            ret = ret.concat(this.N.writeXObject())
+        }
 
         return ret
     }
@@ -111,6 +134,8 @@ export interface XObject {
 }
 
 export class XObjectObj implements XObject {
+    object_id: ReferencePointer | undefined = undefined
+    new_object: boolean = false // indicates to the factory that this object must be created when writing the document
     type: string = "/Form"
     type_encoded: number[] = [47, 70, 111, 114, 109] // = '/Form'
     bBox : number[] = []
@@ -123,8 +148,12 @@ export class XObjectObj implements XObject {
     // note that Type is /XObject instead of /Annot in annotation objects
     constructor() { }
 
-    public addOperator(operator : Operator) {
-        this.contentStream.push(operator)
+    public addOperator(operator : string, parameters: any[] = []) {
+        this.contentStream.push(new Operator(operator, parameters))
+    }
+
+    public writeXObject() : number[] {
+        return []
     }
 }
 

@@ -3,6 +3,7 @@ import { CryptoInterface } from '../parser';
 import { ErrorList, InvalidAnnotationTypeError, InvalidStateError } from './annotation_errors';
 import { WriterUtil } from '../writer-util';
 import { Util } from '../util'
+import { AppStream, XObjectObj } from '../appearance-stream';
 
 export enum AnnotationIcon {
     Comment, Key, Note, Help, NewParagraph, Paragraph, Insert
@@ -35,6 +36,27 @@ export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnota
         this.type_encoded = [47, 84, 101, 120, 116] // = '/Text'
         // demanded by PDF specification (p. 394 - 12.5.6.4 Text Annotations)
         this.annotationFlags = {noZoom: true, noRotate: true}
+    }
+
+    public createDefaultAppearanceStream() {
+        this.appearanceStream = new AppStream(this)
+        this.appearanceStream.object_id = this.factory.parser.getFreeObjectId()
+        this.appearanceStream.new_object = true
+        let xobj = new XObjectObj()
+        xobj.object_id = this.factory.parser.getFreeObjectId()
+        xobj.new_object = true
+        xobj.addOperator("BMC", ["/Tx"])
+        xobj.addOperator("q")
+        xobj.addOperator("cm", [1, 0, 0, 1, 0, 0])
+        xobj.addOperator("rg", [0, 0, 0])
+        xobj.addOperator("BT")
+        xobj.addOperator("Tm", [1, 0, 0, 1, 0, 0])
+        xobj.addOperator("Tf", ["/F1", 18])
+        xobj.addOperator("Tj", [`{this.richtextString}`])
+        xobj.addOperator("ET")
+        xobj.addOperator("Q")
+        xobj.addOperator("EMC")
+        this.appearanceStream.N = xobj
     }
 
     convertAnnotationIcon(icon : AnnotationIcon) : number[] {
