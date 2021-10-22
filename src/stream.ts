@@ -108,7 +108,7 @@ export class FlateStream extends Stream {
                     case 0: // no encoding
                         unfiltered_data.push(data[i])
                         break
-                    case 1: // Sub fitler -- the difference of the current pixel and the pxiel before
+                    case 1: // Sub filter -- the difference of the current pixel and the pxiel before
                         // add the left already decoded pixel and 0 at the start of a row
                         left_value = ((i % total_columns) - 2 < 0) ? 0 : unfiltered_data[((i - 2) % decodeParameters.columns) + Math.floor(i / total_columns) * (decodeParameters.columns - 1)]
                         unfiltered_data.push((data[i] + left_value) % 256)
@@ -125,7 +125,7 @@ export class FlateStream extends Stream {
                         left_value = ((i % total_columns) - 2 < 0) ? 0 : unfiltered_data[((i - 2) % decodeParameters.columns) + Math.floor(i / total_columns) * (decodeParameters.columns - 1)]
                         unfiltered_data.push((data[i] + Math.floor((upper_value + left_value) / 2)) % 256)
                         break
-                    case 4: // Paeth -- uses three neighbouring bytes (left, upper and upper left) to compute a linear function
+                    case 4: // Path -- uses three neighbouring bytes (left, upper and upper left) to compute a linear function
                         index_upper_value = i - (total_columns + Math.floor(i / total_columns))
                         upper_value = (index_upper_value < 0) ? 0 : unfiltered_data[index_upper_value]
                         left_value = ((i % total_columns) - 2 < 0) ? 0 : unfiltered_data[((i - 2) % decodeParameters.columns) + Math.floor(i / total_columns) * (decodeParameters.columns - 1)]
@@ -140,7 +140,7 @@ export class FlateStream extends Stream {
     }
 
     /**
-     * Computes the path predictor of the given byets
+     * Computes the path predictor of the given bytes
      * */
     private paethPredictor(left_byte: number, upper_byte: number, upper_left_byte: number): number {
         let p = left_byte + upper_byte - upper_left_byte
