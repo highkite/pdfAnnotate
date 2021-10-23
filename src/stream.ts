@@ -3,9 +3,10 @@ import { ObjectUtil } from './object-util';
 import { XRef } from './document-history';
 import * as Pako from 'pako'
 
-export interface DecodeParameters {
+export interface FilterParameters {
     predictor: number
     columns: number
+    encoding?: number | undefined
 }
 
 export class Stream {
@@ -14,6 +15,13 @@ export class Stream {
 
     getData(): Uint8Array {
         return this.data
+    }
+
+    /**
+     * Returns the data encoded
+     * */
+    encode(): Uint8Array {
+        throw Error("abstract method")
     }
 
     getLength(): number {
@@ -65,7 +73,7 @@ export class Stream {
 }
 
 export class FlateStream extends Stream {
-    constructor(protected data: Uint8Array, private decodeParameters: DecodeParameters | undefined = undefined) {
+    constructor(protected data: Uint8Array, private decodeParameters: FilterParameters | undefined = undefined) {
         super(data)
 
         if (this.data.length > 0) {
@@ -77,9 +85,16 @@ export class FlateStream extends Stream {
         }
     }
 
-    private applyFilter(data: Uint8Array, decodeParameters: DecodeParameters): Uint8Array {
+    /**
+     * Returns the data encoded
+     * */
+    encode(): Uint8Array {
+        return new Uint8Array()
+    }
+
+    private applyFilter(data: Uint8Array, decodeParameters: FilterParameters): Uint8Array {
         if (decodeParameters.predictor >= 10) {
-            return this.applyPNGFilter(data, decodeParameters)
+            return this.decodePNGFilter(data, decodeParameters)
         } else if (decodeParameters.predictor === 2) {
             throw Error("Unsupported filter -- file feature request")
         }
@@ -87,7 +102,72 @@ export class FlateStream extends Stream {
         return data
     }
 
-    public applyPNGFilter(data: Uint8Array, decodeParameters: DecodeParameters): Uint8Array {
+    /**
+     * Applies PNG filter for encoding the data stream
+     * */
+    public encodePNGFilter(data: Uint8Array, decodeParameters: FilterParameters): Uint8Array {
+        if (data.length % (decodeParameters.columns) !== 0)
+            throw Error("Invalid decode parameters")
+
+        if ((typeof decodeParameters.encoding == 'undefined') || decodeParameters.encoding < 0 || decodeParameters.encoding > 4)
+            throw Error("Invalid PNG filter encoding")
+
+        let total_columns = decodeParameters.columns
+
+        let encoded_data: number[] = []
+
+        debugger;
+
+        let encoding: number = 0
+        let offset: number = 0
+        let index_upper_value: number = 0
+        let upper_value: number = 0
+        let left_value: number = 0
+        let left_upper_value: number = 0
+        for (let i = 0; i < data.length; ++i) {
+            if (i % total_columns === 0) {
+                encoded_data.push(decodeParameters.encoding)
+            }
+
+            switch(decodeParameters.encoding) {
+                case 0:
+                    encoded_data.push(data[i])
+                    break
+                case 1:
+                    offset = Math.floor(i / total_columns) * total_columns
+                    encoded_data.push(((i % total_columns) === 0) ? data[(i % total_columns) + offset] : (data[(i % total_columns) + offset] - data[(i % total_columns) + offset - 1]) % 256)
+                    break
+                case 2:
+                    index_upper_value = i - total_columns
+                    upper_value = (index_upper_value < 0) ? 0 : data[index_upper_value]
+                    encoded_data.push((data[i] - upper_value) % 256)
+                    break
+                case 3:
+                    index_upper_value = i - total_columns
+                    upper_value = (index_upper_value < 0) ? 0 : data[index_upper_value]
+                    left_value = ((i % total_columns) - 1 < 0) ? 0 : data[i - 1]
+                    encoded_data.push((data[i] - Math.floor((upper_value + left_value) / 2)) % 256)
+                    break
+                case 4: // Paeth -- uses three neighbouring bytes (left, upper and upper left) to compute a linear function
+                    index_upper_value = i - total_columns
+                    upper_value = (index_upper_value < 0) ? 0 : data[index_upper_value]
+                    left_value = ((i % total_columns) - 1 < 0) ? 0 : data[i - 1]
+                    left_upper_value = (index_upper_value - 1 < 0) ? 0 : data[index_upper_value - 1]
+                    encoded_data.push((data[i] - this.paethPredictor(left_value, upper_value, left_upper_value)) % 256)
+                    break
+                default:
+                    throw Error("Invalid PNG filter encoding")
+
+            }
+        }
+
+        return new Uint8Array(encoded_data)
+    }
+
+    /**
+     * Applies PNG Filter for decoding the data stream
+     * */
+    public decodePNGFilter(data: Uint8Array, decodeParameters: FilterParameters): Uint8Array {
         if (data.length % (decodeParameters.columns + 1) !== 0)
             throw Error("Invalid decode parameters")
 
@@ -108,7 +188,7 @@ export class FlateStream extends Stream {
                     case 0: // no encoding
                         unfiltered_data.push(data[i])
                         break
-                    case 1: // Sub filter -- the difference of the current pixel and the pxiel before
+                    case 1: // Sub filter -- the difference of the current pixel and the pixel before
                         // add the left already decoded pixel and 0 at the start of a row
                         left_value = ((i % total_columns) - 2 < 0) ? 0 : unfiltered_data[((i - 2) % decodeParameters.columns) + Math.floor(i / total_columns) * (decodeParameters.columns - 1)]
                         unfiltered_data.push((data[i] + left_value) % 256)
@@ -120,12 +200,11 @@ export class FlateStream extends Stream {
                         break
                     case 3: // Average filter -- considers the average of the upper and the left pixel
                         index_upper_value = i - (total_columns + Math.floor(i / total_columns))
-                        index_upper_value = i - (total_columns + Math.floor(i / total_columns))
                         upper_value = (index_upper_value < 0) ? 0 : unfiltered_data[index_upper_value]
                         left_value = ((i % total_columns) - 2 < 0) ? 0 : unfiltered_data[((i - 2) % decodeParameters.columns) + Math.floor(i / total_columns) * (decodeParameters.columns - 1)]
                         unfiltered_data.push((data[i] + Math.floor((upper_value + left_value) / 2)) % 256)
                         break
-                    case 4: // Path -- uses three neighbouring bytes (left, upper and upper left) to compute a linear function
+                    case 4: // Paeth -- uses three neighbouring bytes (left, upper and upper left) to compute a linear function
                         index_upper_value = i - (total_columns + Math.floor(i / total_columns))
                         upper_value = (index_upper_value < 0) ? 0 : unfiltered_data[index_upper_value]
                         left_value = ((i % total_columns) - 2 < 0) ? 0 : unfiltered_data[((i - 2) % decodeParameters.columns) + Math.floor(i / total_columns) * (decodeParameters.columns - 1)]

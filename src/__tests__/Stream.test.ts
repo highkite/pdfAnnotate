@@ -40,7 +40,7 @@ test('testPNGFilter_None', () => {
 
     let decodeParameters = { predictor: 12, columns: 5 }
     let flt = new FlateStream(new Uint8Array())
-    expect(flt.applyPNGFilter(source, decodeParameters)).toEqual(target)
+    expect(flt.decodePNGFilter(source, decodeParameters)).toEqual(target)
 })
 
 test('testPNGFilter_Sub', () => {
@@ -55,7 +55,7 @@ test('testPNGFilter_Sub', () => {
 
     let decodeParameters = { predictor: 12, columns: 5 }
     let flt = new FlateStream(new Uint8Array())
-    expect(flt.applyPNGFilter(source, decodeParameters)).toEqual(target)
+    expect(flt.decodePNGFilter(source, decodeParameters)).toEqual(target)
 })
 
 test('testPNGFilter_Up', () => {
@@ -70,7 +70,7 @@ test('testPNGFilter_Up', () => {
 
     let decodeParameters = { predictor: 12, columns: 5 }
     let flt = new FlateStream(new Uint8Array())
-    expect(flt.applyPNGFilter(source, decodeParameters)).toEqual(target)
+    expect(flt.decodePNGFilter(source, decodeParameters)).toEqual(target)
 })
 
 test('testPNGFilter_Avg', () => {
@@ -85,7 +85,7 @@ test('testPNGFilter_Avg', () => {
 
     let decodeParameters = { predictor: 12, columns: 5 }
     let flt = new FlateStream(new Uint8Array())
-    expect(flt.applyPNGFilter(source, decodeParameters)).toEqual(target)
+    expect(flt.decodePNGFilter(source, decodeParameters)).toEqual(target)
 })
 
 test('testPNGFilter_Paeth', () => {
@@ -100,5 +100,81 @@ test('testPNGFilter_Paeth', () => {
 
     let decodeParameters = { predictor: 12, columns: 5 }
     let flt = new FlateStream(new Uint8Array())
-    expect(flt.applyPNGFilter(source, decodeParameters)).toEqual(target)
+    expect(flt.decodePNGFilter(source, decodeParameters)).toEqual(target)
+})
+
+
+test('testPNGFilter_None_encode', () => {
+    let source = new Uint8Array(
+        [52, 55, 61, 66, 70,
+            63, 59, 55, 90, 109]
+    )
+    let target = new Uint8Array(
+        [0, 52, 55, 61, 66, 70,
+            0, 63, 59, 55, 90, 109]
+    )
+
+    let decodeParameters = { predictor: 12, columns: 5, encoding: 0 }
+    let flt = new FlateStream(new Uint8Array())
+    expect(flt.encodePNGFilter(source, decodeParameters)).toEqual(target)
+})
+
+test('testPNGFilter_Sub_encode', () => {
+    let source = new Uint8Array(
+        [52, 55, 61, 66, 70,
+            63, 59, 55, 90, 109]
+    )
+    let target = new Uint8Array(
+        [1, 52, 3, 6, 5, 4,
+            1, 63, -4, -4, 35, 19]
+    )
+
+    let decodeParameters = { predictor: 12, columns: 5, encoding: 1 }
+    let flt = new FlateStream(new Uint8Array())
+    expect(flt.encodePNGFilter(source, decodeParameters)).toEqual(target)
+})
+
+test('testPNGFilter_Up_encode', () => {
+    let source = new Uint8Array(
+        [52, 55, 61, 66, 70,
+            63, 59, 55, 90, 109]
+    )
+    let target = new Uint8Array(
+        [2, 52, 55, 61, 66, 70,
+            2, 11, 4, -6, 24, 39]
+    )
+
+    let decodeParameters = { predictor: 12, columns: 5, encoding: 2 }
+    let flt = new FlateStream(new Uint8Array())
+    expect(flt.encodePNGFilter(source, decodeParameters)).toEqual(target)
+})
+
+test('testPNGFilter_Avg_encode', () => {
+    let source = new Uint8Array(
+        [52, 55, 61, 66, 70,
+            63, 59, 55, 90, 109]
+    )
+    let target = new Uint8Array(
+        [3, 52, 29, 34, 36, 37,
+            3, 37, 0, -5, 30, 29]
+    )
+
+    let decodeParameters = { predictor: 12, columns: 5, encoding: 3 }
+    let flt = new FlateStream(new Uint8Array())
+    expect(flt.encodePNGFilter(source, decodeParameters)).toEqual(target)
+})
+
+test('testPNGFilter_Paeth_encode', () => {
+    let source = new Uint8Array(
+        [52, 55, 61, 66, 70,
+            63, 59, 55, 90, 109]
+    )
+    let target = new Uint8Array(
+        [4, 52, 3, 6, 5, 4,
+            4, 11, -4, -6, 29, 19]
+    )
+
+    let decodeParameters = { predictor: 12, columns: 5, encoding: 4 }
+    let flt = new FlateStream(new Uint8Array())
+    expect(flt.encodePNGFilter(source, decodeParameters)).toEqual(target)
 })
