@@ -24,8 +24,10 @@ export class WriterUtil {
     public static HEX_STRING_END: number[] = [62]
     public static DICT_END: number[] = [62, 62]
     public static TYPE_ANNOT: number[] = [47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 65, 110, 110, 111, 116]
+    public static TYPE_XOBJECT: number[] = [47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 88, 98, 106, 101, 99, 116]
     public static RECT: number[] = [47, 82, 101, 99, 116]
     public static SUBTYPE: number[] = [47, 83, 117, 98, 116, 121, 112, 101]
+    public static FORM: number[] = [47, 70, 111, 114, 109] // = '/Form'
     public static UPDATE_DATE: number[] = [47, 77] // = '/M'
     public static AUTHOR: number[] = [47, 84] // = '/T'
     public static CONTENTS: number[] = [47, 67, 111, 110, 116, 101, 110, 116, 115] // = '/Contents'
@@ -48,6 +50,9 @@ export class WriterUtil {
     public static LENGTH: number[] = [47, 76, 101, 110, 103, 116, 104] // = '/Length'
     public static STREAM: number[] = [115, 116, 114, 101, 97, 109] // = 'stream'
     public static ENDSTREAM: number[] = [101, 110, 100, 115, 116, 114, 101, 97, 109] // = 'endstream'
+    public static FORMTYPE: number[] = [47, 70, 111, 114, 109, 84, 121, 112, 101] // = '/FormType'
+    public static MATRIX: number[] = [47, 77, 97, 116, 114, 105, 120] // = '/Matrix'
+    public static BBOX: number[] = [47, 66, 66, 111, 120] // = '/BBox'
 
     public static RC: number[] = [47, 82, 67] // = '/RC'
     public static CREATION_DATE: number[] = [47, 67, 114, 101, 97, 116, 105, 111, 110, 68, 97, 116, 101] // = '/CreationDate'
@@ -120,7 +125,7 @@ export class WriterUtil {
      * Writes a nested number array
      * */
     public static writeNestedNumberArray(array: number[][]): number[] {
-        let ret: number[] = Util.ARRAY_START
+        let ret: number[] = [...Util.ARRAY_START]
 
         for (let subArray of array) {
             ret = ret.concat(WriterUtil.writeNumberArray(subArray))
@@ -135,7 +140,7 @@ export class WriterUtil {
      * Writes a javascript number array to a PDF number array
      * */
     public static writeNumberArray(array: number[]): number[] {
-        let ret: number[] = Util.ARRAY_START
+        let ret: number[] = [...Util.ARRAY_START]
 
         for (let i of array) {
             ret = ret.concat(Util.convertNumberToCharArray(i))
@@ -201,12 +206,14 @@ export class WriterUtil {
      * stream: The stream content
      * */
     public static writeStreamObject(object_id : ReferencePointer, dict : number[], stream : Stream) : number[] {
+        let streamData = stream.encode()
         let ret: number[] = WriterUtil.writeReferencePointer(object_id)
         ret.push(WriterUtil.SPACE)
         ret = ret.concat(WriterUtil.OBJ)
         ret.push(WriterUtil.CR)
         ret.push(WriterUtil.LF)
         ret = ret.concat(WriterUtil.DICT_START)
+        ret.push(WriterUtil.SPACE)
 
         ret = ret.concat(WriterUtil.FILTER)
         ret.push(WriterUtil.SPACE)
@@ -215,7 +222,7 @@ export class WriterUtil {
 
         ret = ret.concat(WriterUtil.LENGTH)
         ret.push(WriterUtil.SPACE)
-        ret = ret.concat(Util.convertNumberToCharArray(stream.getLength()))
+        ret = ret.concat(Util.convertNumberToCharArray(streamData.length))
         ret.push(WriterUtil.SPACE)
 
         ret = ret.concat(dict)
@@ -224,7 +231,7 @@ export class WriterUtil {
         ret.push(WriterUtil.CR)
         ret.push(WriterUtil.LF)
 
-        ret = ret.concat(Array.from(stream.getData()))
+        ret = ret.concat(Array.from(streamData))
 
         ret = ret.concat(WriterUtil.ENDSTREAM)
         ret.push(WriterUtil.CR)

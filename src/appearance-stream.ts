@@ -2,6 +2,7 @@ import { ReferencePointer, Annotation } from './parser';
 import { WriterUtil } from './writer-util';
 import { Util } from './util';
 import { Operator, ContentStream } from './content-stream';
+import { FlateStream } from './stream';
 
 export interface Resources {
 }
@@ -107,10 +108,6 @@ export class AppStream implements AppearanceStream {
         ret.push(WriterUtil.CR)
         ret.push(WriterUtil.LF)
 
-        if (this.N && (this.N instanceof XObjectObj) && this.N.new_object) {
-            ret = ret.concat(this.N.writeXObject())
-        }
-
         return ret
     }
 }
@@ -137,7 +134,7 @@ export class XObjectObj implements XObject {
     object_id: ReferencePointer | undefined = undefined
     new_object: boolean = false // indicates to the factory that this object must be created when writing the document
     type: string = "/Form"
-    type_encoded: number[] = [47, 70, 111, 114, 109] // = '/Form'
+    type_encoded: number[] = WriterUtil.SUBTYPE // = '/Form'
     bBox : number[] = []
     name : string = "/ARM"
     matrix : number[] = [1, 0, 0, 1, 0, 0]
@@ -153,7 +150,46 @@ export class XObjectObj implements XObject {
     }
 
     public writeXObject() : number[] {
-        return []
+        if(!this.object_id)
+            throw Error("object_id of XObject not set")
+
+        let ret: number[] = []
+
+        ret = ret.concat(WriterUtil.TYPE_XOBJECT)
+        ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(WriterUtil.SUBTYPE)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.FORM)
+        ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(WriterUtil.FORMTYPE)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(Util.convertNumberToCharArray(this.formType))
+        ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(WriterUtil.BBOX)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.writeNumberArray(this.bBox))
+        ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(WriterUtil.NAME)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(Util.convertStringToAscii(this.name))
+        ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(WriterUtil.MATRIX)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.writeNumberArray(this.matrix))
+        ret.push(WriterUtil.SPACE)
+
+        let stream_data: number[] = []
+
+        for(let cs of this.contentStream) {
+            stream_data = stream_data.concat(cs.toByteArray())
+        }
+
+        return WriterUtil.writeStreamObject(this.object_id, ret, new FlateStream(new Uint8Array(stream_data), undefined, true))
     }
 }
 

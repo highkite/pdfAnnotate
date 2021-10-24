@@ -73,15 +73,18 @@ export class Stream {
 }
 
 export class FlateStream extends Stream {
-    constructor(protected data: Uint8Array, private decodeParameters: FilterParameters | undefined = undefined) {
+    /**
+     * rawData : if true, the provided data is not compressed yet.
+     * */
+    constructor(protected data: Uint8Array, private decodeParameters: FilterParameters | undefined = undefined, private rawData : boolean = false) {
         super(data)
 
-        if (this.data.length > 0) {
+        if (this.data.length > 0 && !rawData) {
             this.data = Pako.inflate(data)
         }
 
-        if (decodeParameters) {
-            this.data = this.applyFilter(this.data, decodeParameters)
+        if (decodeParameters && !rawData) {
+            this.data = this.applyDecoding(this.data, decodeParameters)
         }
     }
 
@@ -89,10 +92,29 @@ export class FlateStream extends Stream {
      * Returns the data encoded
      * */
     encode(): Uint8Array {
-        return new Uint8Array()
+        if (!this.data || this.data.length === 0)
+            return new Uint8Array()
+
+        let int_data : Uint8Array = this.data
+
+        if (this.decodeParameters && this.rawData) {
+            int_data = this.applyEncoding(int_data, this.decodeParameters)
+        }
+
+        return Pako.deflate(int_data)
     }
 
-    private applyFilter(data: Uint8Array, decodeParameters: FilterParameters): Uint8Array {
+    private applyEncoding(data: Uint8Array, decodeParameters: FilterParameters): Uint8Array {
+        if (decodeParameters.predictor >= 10) {
+            return this.encodePNGFilter(data, decodeParameters)
+        } else if (decodeParameters.predictor === 2) {
+            throw Error("Unsupported filter -- file feature request")
+        }
+
+        return data
+    }
+
+    private applyDecoding(data: Uint8Array, decodeParameters: FilterParameters): Uint8Array {
         if (decodeParameters.predictor >= 10) {
             return this.decodePNGFilter(data, decodeParameters)
         } else if (decodeParameters.predictor === 2) {
@@ -115,8 +137,6 @@ export class FlateStream extends Stream {
         let total_columns = decodeParameters.columns
 
         let encoded_data: number[] = []
-
-        debugger;
 
         let encoding: number = 0
         let offset: number = 0

@@ -5,7 +5,7 @@ import { AnnotationState, AnnotationStateModel, AnnotationIcon, TextAnnotationOb
 import { Color, MarkupAnnotationObj } from './annotations/annotation_types';
 import { XRef } from './document-history'
 import { WriterUtil } from './writer-util'
-import { AppStream } from './appearance-stream';
+import { AppStream, XObjectObj } from './appearance-stream';
 
 /**
  * Creats the byte array that must be attached to the end of the document
@@ -154,6 +154,11 @@ export class Writer {
     writeAppearanceStream(appstream: AppStream): { ptr: ReferencePointer, data: number[] } {
         let ret : number[] = appstream.writeAppearanceStream()
         return { ptr: appstream.object_id!, data: ret }
+    }
+
+    writeXObject(xobject: XObjectObj): { ptr: ReferencePointer, data: number[] } {
+        let ret: number[] = xobject.writeXObject()
+        return { ptr: xobject.object_id!, data: ret }
     }
 
     /**
@@ -425,6 +430,21 @@ export class Writer {
             for (let annot of pageAnnots) {
                 // write appearance stream object
                 if (annot.appearanceStream && annot.appearanceStream.new_object) {
+                    if (annot.appearanceStream.N && (annot.appearanceStream.N instanceof XObjectObj) && annot.appearanceStream.N.new_object) {
+                        let xobj = this.writeXObject(annot.appearanceStream.N)
+
+                        this.xrefs.push({
+                            id: xobj.ptr.obj,
+                            pointer: ptr,
+                            generation: xobj.ptr.generation,
+                            free: false,
+                            update: true
+                        })
+
+                        new_data = new_data.concat(xobj.data)
+                        ptr += xobj.data.length
+                    }
+
                     let appStream = this.writeAppearanceStream(annot.appearanceStream)
 
                     this.xrefs.push({

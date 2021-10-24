@@ -1,6 +1,6 @@
 import { Util } from './util';
 import { ArrayUtil } from './array-util'
-import { Stream, FlateStream, DecodeParameters } from './stream';
+import { Stream, FlateStream, FilterParameters } from './stream';
 import { ObjectLookupTable, XRef } from './document-history';
 
 interface StreamObjectLookupTable {
@@ -279,7 +279,7 @@ export class ObjectUtil {
         return result_obj
     }
 
-    private static translateDecodeParams(dict: any): DecodeParameters | undefined {
+    private static translateDecodeParams(dict: any): FilterParameters | undefined {
         if (!dict.value)
             return undefined
 
@@ -308,7 +308,7 @@ export class ObjectUtil {
         return references
     }
 
-    private static extractStreamData(streamData: Uint8Array, compression: string, decodeParameters: DecodeParameters | undefined = undefined): Stream {
+    private static extractStreamData(streamData: Uint8Array, compression: string, decodeParameters: FilterParameters | undefined = undefined): Stream {
         let stream: Stream | undefined = undefined
         if (compression === '/FlateDecode') {
             stream = new FlateStream(streamData, decodeParameters)
