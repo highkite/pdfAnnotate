@@ -17,6 +17,8 @@ export class Operator {
 
         ret = ret.concat(Util.convertStringToAscii(this.name))
 
+        ret.push(Util.LF)
+
         return ret
     }
 }
