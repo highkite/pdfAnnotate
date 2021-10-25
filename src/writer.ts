@@ -151,11 +151,6 @@ export class Writer {
         return { ptr: refArray_id, data: ret, pageReference: page.object_id, pageData: page_data }
     }
 
-    writeAppearanceStream(appstream: AppStream): { ptr: ReferencePointer, data: number[] } {
-        let ret : number[] = appstream.writeAppearanceStream()
-        return { ptr: appstream.object_id!, data: ret }
-    }
-
     writeXObject(xobject: XObjectObj): { ptr: ReferencePointer, data: number[] } {
         let ret: number[] = xobject.writeXObject()
         return { ptr: xobject.object_id!, data: ret }
@@ -444,19 +439,6 @@ export class Writer {
                         new_data = new_data.concat(xobj.data)
                         ptr += xobj.data.length
                     }
-
-                    let appStream = this.writeAppearanceStream(annot.appearanceStream)
-
-                    this.xrefs.push({
-                        id: appStream.ptr.obj,
-                        pointer: ptr,
-                        generation: appStream.ptr.generation,
-                        free: false,
-                        update: true
-                    })
-
-                    new_data = new_data.concat(appStream.data)
-                    ptr += appStream.data.length
                 }
 
 

@@ -72,11 +72,7 @@ export class AppStream implements AppearanceStream {
      * Writes the appearance stream object
      * */
     writeAppearanceStream() : number[] {
-        let ret: number[] = WriterUtil.writeReferencePointer(this.object_id!)
-        ret.push(WriterUtil.SPACE)
-        ret = ret.concat(WriterUtil.OBJ)
-        ret.push(WriterUtil.CR)
-        ret.push(WriterUtil.LF)
+        let ret: number[] = []
         ret = ret.concat(WriterUtil.DICT_START)
 
         if (this.N) {
@@ -101,12 +97,6 @@ export class AppStream implements AppearanceStream {
         }
 
         ret = ret.concat(WriterUtil.DICT_END)
-        ret.push(WriterUtil.CR)
-        ret.push(WriterUtil.LF)
-
-        ret = ret.concat(WriterUtil.ENDOBJ)
-        ret.push(WriterUtil.CR)
-        ret.push(WriterUtil.LF)
 
         return ret
     }
@@ -149,6 +139,16 @@ export class XObjectObj implements XObject {
         this.contentStream.push(new Operator(operator, parameters))
     }
 
+    public arangeContentStream() : number[] {
+        let stream_data: number[] = []
+
+        for(let cs of this.contentStream) {
+            stream_data = stream_data.concat(cs.toByteArray())
+        }
+
+        return stream_data
+    }
+
     public writeXObject() : number[] {
         if(!this.object_id)
             throw Error("object_id of XObject not set")
@@ -183,11 +183,7 @@ export class XObjectObj implements XObject {
         ret = ret.concat(WriterUtil.writeNumberArray(this.matrix))
         ret.push(WriterUtil.SPACE)
 
-        let stream_data: number[] = []
-
-        for(let cs of this.contentStream) {
-            stream_data = stream_data.concat(cs.toByteArray())
-        }
+        let stream_data = this.arangeContentStream()
 
         return WriterUtil.writeStreamObject(this.object_id, ret, new FlateStream(new Uint8Array(stream_data), undefined, true))
     }

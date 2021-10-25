@@ -11,7 +11,7 @@ export class Operator {
         let ret: number[] = []
 
         for(let op of this.parameters) {
-            ret = ret.concat(Util.convertStringToAscii(`{op}`))
+            ret = ret.concat(Util.convertStringToAscii(`${op}`))
             ret.push(Util.SPACE)
         }
 

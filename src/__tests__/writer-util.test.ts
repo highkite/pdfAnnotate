@@ -26,7 +26,7 @@ test('replaceAnnotsFieldInPageObject_1', () => {
 /Resources 9 0 R
 /MediaBox [0 0 612 792]
 /Parent 23 0 R
-/Annots 44 20 R 
+/Annots 44 20 R
 >> endobj`)
 })
 
@@ -89,12 +89,23 @@ test('replaceAnnotsFieldInPageObject_4', () => {
 >>
 >>
 /MediaBox [0 0 486 720]
-/Annots 44 20 R 
+/Annots 44 20 R
 /Contents 97 0 R
 /StructParents 0
 /Parent 11 0 R
 >>
 endobj`)
+})
+
+test('writeNumberArray', () => {
+    let value : number[] = [1, 0, 0, 1, 0, 0]
+    let target: number[] =  [
+        91, 49, 32, 48, 32, 48,
+        32, 49, 32, 48, 32, 48,
+        32, 93
+    ]
+
+    expect(WriterUtil.writeNumberArray(value)).toEqual(target)
 })
 
 test('replaceAnnotsFieldInPageObject_5', () => {

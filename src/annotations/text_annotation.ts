@@ -40,20 +40,20 @@ export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnota
 
     public createDefaultAppearanceStream() {
         this.appearanceStream = new AppStream(this)
-        this.appearanceStream.object_id = this.factory.parser.getFreeObjectId()
         this.appearanceStream.new_object = true
         let xobj = new XObjectObj()
-        xobj.bBox = this.rect
+        xobj.bBox = [0, 0, 200, 200]
+        xobj.matrix = [1, 0, 0, 1, 50, 50]
         xobj.object_id = this.factory.parser.getFreeObjectId()
         xobj.new_object = true
         xobj.addOperator("BMC", ["/Tx"])
         xobj.addOperator("q")
-        xobj.addOperator("cm", [1, 0, 0, 1, 100, 200])
-        xobj.addOperator("rg", [0, 0, 0])
+        xobj.addOperator("cm", [1, 0, 0, 1, 0, 0])
+        xobj.addOperator("rg", [1, 0, 0])
         xobj.addOperator("BT")
-        xobj.addOperator("Tm", [1, 0, 0, 1, 100, 200])
+        xobj.addOperator("Tm", [1, 0, 0, 1, 0, 0])
         xobj.addOperator("Tf", ["/F1", 18])
-        xobj.addOperator("Tj", [`{this.richtextString}`])
+        xobj.addOperator("Tj", [`(${this.richtextString})`])
         xobj.addOperator("ET")
         xobj.addOperator("Q")
         xobj.addOperator("EMC")

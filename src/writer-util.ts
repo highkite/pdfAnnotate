@@ -24,7 +24,7 @@ export class WriterUtil {
     public static HEX_STRING_END: number[] = [62]
     public static DICT_END: number[] = [62, 62]
     public static TYPE_ANNOT: number[] = [47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 65, 110, 110, 111, 116]
-    public static TYPE_XOBJECT: number[] = [47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 88, 98, 106, 101, 99, 116]
+    public static TYPE_XOBJECT: number[] = [47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 88, 79, 98, 106, 101, 99, 116]
     public static RECT: number[] = [47, 82, 101, 99, 116]
     public static SUBTYPE: number[] = [47, 83, 117, 98, 116, 121, 112, 101]
     public static FORM: number[] = [47, 70, 111, 114, 109] // = '/Form'
@@ -203,10 +203,16 @@ export class WriterUtil {
      * Writes the given object as stream object. Handels all the necessary stuff
      * object_id: The reference pointer id and generation
      * dict: dictionary fields that must be added to the stream object. Must be already encoded in bytes
-     * stream: The stream content
+     * stream: The stream content. Note, that the stream output will be only compressed if you provide a stream object. Number arrays will be processed unaltered.
      * */
-    public static writeStreamObject(object_id : ReferencePointer, dict : number[], stream : Stream) : number[] {
-        let streamData = stream.encode()
+    public static writeStreamObject(object_id : ReferencePointer, dict : number[], stream : Stream | number[]) : number[] {
+        let streamData = stream
+        let compressed: boolean = false
+
+        if (stream instanceof Stream) {
+            streamData = Array.from(stream.encode())
+            compressed = true
+        }
         let ret: number[] = WriterUtil.writeReferencePointer(object_id)
         ret.push(WriterUtil.SPACE)
         ret = ret.concat(WriterUtil.OBJ)
@@ -215,14 +221,16 @@ export class WriterUtil {
         ret = ret.concat(WriterUtil.DICT_START)
         ret.push(WriterUtil.SPACE)
 
-        ret = ret.concat(WriterUtil.FILTER)
-        ret.push(WriterUtil.SPACE)
-        ret = ret.concat(WriterUtil.FLATEDECODE)
-        ret.push(WriterUtil.SPACE)
+        if (compressed) {
+            ret = ret.concat(WriterUtil.FILTER)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(WriterUtil.FLATEDECODE)
+            ret.push(WriterUtil.SPACE)
+        }
 
         ret = ret.concat(WriterUtil.LENGTH)
         ret.push(WriterUtil.SPACE)
-        ret = ret.concat(Util.convertNumberToCharArray(streamData.length))
+        ret = ret.concat(Util.convertNumberToCharArray((streamData as number[]).length))
         ret.push(WriterUtil.SPACE)
 
         ret = ret.concat(dict)
@@ -231,7 +239,9 @@ export class WriterUtil {
         ret.push(WriterUtil.CR)
         ret.push(WriterUtil.LF)
 
-        ret = ret.concat(Array.from(streamData))
+        ret = ret.concat(streamData as number[])
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
 
         ret = ret.concat(WriterUtil.ENDSTREAM)
         ret.push(WriterUtil.CR)
