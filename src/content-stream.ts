@@ -40,7 +40,8 @@ export class Operator {
             }
         }
 
-        ret.push(Util.LF)
+        if (ret[ret.length - 1] !== Util.LF)
+            ret.push(Util.LF)
 
         return ret
     }
@@ -96,24 +97,110 @@ export class MarkedContent extends Operator {
 export class GraphicsObject extends Operator {
     drawFillRect(x_1 : number, y_1 : number, x_2 : number, y_2 : number, cornerRadius : number | undefined = undefined, linewidth : number = 2) : GraphicsObject {
         this.addOperator("w", [linewidth])
-        this.addOperator("m", [x_1, y_1])
-        this.addOperator("l", [x_2, y_1])
-        this.addOperator("l", [x_2, y_2])
-        this.addOperator("l", [x_1, y_2])
-        this.addOperator("l", [x_1, y_1])
+
+        if (cornerRadius && (2 * cornerRadius > Math.abs(x_1 - x_2) || 2 * cornerRadius > Math.abs(y_1 - y_2))) {
+            throw Error("Invalid corner radius. Must be small than two times the linewidth")
+        }
+
+        if (cornerRadius) {
+            this.addOperator("m", [x_1, y_1 + cornerRadius])
+            this.addOperator("l", [x_1, y_2 - cornerRadius])
+            this.addOperator("c", [x_1, y_2, x_1, y_2, x_1 + cornerRadius, y_2])
+            this.addOperator("l", [x_2 - cornerRadius, y_2])
+            this.addOperator("c", [x_2, y_2, x_2, y_2, x_2, y_2 - cornerRadius])
+            this.addOperator("l", [x_2, y_1 + cornerRadius])
+            this.addOperator("c", [x_2, y_1, x_2, y_1, x_2 - cornerRadius, y_1])
+            this.addOperator("l", [x_1 + cornerRadius, y_1])
+            this.addOperator("c", [x_1, y_1, x_1, y_1, x_1, y_1 + cornerRadius])
+        } else {
+            this.addOperator("m", [x_1, y_1])
+            this.addOperator("l", [x_2, y_1])
+            this.addOperator("l", [x_2, y_2])
+            this.addOperator("l", [x_1, y_2])
+            this.addOperator("l", [x_1, y_1])
+        }
         this.addOperator("B")
         return this
     }
 
-    drawRect(x_1 : number, y_1 : number, x_2 : number, y_2 : number, cornerRadius : number | undefined = undefined) : GraphicsObject {
-        return this
-    }
-
-    drawLine(x_1 : number, y_1 : number, x_2 : number, y_2 : number) : GraphicsObject {
-        return this
-    }
-
     fillRect(x_1 : number, y_1 : number, x_2 : number, y_2 : number, cornerRadius : number | undefined = undefined) : GraphicsObject {
+        if (cornerRadius && (2 * cornerRadius > Math.abs(x_1 - x_2) || 2 * cornerRadius > Math.abs(y_1 - y_2))) {
+            throw Error("Invalid corner radius. Must be small than two times the linewidth")
+        }
+
+        if (cornerRadius) {
+            this.addOperator("m", [x_1, y_1 + cornerRadius])
+            this.addOperator("l", [x_1, y_2 - cornerRadius])
+            this.addOperator("c", [x_1, y_2, x_1, y_2, x_1 + cornerRadius, y_2])
+            this.addOperator("l", [x_2 - cornerRadius, y_2])
+            this.addOperator("c", [x_2, y_2, x_2, y_2, x_2, y_2 - cornerRadius])
+            this.addOperator("l", [x_2, y_1 + cornerRadius])
+            this.addOperator("c", [x_2, y_1, x_2, y_1, x_2 - cornerRadius, y_1])
+            this.addOperator("l", [x_1 + cornerRadius, y_1])
+            this.addOperator("c", [x_1, y_1, x_1, y_1, x_1, y_1 + cornerRadius])
+        } else {
+            this.addOperator("m", [x_1, y_1])
+            this.addOperator("l", [x_2, y_1])
+            this.addOperator("l", [x_2, y_2])
+            this.addOperator("l", [x_1, y_2])
+            this.addOperator("l", [x_1, y_1])
+        }
+        this.addOperator("f")
+        return this
+    }
+
+    drawRect(x_1 : number, y_1 : number, x_2 : number, y_2 : number, cornerRadius : number | undefined = undefined, linewidth : number = 2) : GraphicsObject {
+        this.addOperator("w", [linewidth])
+
+        if (cornerRadius && (2 * cornerRadius > Math.abs(x_1 - x_2) || 2 * cornerRadius > Math.abs(y_1 - y_2))) {
+            throw Error("Invalid corner radius. Must be small than two times the linewidth")
+        }
+
+        if (cornerRadius) {
+            this.addOperator("m", [x_1, y_1 + cornerRadius])
+            this.addOperator("l", [x_1, y_2 - cornerRadius])
+            this.addOperator("c", [x_1, y_2, x_1, y_2, x_1 + cornerRadius, y_2])
+            this.addOperator("l", [x_2 - cornerRadius, y_2])
+            this.addOperator("c", [x_2, y_2, x_2, y_2, x_2, y_2 - cornerRadius])
+            this.addOperator("l", [x_2, y_1 + cornerRadius])
+            this.addOperator("c", [x_2, y_1, x_2, y_1, x_2 - cornerRadius, y_1])
+            this.addOperator("l", [x_1 + cornerRadius, y_1])
+            this.addOperator("c", [x_1, y_1, x_1, y_1, x_1, y_1 + cornerRadius])
+        } else {
+            this.addOperator("m", [x_1, y_1])
+            this.addOperator("l", [x_2, y_1])
+            this.addOperator("l", [x_2, y_2])
+            this.addOperator("l", [x_1, y_2])
+            this.addOperator("l", [x_1, y_1])
+        }
+        this.addOperator("s")
+        return this
+    }
+
+    drawPolygon(points: number[], linewidth: number = 2) : GraphicsObject {
+        if(points.length <= 2)
+            return this
+
+        if(points.length % 2 !== 0)
+            throw Error("Number of points must be even")
+
+        this.addOperator("w", [linewidth])
+        this.addOperator("m", [points[0], points[1]])
+
+        for(let i = 2; i < points.length; i+=2) {
+            this.addOperator("l", [points[i], points[i+1]])
+        }
+        this.addOperator("S")
+
+        return this
+    }
+
+    drawLine(x_1 : number, y_1 : number, x_2 : number, y_2 : number, linewidth: number = 2) : GraphicsObject {
+        this.addOperator("w", [linewidth])
+        this.addOperator("m", [x_1, y_1])
+        this.addOperator("l", [x_2, y_2])
+        this.addOperator("S")
+
         return this
     }
 

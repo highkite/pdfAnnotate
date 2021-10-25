@@ -354,7 +354,7 @@ test('TextAnnotation_appearance_stream', () => {
 
     let val = {
         page: 0,
-        rect: [50, 50, 80, 80],
+        rect: [50, 50, 70, 80],
         contents: "Test123",
         author: "John",
         updateDate: new Date(2021, 1, 1),
