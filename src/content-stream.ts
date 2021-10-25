@@ -1,6 +1,7 @@
 import { ReferencePointer } from './parser';
 import { Util } from './util';
 import { WriterUtil } from './writer-util';
+import { Color } from './annotations/annotation_types';
 
 export class Operator {
     operators: Operator[] = []
@@ -35,6 +36,7 @@ export class Operator {
                 ret = ret.concat(WriterUtil.ET)
             } else {
                 ret = ret.concat(Util.convertStringToAscii(op.name))
+                ret.push(Util.LF)
             }
         }
 
@@ -91,7 +93,52 @@ export class MarkedContent extends Operator {
     }
 }
 
-export class GraphicsObject extends Operator { }
+export class GraphicsObject extends Operator {
+    drawFillRect(x_1 : number, y_1 : number, x_2 : number, y_2 : number, cornerRadius : number | undefined = undefined, linewidth : number = 2) : GraphicsObject {
+        this.addOperator("w", [linewidth])
+        this.addOperator("m", [x_1, y_1])
+        this.addOperator("l", [x_2, y_1])
+        this.addOperator("l", [x_2, y_2])
+        this.addOperator("l", [x_1, y_2])
+        this.addOperator("l", [x_1, y_1])
+        this.addOperator("B")
+        return this
+    }
+
+    drawRect(x_1 : number, y_1 : number, x_2 : number, y_2 : number, cornerRadius : number | undefined = undefined) : GraphicsObject {
+        return this
+    }
+
+    drawLine(x_1 : number, y_1 : number, x_2 : number, y_2 : number) : GraphicsObject {
+        return this
+    }
+
+    fillRect(x_1 : number, y_1 : number, x_2 : number, y_2 : number, cornerRadius : number | undefined = undefined) : GraphicsObject {
+        return this
+    }
+
+    setLineColor(color : Color | undefined) : GraphicsObject {
+        if (!color)
+            color = {r: 0, g: 0, b: 0}
+
+        if (color.r > 1) color.r /= 255
+        if (color.g > 1) color.g /= 255
+        if (color.b > 1) color.b /= 255
+        this.addOperator("RG", [color.r, color.g, color.b])
+        return this
+    }
+
+    setFillColor(color : Color | undefined) : GraphicsObject {
+        if (!color)
+            color = {r: 0, g: 0, b: 0}
+
+        if (color.r > 1) color.r /= 255
+        if (color.g > 1) color.g /= 255
+        if (color.b > 1) color.b /= 255
+        this.addOperator("rg", [color.r, color.g, color.b])
+        return this
+    }
+}
 
 export class TextObject extends Operator {
     constructor() {

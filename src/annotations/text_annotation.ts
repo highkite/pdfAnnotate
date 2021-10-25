@@ -4,6 +4,7 @@ import { ErrorList, InvalidAnnotationTypeError, InvalidStateError } from './anno
 import { WriterUtil } from '../writer-util';
 import { Util } from '../util'
 import { AppStream, XObjectObj } from '../appearance-stream';
+import { ContentStream } from '../content-stream';
 
 export enum AnnotationIcon {
     Comment, Key, Note, Help, NewParagraph, Paragraph, Insert
@@ -42,32 +43,15 @@ export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnota
         this.appearanceStream = new AppStream(this)
         this.appearanceStream.new_object = true
         let xobj = new XObjectObj()
-        xobj.bBox = [0, 0, 100, 100]
-        xobj.matrix = [1, 0, 0, 1, 0, 0]
         xobj.object_id = this.factory.parser.getFreeObjectId()
         xobj.new_object = true
-        xobj.addOperator("BMC", ["/Tx"])
-        xobj.addOperator("q")
-        xobj.addOperator("cm", [1, 0, 0, 1, 0, 0])
-        xobj.addOperator("rg", [1, 0, 0])
-        xobj.addOperator("RG", [0, 0, 0])
-        xobj.addOperator("w", [2])
-        xobj.addOperator("j", [1])
-        xobj.addOperator("m", [1, 1])
-        xobj.addOperator("l", [99, 1])
-        xobj.addOperator("l", [99, 99])
-        xobj.addOperator("l", [1, 99])
-        xobj.addOperator("l", [1, 1])
-        xobj.addOperator("B")
-
-
-        //xobj.addOperator("BT")
-        //xobj.addOperator("Tm", [1, 0, 0, 1, 0, 0])
-        //xobj.addOperator("Tf", ["/F1", 18])
-        //xobj.addOperator("Tj", [`(${this.richtextString})`])
-        //xobj.addOperator("ET")
-        xobj.addOperator("Q")
-        xobj.addOperator("EMC")
+        xobj.bBox = [0, 0, 100, 100]
+        xobj.matrix = [1, 0, 0, 1, 0, 0]
+        let cs  = new ContentStream()
+        xobj.contentStream = cs
+        let cmo = cs.addMarkedContentObject(["/Tx"])
+        let go = cmo.addGraphicObject()
+        go.setLineColor({r: 0, g: 0, b:0}).setFillColor(this.color).drawFillRect(0, 0, 100, 100)
         this.appearanceStream.N = xobj
     }
 

@@ -2,6 +2,8 @@ import { loadFromFile } from './Data2';
 import { AnnotationFactory } from '../annotation';
 import { CryptoUtil } from '../crypto-util';
 import { AnnotationIcon, AnnotationStateModel } from '../annotations/text_annotation';
+import { Util } from '../util';
+import { XObjectObj } from '../appearance-stream';
 
 // @ts-ignore
 const { window } = global
@@ -342,3 +344,78 @@ test('TextAnnotation_state_model_reviewed', () => {
 
     expect(CryptoUtil.MD5Hex(factory.write())).toBe("d865f0518a6aa5b15d0292038af28f24")
 })
+
+test('TextAnnotation_appearance_stream', () => {
+    let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
+    let factory = new AnnotationFactory(data)
+
+    let textAnnotColor = {r:1, g:1, b:0}
+    let icon = undefined
+
+    let val = {
+        page: 0,
+        rect: [50, 50, 80, 80],
+        contents: "Test123",
+        author: "John",
+        updateDate: new Date(2021, 1, 1),
+        creationDate: new Date(2021, 1, 1),
+        color: textAnnotColor,
+        id: "test-id-123",
+        subject: "A subject",
+        richtextString: "A very rich text string"
+    }
+    let ta = factory.createTextAnnotation(val)
+    ta.createDefaultAppearanceStream()
+
+    let stream_data: number[] = (ta.appearanceStream!.N! as XObjectObj).contentStream!.writeContentStream()
+
+    console.log(Util.convertAsciiToString(stream_data))
+
+    factory.save("test123.pdf")
+
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("d865f0518a6aa5b15d0292038af28f24")
+})
+
+//test('TextAnnotation_appearance_stream_custom', () => {
+//    let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
+//    let factory = new AnnotationFactory(data)
+//
+//    let textAnnotColor = {r:1, g:0, b:0}
+//    let icon = undefined
+//
+//    let val = {
+//        page: 0,
+//        rect: [50, 50, 80, 80],
+//        contents: "Test123",
+//        author: "John",
+//        updateDate: new Date(2021, 1, 1),
+//        creationDate: new Date(2021, 1, 1),
+//        id: "test-id-123",
+//        color: textAnnotColor,
+//        open: true,
+//        icon: icon,
+//        opacity: 0.5,
+//        subject: "A subject",
+//        stateModel: AnnotationStateModel.Review,
+//        richtextString: "A very rich text string"
+//    }
+//    let ta = factory.createTextAnnotation(val)
+//    //    ta.createDefaultAppearanceStream()
+//    //    ta.appearanceStream.N.contentStream = []
+//    //    ta.appearanceStream.N.addOperator("BMC", ["/Tx"])
+//    //    ta.appearanceStream.N.addOperator("q")
+//    //    ta.appearanceStream.N.addOperator("cm", [1, 0, 0, 1, 0, 0])
+//    //    ta.appearanceStream.N.addOperator("rg", [0, 0, 0])
+//    //    ta.appearanceStream.N.addOperator("BT")
+//    //    ta.appearanceStream.N.addOperator("Tm", [1, 0, 0, 1, 214.613, 780.328])
+//    //    ta.appearanceStream.N.addOperator("Tf", ["/F1", 18])
+//    //    ta.appearanceStream.N.addOperator("Tj", [`{this.richtextString}`])
+//    //    ta.appearanceStream.N.addOperator("ET")
+//    //    ta.appearanceStream.N.addOperator("Q")
+//    //    ta.appearanceStream.N.addOperator("EMC")
+//
+//
+//    factory.save("test123.pdf")
+//
+//    expect(CryptoUtil.MD5Hex(factory.write())).toBe("d865f0518a6aa5b15d0292038af28f24")
+//})
