@@ -41,8 +41,8 @@ export class ContentStreamParser {
     public static MARKED_CONTENT_START: string = "BMC"
     public static MARKED_CONTENT_END: string = "EMC"
 
-    public static extract(data: Uint8Array) : ContentStream[] {
-        let ret_val : ContentStream[] = []
+    public static extract(data: Uint8Array) : ContentStream {
+        let ret_val : ContentStream = new ContentStream()
         let grouping_object : any[] = [ret_val]
 
         let index = 0
@@ -72,7 +72,11 @@ export class ContentStreamParser {
                     to.operators = new_ops.slice(1)
                     grouping_object[grouping_object.length - 1].push(to)
                 } else {
-                    grouping_object[grouping_object.length - 1].push(new Operator(op_name, [...parameters]))
+                    if (grouping_object[grouping_object.length - 1] instanceof ContentStream) {
+                        grouping_object[grouping_object.length - 1].addOperator(new Operator(op_name, [...parameters]))
+                    } else {
+                        grouping_object[grouping_object.length - 1].push(new Operator(op_name, [...parameters]))
+                    }
                 }
 
                 parameters = []

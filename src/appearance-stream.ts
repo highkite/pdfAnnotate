@@ -129,24 +129,20 @@ export class XObjectObj implements XObject {
     name : string = "/ARM"
     matrix : number[] = [1, 0, 0, 1, 0, 0]
     formType : number = 1
-    contentStream : ContentStream[] = []
+    contentStream : ContentStream | undefined = undefined
     resources : any = undefined
 
     // note that Type is /XObject instead of /Annot in annotation objects
     constructor() { }
 
+    /**
+     * Adds a content stream operator
+     * */
     public addOperator(operator : string, parameters: any[] = []) {
-        this.contentStream.push(new Operator(operator, parameters))
-    }
+        if (!this.contentStream)
+            this.contentStream = new ContentStream()
 
-    public arangeContentStream() : number[] {
-        let stream_data: number[] = []
-
-        for(let cs of this.contentStream) {
-            stream_data = stream_data.concat(cs.toByteArray())
-        }
-
-        return stream_data
+        this.contentStream.addOperator(operator, parameters)
     }
 
     public writeXObject() : number[] {
@@ -183,7 +179,7 @@ export class XObjectObj implements XObject {
         ret = ret.concat(WriterUtil.writeNumberArray(this.matrix))
         ret.push(WriterUtil.SPACE)
 
-        let stream_data = this.arangeContentStream()
+        let stream_data: number[] = (this.contentStream) ? this.contentStream.writeContentStream() : []
 
         return WriterUtil.writeStreamObject(this.object_id, ret, new FlateStream(new Uint8Array(stream_data), undefined, true))
     }

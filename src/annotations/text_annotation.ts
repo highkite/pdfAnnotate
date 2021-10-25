@@ -42,19 +42,30 @@ export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnota
         this.appearanceStream = new AppStream(this)
         this.appearanceStream.new_object = true
         let xobj = new XObjectObj()
-        xobj.bBox = [0, 0, 200, 200]
-        xobj.matrix = [1, 0, 0, 1, 50, 50]
+        xobj.bBox = [0, 0, 100, 100]
+        xobj.matrix = [1, 0, 0, 1, 0, 0]
         xobj.object_id = this.factory.parser.getFreeObjectId()
         xobj.new_object = true
         xobj.addOperator("BMC", ["/Tx"])
         xobj.addOperator("q")
         xobj.addOperator("cm", [1, 0, 0, 1, 0, 0])
         xobj.addOperator("rg", [1, 0, 0])
-        xobj.addOperator("BT")
-        xobj.addOperator("Tm", [1, 0, 0, 1, 0, 0])
-        xobj.addOperator("Tf", ["/F1", 18])
-        xobj.addOperator("Tj", [`(${this.richtextString})`])
-        xobj.addOperator("ET")
+        xobj.addOperator("RG", [0, 0, 0])
+        xobj.addOperator("w", [2])
+        xobj.addOperator("j", [1])
+        xobj.addOperator("m", [1, 1])
+        xobj.addOperator("l", [99, 1])
+        xobj.addOperator("l", [99, 99])
+        xobj.addOperator("l", [1, 99])
+        xobj.addOperator("l", [1, 1])
+        xobj.addOperator("B")
+
+
+        //xobj.addOperator("BT")
+        //xobj.addOperator("Tm", [1, 0, 0, 1, 0, 0])
+        //xobj.addOperator("Tf", ["/F1", 18])
+        //xobj.addOperator("Tj", [`(${this.richtextString})`])
+        //xobj.addOperator("ET")
         xobj.addOperator("Q")
         xobj.addOperator("EMC")
         this.appearanceStream.N = xobj

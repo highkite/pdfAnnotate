@@ -3,7 +3,7 @@ import { testDocument, testDocument2 } from './Data';
 import { pageObject_string, loadFromFile } from './Data2';
 import { MarkupAnnotationObj } from '../annotations/annotation_types';
 import { Util } from '../util';
-import { Operator, TextObject, MarkedContent } from '../content-stream';
+import { Operator, TextObject, MarkedContent, ContentStream } from '../content-stream';
 
 test('extractPDFVersion', () => {
     let doc = new PDFDocumentParser(new Uint8Array(testDocument))
@@ -228,36 +228,36 @@ test('parseContentStream_1', () => {
      *   EMC
      * */
     let data = new Uint8Array([ 47, 84, 120, 32, 66, 77, 67, 10, 32, 113, 10, 49, 46, 48, 48, 48, 48, 48, 48, 32, 48, 46, 48, 48, 48, 48, 48, 48, 32, 48, 46, 48, 48, 48, 48, 48, 48, 32, 49, 46, 48, 48, 48, 48, 48, 48, 32, 48, 46, 48, 48, 48, 48, 48, 48, 32, 48, 46, 48, 48, 48, 48, 48, 48, 32, 99, 109, 10, 48, 32, 48, 32, 48, 32, 114, 103, 10, 66, 84, 10, 49, 32, 48, 32, 48, 32, 49, 32, 50, 49, 52, 46, 54, 49, 51, 32, 55, 56, 48, 46, 51, 50, 56, 32, 84, 109, 10, 47, 72, 101, 108, 118, 101, 116, 105, 99, 97, 95, 48, 32, 49, 56, 32, 84, 102, 10, 40, 97, 41, 32, 84, 106, 10, 57, 46, 57, 57, 32, 48, 32, 84, 100, 10, 40, 110, 41, 32, 84, 106, 10, 57, 46, 57, 57, 32, 48, 32, 84, 100, 10, 40, 110, 41, 32, 84, 106, 10, 57, 46, 57, 57, 32, 48, 32, 84, 100, 10, 40, 111, 41, 32, 84, 106, 10, 57, 46, 57, 57, 32, 48, 32, 84, 100, 10, 40, 116, 97, 41, 32, 84, 106, 10, 49, 52, 46, 57, 57, 52, 32, 48, 32, 84, 100, 10, 40, 116, 105, 41, 32, 84, 106, 10, 56, 46, 57, 56, 50, 32, 48, 32, 84, 100, 10, 40, 111, 41, 32, 84, 106, 10, 57, 46, 57, 57, 32, 48, 32, 84, 100, 10, 40, 110, 41, 32, 84, 106, 10, 57, 46, 57, 57, 32, 48, 32, 84, 100, 10, 40, 32, 116, 101, 41, 32, 84, 106, 10, 49, 57, 46, 57, 57, 56, 32, 48, 32, 84, 100, 10, 40, 115, 116, 41, 32, 84, 106, 10, 69, 84, 10, 81, 10, 69, 77, 67, 10])
-    let content_stream = ContentStreamParser.extract(data)
+    let content_stream : ContentStream = ContentStreamParser.extract(data)
 
-    expect(content_stream[0] instanceof MarkedContent).toBeTruthy()
-    expect(content_stream[0].name).toBe("BMC")
-    expect(content_stream[0].parameters.length).toBe(1)
-    expect(content_stream[0].parameters[0]).toBe("/Tx")
-    expect(content_stream[0].operators.length).toBe(5)
+    expect(content_stream.operators[0] instanceof MarkedContent).toBeTruthy()
+    expect(content_stream.operators[0].name).toBe("BMC")
+    expect(content_stream.operators[0].parameters.length).toBe(1)
+    expect(content_stream.operators[0].parameters[0]).toBe("/Tx")
+    expect(content_stream.operators[0].operators.length).toBe(5)
 
-    expect(content_stream[0].operators[0].name).toBe("q")
-    expect(content_stream[0].operators[0].parameters.length).toBe(0)
+    expect(content_stream.operators[0].operators[0].name).toBe("q")
+    expect(content_stream.operators[0].operators[0].parameters.length).toBe(0)
 
-    expect(content_stream[0].operators[1].name).toBe("cm")
-    expect(content_stream[0].operators[1].parameters.length).toBe(6)
-    expect(content_stream[0].operators[1].parameters[0]).toBe(1)
-    expect(content_stream[0].operators[1].parameters[1]).toBe(0)
-    expect(content_stream[0].operators[1].parameters[2]).toBe(0)
-    expect(content_stream[0].operators[1].parameters[3]).toBe(1)
-    expect(content_stream[0].operators[1].parameters[4]).toBe(0)
-    expect(content_stream[0].operators[1].parameters[5]).toBe(0)
+    expect(content_stream.operators[0].operators[1].name).toBe("cm")
+    expect(content_stream.operators[0].operators[1].parameters.length).toBe(6)
+    expect(content_stream.operators[0].operators[1].parameters[0]).toBe(1)
+    expect(content_stream.operators[0].operators[1].parameters[1]).toBe(0)
+    expect(content_stream.operators[0].operators[1].parameters[2]).toBe(0)
+    expect(content_stream.operators[0].operators[1].parameters[3]).toBe(1)
+    expect(content_stream.operators[0].operators[1].parameters[4]).toBe(0)
+    expect(content_stream.operators[0].operators[1].parameters[5]).toBe(0)
 
-    expect(content_stream[0].operators[2].name).toBe("rg")
-    expect(content_stream[0].operators[2].parameters.length).toBe(3)
-    expect(content_stream[0].operators[2].parameters[0]).toBe(0)
-    expect(content_stream[0].operators[2].parameters[1]).toBe(0)
-    expect(content_stream[0].operators[2].parameters[2]).toBe(0)
+    expect(content_stream.operators[0].operators[2].name).toBe("rg")
+    expect(content_stream.operators[0].operators[2].parameters.length).toBe(3)
+    expect(content_stream.operators[0].operators[2].parameters[0]).toBe(0)
+    expect(content_stream.operators[0].operators[2].parameters[1]).toBe(0)
+    expect(content_stream.operators[0].operators[2].parameters[2]).toBe(0)
 
-    expect(content_stream[0].operators[3] instanceof TextObject).toBeTruthy()
-    expect(content_stream[0].operators[3].operators.length).toBe(21)
+    expect(content_stream.operators[0].operators[3] instanceof TextObject).toBeTruthy()
+    expect(content_stream.operators[0].operators[3].operators.length).toBe(21)
 
-    expect(content_stream[0].operators[4].name).toBe("Q")
+    expect(content_stream.operators[0].operators[4].name).toBe("Q")
 })
 
 test('parseContentStream_2', () => {
@@ -275,22 +275,22 @@ test('parseContentStream_2', () => {
         114, 108, 100,  41,  84, 106,  10
     ])
 
-    let content_stream : Operator[] = (ContentStreamParser.extract(data) as Operator[])
+    let content_stream : ContentStream = ContentStreamParser.extract(data)
 
-    expect(content_stream[0].name).toBe("Tf")
-    expect(content_stream[0].parameters[0]).toBe("/F1")
-    expect(content_stream[0].parameters[1]).toBe(1)
+    expect(content_stream.operators[0].name).toBe("Tf")
+    expect(content_stream.operators[0].parameters[0]).toBe("/F1")
+    expect(content_stream.operators[0].parameters[1]).toBe(1)
 
-    expect(content_stream[1].name).toBe("Tm")
-    expect(content_stream[1].parameters[0]).toBe(24)
-    expect(content_stream[1].parameters[1]).toBe(0)
-    expect(content_stream[1].parameters[2]).toBe(0)
-    expect(content_stream[1].parameters[3]).toBe(24)
-    expect(content_stream[1].parameters[4]).toBe(260)
-    expect(content_stream[1].parameters[5]).toBe(600)
+    expect(content_stream.operators[1].name).toBe("Tm")
+    expect(content_stream.operators[1].parameters[0]).toBe(24)
+    expect(content_stream.operators[1].parameters[1]).toBe(0)
+    expect(content_stream.operators[1].parameters[2]).toBe(0)
+    expect(content_stream.operators[1].parameters[3]).toBe(24)
+    expect(content_stream.operators[1].parameters[4]).toBe(260)
+    expect(content_stream.operators[1].parameters[5]).toBe(600)
 
-    expect(content_stream[2].name).toBe("Tj")
-    expect(content_stream[2].parameters[0]).toBe("Hello World")
+    expect(content_stream.operators[2].name).toBe("Tj")
+    expect(content_stream.operators[2].parameters[0]).toBe("Hello World")
 })
 
 test('parseContentStream_3', () => {
@@ -316,39 +316,39 @@ test('parseContentStream_3', () => {
         32,  32,  32,  32,  40,  83, 109, 97, 108, 108,  32,  84,
         101, 120, 116,  41,  84, 106,  10, 69,  84,  10
     ])
-    let content_stream  = ContentStreamParser.extract(data)
+    let content_stream : ContentStream = ContentStreamParser.extract(data)
 
-    expect(content_stream[0] instanceof TextObject).toBeTruthy()
-    expect(content_stream[0].operators.length).toBe(6)
-    expect(content_stream[0].operators[0].name).toBe("Tf")
-    expect(content_stream[0].operators[0].parameters[0]).toBe("/F1")
-    expect(content_stream[0].operators[0].parameters[1]).toBe(24)
+    expect(content_stream.operators[0] instanceof TextObject).toBeTruthy()
+    expect(content_stream.operators[0].operators.length).toBe(6)
+    expect(content_stream.operators[0].operators[0].name).toBe("Tf")
+    expect(content_stream.operators[0].operators[0].parameters[0]).toBe("/F1")
+    expect(content_stream.operators[0].operators[0].parameters[1]).toBe(24)
 
-    expect(content_stream[0].operators[1].name).toBe("Tm")
-    expect(content_stream[0].operators[1].parameters[0]).toBe(1)
-    expect(content_stream[0].operators[1].parameters[1]).toBe(0)
-    expect(content_stream[0].operators[1].parameters[2]).toBe(0)
-    expect(content_stream[0].operators[1].parameters[3]).toBe(1)
-    expect(content_stream[0].operators[1].parameters[4]).toBe(100)
-    expect(content_stream[0].operators[1].parameters[5]).toBe(150)
+    expect(content_stream.operators[0].operators[1].name).toBe("Tm")
+    expect(content_stream.operators[0].operators[1].parameters[0]).toBe(1)
+    expect(content_stream.operators[0].operators[1].parameters[1]).toBe(0)
+    expect(content_stream.operators[0].operators[1].parameters[2]).toBe(0)
+    expect(content_stream.operators[0].operators[1].parameters[3]).toBe(1)
+    expect(content_stream.operators[0].operators[1].parameters[4]).toBe(100)
+    expect(content_stream.operators[0].operators[1].parameters[5]).toBe(150)
 
-    expect(content_stream[0].operators[2].name).toBe("Tj")
-    expect(content_stream[0].operators[2].parameters[0]).toBe("Big Text")
+    expect(content_stream.operators[0].operators[2].name).toBe("Tj")
+    expect(content_stream.operators[0].operators[2].parameters[0]).toBe("Big Text")
 
-    expect(content_stream[0].operators[3].name).toBe("Tf")
-    expect(content_stream[0].operators[3].parameters[0]).toBe("/F1")
-    expect(content_stream[0].operators[3].parameters[1]).toBe(12)
+    expect(content_stream.operators[0].operators[3].name).toBe("Tf")
+    expect(content_stream.operators[0].operators[3].parameters[0]).toBe("/F1")
+    expect(content_stream.operators[0].operators[3].parameters[1]).toBe(12)
 
-    expect(content_stream[0].operators[4].name).toBe("Tm")
-    expect(content_stream[0].operators[4].parameters[0]).toBe(1)
-    expect(content_stream[0].operators[4].parameters[1]).toBe(0)
-    expect(content_stream[0].operators[4].parameters[2]).toBe(0)
-    expect(content_stream[0].operators[4].parameters[3]).toBe(1)
-    expect(content_stream[0].operators[4].parameters[4]).toBe(100)
-    expect(content_stream[0].operators[4].parameters[5]).toBe(100)
+    expect(content_stream.operators[0].operators[4].name).toBe("Tm")
+    expect(content_stream.operators[0].operators[4].parameters[0]).toBe(1)
+    expect(content_stream.operators[0].operators[4].parameters[1]).toBe(0)
+    expect(content_stream.operators[0].operators[4].parameters[2]).toBe(0)
+    expect(content_stream.operators[0].operators[4].parameters[3]).toBe(1)
+    expect(content_stream.operators[0].operators[4].parameters[4]).toBe(100)
+    expect(content_stream.operators[0].operators[4].parameters[5]).toBe(100)
 
-    expect(content_stream[0].operators[5].name).toBe("Tj")
-    expect(content_stream[0].operators[5].parameters[0]).toBe("Small Text")
+    expect(content_stream.operators[0].operators[5].name).toBe("Tj")
+    expect(content_stream.operators[0].operators[5].parameters[0]).toBe("Small Text")
 })
 
 test('parseContentStream_4', () => {
@@ -384,43 +384,43 @@ test('parseContentStream_4', () => {
         41,  84, 106,  10,  69,  84,  10
     ])
 
-    let content_stream  = ContentStreamParser.extract(data)
-    expect(content_stream[0] instanceof TextObject).toBeTruthy()
-    expect(content_stream[0].operators.length).toBe(9)
+    let content_stream : ContentStream = ContentStreamParser.extract(data)
+    expect(content_stream.operators[0] instanceof TextObject).toBeTruthy()
+    expect(content_stream.operators[0].operators.length).toBe(9)
 
-    expect(content_stream[0].operators[0].name).toBe("Tf")
-    expect(content_stream[0].operators[0].parameters[0]).toBe("/F1")
-    expect(content_stream[0].operators[0].parameters[1]).toBe(48)
+    expect(content_stream.operators[0].operators[0].name).toBe("Tf")
+    expect(content_stream.operators[0].operators[0].parameters[0]).toBe("/F1")
+    expect(content_stream.operators[0].operators[0].parameters[1]).toBe(48)
 
-    expect(content_stream[0].operators[1].name).toBe("Tm")
-    expect(content_stream[0].operators[1].parameters[0]).toBe(1)
-    expect(content_stream[0].operators[1].parameters[1]).toBe(0)
-    expect(content_stream[0].operators[1].parameters[2]).toBe(0)
-    expect(content_stream[0].operators[1].parameters[3]).toBe(1)
-    expect(content_stream[0].operators[1].parameters[4]).toBe(10)
-    expect(content_stream[0].operators[1].parameters[5]).toBe(700)
+    expect(content_stream.operators[0].operators[1].name).toBe("Tm")
+    expect(content_stream.operators[0].operators[1].parameters[0]).toBe(1)
+    expect(content_stream.operators[0].operators[1].parameters[1]).toBe(0)
+    expect(content_stream.operators[0].operators[1].parameters[2]).toBe(0)
+    expect(content_stream.operators[0].operators[1].parameters[3]).toBe(1)
+    expect(content_stream.operators[0].operators[1].parameters[4]).toBe(10)
+    expect(content_stream.operators[0].operators[1].parameters[5]).toBe(700)
 
-    expect(content_stream[0].operators[2].name).toBe("Tj")
-    expect(content_stream[0].operators[2].parameters[0]).toBe("1")
+    expect(content_stream.operators[0].operators[2].name).toBe("Tj")
+    expect(content_stream.operators[0].operators[2].parameters[0]).toBe("1")
 
-    expect(content_stream[0].operators[3].name).toBe("Td")
-    expect(content_stream[0].operators[3].parameters[0]).toBe(0)
-    expect(content_stream[0].operators[3].parameters[1]).toBe(-50)
+    expect(content_stream.operators[0].operators[3].name).toBe("Td")
+    expect(content_stream.operators[0].operators[3].parameters[0]).toBe(0)
+    expect(content_stream.operators[0].operators[3].parameters[1]).toBe(-50)
 
-    expect(content_stream[0].operators[4].name).toBe("Tj")
-    expect(content_stream[0].operators[4].parameters[0]).toBe("2")
+    expect(content_stream.operators[0].operators[4].name).toBe("Tj")
+    expect(content_stream.operators[0].operators[4].parameters[0]).toBe("2")
 
-    expect(content_stream[0].operators[5].name).toBe("Td")
-    expect(content_stream[0].operators[5].parameters[0]).toBe(50)
-    expect(content_stream[0].operators[5].parameters[1]).toBe(50)
+    expect(content_stream.operators[0].operators[5].name).toBe("Td")
+    expect(content_stream.operators[0].operators[5].parameters[0]).toBe(50)
+    expect(content_stream.operators[0].operators[5].parameters[1]).toBe(50)
 
-    expect(content_stream[0].operators[6].name).toBe("Tj")
-    expect(content_stream[0].operators[6].parameters[0]).toBe("3")
+    expect(content_stream.operators[0].operators[6].name).toBe("Tj")
+    expect(content_stream.operators[0].operators[6].parameters[0]).toBe("3")
 
-    expect(content_stream[0].operators[7].name).toBe("Td")
-    expect(content_stream[0].operators[7].parameters[0]).toBe(0)
-    expect(content_stream[0].operators[7].parameters[1]).toBe(-50)
+    expect(content_stream.operators[0].operators[7].name).toBe("Td")
+    expect(content_stream.operators[0].operators[7].parameters[0]).toBe(0)
+    expect(content_stream.operators[0].operators[7].parameters[1]).toBe(-50)
 
-    expect(content_stream[0].operators[8].name).toBe("Tj")
-    expect(content_stream[0].operators[8].parameters[0]).toBe("4")
+    expect(content_stream.operators[0].operators[8].name).toBe("Tj")
+    expect(content_stream.operators[0].operators[8].parameters[0]).toBe("4")
 })
