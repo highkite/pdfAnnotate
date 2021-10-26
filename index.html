@@ -594,6 +594,7 @@
                                                                                 pdfFactory.getAnnotations().then( (data) => {
                                                                                                                 console.log(data)
                                                                                                                 document.querySelector('#app').innerHTML = data[0].map(d => d.type)
+                                                                                                                data[0][17].appearanceStream.lookupNContentStream()
                                                                                                                 let fta = pdfFactory.createUnderlineAnnotation({
                                                                                                                                                 page: 0,
                                                                                                                                                 rect: [50, 50, 80, 80],
@@ -603,11 +604,11 @@
                                                                                                                                                 opacity: document.getElementById("highlightAnnotOpacity").value,
                                                                                                                                         })
                                                                                                                 //                       let fta = pdfFactory.createFreeTextAnnotation({
-                                                                                                                //                                                       page: 0,
-                                                                                                                //                                                       rect: [30, 30, 50, 50],
-                                                                                                                //                                                       contents: "Test123",
-                                                                                                                //                                                       author: "John"
-                                                                                                                //                                               })
+                                                                                                                                                //                                                       page: 0,
+                                                                                                                                                //                                                       rect: [30, 30, 50, 50],
+                                                                                                                                                //                                                       contents: "Test123",
+                                                                                                                                                //                                                       author: "John"
+                                                                                                                                                //                                               })
                                                                                                                 fta.createDefaultAppearanceStream()
                                                                                                         })
                                                                         })

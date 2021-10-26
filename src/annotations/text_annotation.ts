@@ -51,7 +51,27 @@ export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnota
         xobj.contentStream = cs
         let cmo = cs.addMarkedContentObject(["/Tx"])
         let go = cmo.addGraphicObject()
-        go.setLineColor({r: 0, g: 0, b:0}).setFillColor(this.color).drawFillRect(0, 0, 100, 100, 25).drawPolygon([10, 10, 10, 90, 80, 90, 80, 80, 90, 80, 90, 10, 10, 10]).drawLine(80, 90, 90, 80)
+        go.setLineColor({r: 0, g: 0, b:0}).setFillColor(this.color).drawFillRect(0, 0, 100, 100, 25)
+
+        switch (this.icon) {
+            case AnnotationIcon.Help:
+                go.addTextObject().setColor().setFont("/F1", 120).setText("?", [20, 10])
+                break
+            case AnnotationIcon.Insert:
+                throw Error("Not yet implemented. Pls. create ticket on Github with feature request.")
+                break
+            case AnnotationIcon.Key:
+                throw Error("Not yet implemented. Pls. create ticket on Github with feature request.")
+                break
+            case AnnotationIcon.NewParagraph:
+                throw Error("Not yet implemented. Pls. create ticket on Github with feature request.")
+                break
+            case AnnotationIcon.Paragraph:
+                throw Error("Not yet implemented. Pls. create ticket on Github with feature request.")
+                break
+            default:
+                go.drawPolygon([10, 10, 10, 90, 80, 90, 80, 80, 90, 80, 90, 10, 10, 10]).drawLine(80, 90, 90, 80)
+        }
         this.appearanceStream.N = xobj
     }
 

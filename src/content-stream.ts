@@ -231,6 +231,46 @@ export class TextObject extends Operator {
     constructor() {
         super("BT")
     }
+
+    setText(text: string, pos : number[] | undefined = undefined) : TextObject {
+        if (text === "")
+            return this
+
+        text = text.trim()
+
+        if (text.charAt(0) !== "(" || text.charAt(text.length -1) !== ")") {
+            text = `(${text})`
+        }
+
+        if (pos) {
+            if (pos.length !== 2) {
+                throw Error("Invalid number of positioning elements. Must be x and y coordinate")
+            }
+
+            this.addOperator("Td", pos)
+        }
+        this.addOperator("Tj", [text])
+
+        return this
+    }
+
+    setFont(font: string = "/F1", fontSize: number = 14) : TextObject {
+        this.addOperator("Tf", [font, fontSize])
+
+        return this
+    }
+
+
+    setColor(color : Color | undefined = undefined) : TextObject {
+        if (!color)
+            color = {r: 0, g: 0, b: 0}
+
+        if (color.r > 1) color.r /= 255
+        if (color.g > 1) color.g /= 255
+        if (color.b > 1) color.b /= 255
+        this.addOperator("rg", [color.r, color.g, color.b])
+        return this
+    }
 }
 
 export class ContentStream extends Operator {
