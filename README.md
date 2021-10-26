@@ -276,6 +276,13 @@ In *evince* the annotation icons ar displayed as follows:
 |-------------------------|----------------------------|---------------|---------------|---------------|
 | AnnationIcon.Help | AnnotationIcon.Insert | AnnotationIcon.Key | AnnotationIcon.NewParagraph | AnnotationIcon.Paragraph | AnnotationIcon.Note |
 
+When using the default appearance stream, the icons look as follows:
+
+
+| ![AnnotationIcon.Help](./documentation/icon_help_app.png  "Annotation Icon Help") | ![AnnotationIcon.Note](./documentation/icon_note_app.png  "Annotation Icon Note") |
+|-----------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| AnnationIcon.Help                                                                 | AnnotationIcon.Note                                                               |
+
 Example usage:
 
 ```
