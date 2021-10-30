@@ -62,7 +62,11 @@ export class ContentStreamParser {
                     let to = new TextObject()
                     to.parameters = [...new_ops[0]]
                     to.operators = new_ops.slice(1)
-                    grouping_object[grouping_object.length - 1].push(to)
+                    if (Array.isArray(grouping_object[grouping_object.length - 1])) {
+                        grouping_object[grouping_object.length - 1].push(to)
+                    } else {
+                        grouping_object[grouping_object.length - 1].addOperator(to)
+                    }
                 } else if (op_name === ContentStreamParser.MARKED_CONTENT_START) {
                     grouping_object.push([parameters])
                 } else if (op_name === ContentStreamParser.MARKED_CONTENT_END) {
@@ -70,7 +74,11 @@ export class ContentStreamParser {
                     let to = new MarkedContent()
                     to.parameters = [...new_ops[0]]
                     to.operators = new_ops.slice(1)
-                    grouping_object[grouping_object.length - 1].push(to)
+                    if (Array.isArray(grouping_object[grouping_object.length - 1])) {
+                        grouping_object[grouping_object.length - 1].push(to)
+                    } else {
+                        grouping_object[grouping_object.length - 1].addOperator(to)
+                    }
                 } else {
                     if (grouping_object[grouping_object.length - 1] instanceof ContentStream) {
                         grouping_object[grouping_object.length - 1].addOperator(new Operator(op_name, [...parameters]))
