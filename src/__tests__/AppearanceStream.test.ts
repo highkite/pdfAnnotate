@@ -32,8 +32,10 @@ test('takeAppearanceStreamFrom', () => {
             takeAppearanceStreamFrom: annotWithAppStream
         })
 
-        expect(CryptoUtil.MD5Hex(factory.write())).toBe("6552a95af8bb210823b201ac4389d0cf")
-    }).catch(console.log)
+        expect(CryptoUtil.MD5Hex(factory.write())).toBe("2258abee3a36d3f588ff6701b26e19dd")
+    }).catch((err) => {
+        fail(err)
+    })
 })
 
 test('content-stream', () => {
