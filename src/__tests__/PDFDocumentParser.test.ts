@@ -188,7 +188,7 @@ test('ParseRC4EncryptedRevision3V2Standard', () => {
     expect((annotations[1] as MarkupAnnotationObj).author).toBe("highway")
 })
 
-test('parseDocument_test10.pdf', () => {
+test('parseDocument_test18.pdf', () => {
     let doc = new PDFDocumentParser(new Uint8Array(loadFromFile("./test_documents/test18.pdf")), "123", "")
     let annotations = doc.extractAnnotations(undefined!)
     console.log(annotations)

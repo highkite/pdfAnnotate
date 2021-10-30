@@ -20,7 +20,6 @@ test('replaceAnnotsFieldInPageObject_1', () => {
     let data = pageObject_string
     let page = new Page(data, undefined!)
     page.extract(<XRef>{ pointer: 0 }, undefined!)
-    debugger;
     let replaced = WriterUtil.replaceAnnotsFieldInPageObject(data, page, 0, { obj: 44, generation: 20 })
     let replaced_decoded = decode(replaced).trim().replaceAll('\n', '')
     expect(replaced_decoded).toEqual(`2 0 obj <</Type /Page/Contents 10 0 R/Resources 9 0 R/MediaBox [0 0 612 792]/Parent 23 0 R/Annots 44 20 R >> endobj`)

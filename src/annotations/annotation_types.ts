@@ -406,8 +406,6 @@ export class BaseAnnotationObj implements BaseAnnotation {
      * Extracts the information of the raw annotation obj that is provided by the PDF document parser
      * */
     public extract(annot_obj : any, page : any, cryptoInterface : CryptoInterface) {
-        this.object_id = annot_obj.id
-
         this.pageReference = page
         this.type = annot_obj["/Subtype"]
         this.rect = annot_obj["/Rect"]

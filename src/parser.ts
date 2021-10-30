@@ -228,50 +228,62 @@ export class AnnotationParser {
         switch(annot_obj["/Subtype"]) {
             case "/Circle":
                 ret_obj = new CircleAnnotationObj()
+                ret_obj.object_id = {obj: xref.id, generation: xref.generation}
                 ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/Square":
                 ret_obj = new SquareAnnotationObj()
+                ret_obj.object_id = {obj: xref.id, generation: xref.generation}
                 ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/FreeText":
                 ret_obj = new FreeTextAnnotationObj()
+                ret_obj.object_id = {obj: xref.id, generation: xref.generation}
                 ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/Ink":
                 ret_obj = new InkAnnotationObj()
+                ret_obj.object_id = {obj: xref.id, generation: xref.generation}
                 ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/PolyLine":
                 ret_obj = new PolyLineAnnotationObj()
+                ret_obj.object_id = {obj: xref.id, generation: xref.generation}
                 ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/Polygon":
                 ret_obj = new PolygonAnnotationObj()
+                ret_obj.object_id = {obj: xref.id, generation: xref.generation}
                 ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/Text":
                 ret_obj = new TextAnnotationObj()
+                ret_obj.object_id = {obj: xref.id, generation: xref.generation}
                 ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/Highlight":
                 ret_obj = new HighlightAnnotationObj()
+                ret_obj.object_id = {obj: xref.id, generation: xref.generation}
                 ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/Underline":
                 ret_obj = new UnderlineAnnotationObj()
+                ret_obj.object_id = {obj: xref.id, generation: xref.generation}
                 ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/Squiggly":
                 ret_obj = new SquigglyAnnotationObj()
+                ret_obj.object_id = {obj: xref.id, generation: xref.generation}
                 ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             case "/StrikeOut":
                 ret_obj = new StrikeOutAnnotationObj()
+                ret_obj.object_id = {obj: xref.id, generation: xref.generation}
                 ret_obj.extract(annot_obj, page, cryptoInterface)
                 break
             default:
                 ret_obj = new RawAnnotationObj()
+                ret_obj.object_id = {obj: xref.id, generation: xref.generation}
                 ret_obj.extract(annot_obj, page, cryptoInterface)
         }
 
@@ -515,7 +527,7 @@ export class PageTree {
 
         this.extractPageReferences(refs)
 
-        this.pageCount = this.pageReferences.length
+this.pageCount = this.pageReferences.length
     }
 
     /**
@@ -562,7 +574,7 @@ export class Page {
 
         let annotations_obj = ObjectUtil.extractObject(this.data, ref_annot_table, obj_table)
 
-        this.annots = annotations_obj.value
+this.annots = annotations_obj.value
     }
 
     /**
@@ -587,153 +599,153 @@ export class Page {
             }
         }
     }
-}
+    }
 
-/**
- * Provides a configured interface to handle the encryption and decryption of PDFs
- * */
-export class CryptoInterface {
-    cryptoConfiguration : CryptoConfiguration = {version: undefined, revision: undefined, filter: undefined, user_pwd : "", owner_pwd : "", length: undefined, permissions: undefined, owner_pwd_c: undefined, user_pwd_c: undefined}
+    /**
+     * Provides a configured interface to handle the encryption and decryption of PDFs
+     * */
+    export class CryptoInterface {
+        cryptoConfiguration : CryptoConfiguration = {version: undefined, revision: undefined, filter: undefined, user_pwd : "", owner_pwd : "", length: undefined, permissions: undefined, owner_pwd_c: undefined, user_pwd_c: undefined}
 
-    cryptoEngine : CryptoEngine = new IdentityEngine()
+        cryptoEngine : CryptoEngine = new IdentityEngine()
 
-    constructor(private data?: Uint8Array, private documentHistory?: DocumentHistory, private ref_ptr?: XRef, user_pwd?: string, owner_pwd?: string) {
-        this.data = data
-        this.documentHistory = documentHistory
-        this.cryptoConfiguration.user_pwd = user_pwd ? user_pwd : ""
-        this.cryptoConfiguration.owner_pwd = owner_pwd ? owner_pwd : ""
+        constructor(private data?: Uint8Array, private documentHistory?: DocumentHistory, private ref_ptr?: XRef, user_pwd?: string, owner_pwd?: string) {
+            this.data = data
+            this.documentHistory = documentHistory
+            this.cryptoConfiguration.user_pwd = user_pwd ? user_pwd : ""
+            this.cryptoConfiguration.owner_pwd = owner_pwd ? owner_pwd : ""
 
-        if (this.ref_ptr && this.documentHistory) {
-            this.extractEncryptionDictionary(this.ref_ptr)
+            if (this.ref_ptr && this.documentHistory) {
+                this.extractEncryptionDictionary(this.ref_ptr)
 
-            // setup crypto-engine
+                // setup crypto-engine
 
-            if (this.cryptoConfiguration.version === 1) {
-                this.cryptoEngine = new RC4CryptoEngine(this.cryptoConfiguration, this.documentHistory.getRecentUpdate().id, RC4_40_BIT)
+                if (this.cryptoConfiguration.version === 1) {
+                    this.cryptoEngine = new RC4CryptoEngine(this.cryptoConfiguration, this.documentHistory.getRecentUpdate().id, RC4_40_BIT)
             } else if(this.cryptoConfiguration.version === 2) {
                 this.cryptoEngine = new RC4CryptoEngine(this.cryptoConfiguration, this.documentHistory.getRecentUpdate().id)
             } else if(this.cryptoConfiguration.version === 4) {
                 console.log("Some fancy AES encryption")
             } else {
                 throw Error(`Unsupported Encryption ${this.cryptoConfiguration.version}`)
+                }
             }
         }
-    }
 
-    /**
-     * Returns the reference pointer
-     * */
-    getEncryptionDictReference() : ReferencePointer | undefined {
-        if(!this.ref_ptr)
-            return undefined
+        /**
+         * Returns the reference pointer
+         * */
+        getEncryptionDictReference() : ReferencePointer | undefined {
+            if(!this.ref_ptr)
+                return undefined
 
-        return {obj : this.ref_ptr.id, generation : this.ref_ptr.generation}
-    }
-
-    encrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array {
-        return this.cryptoEngine.encrypt(data, reference)
-    }
-
-    decrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array {
-        return this.cryptoEngine.decrypt(data, reference)
-    }
-
-    isUserPasswordCorrect() : boolean {
-        if (!this.cryptoEngine) {
-            throw Error("Crypto engine not configured")
+            return {obj : this.ref_ptr.id, generation : this.ref_ptr.generation}
         }
 
-        return this.cryptoEngine.isUserPasswordCorrect()
-    }
-
-    isOwnerPasswordCorrect() : boolean {
-        if (!this.cryptoEngine) {
-            throw Error("Crypto engine not configured")
+        encrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array {
+            return this.cryptoEngine.encrypt(data, reference)
         }
 
-        return this.cryptoEngine.isOwnerPasswordCorrect()
-    }
-
-    /**
-     * Extracts the enrcyption dictionary
-     * */
-    extractEncryptionDictionary(ptr : XRef) {
-        if(!this.documentHistory) {
-            throw Error("Documenthistory not configured")
+        decrypt(data : Uint8Array, reference : ReferencePointer | undefined) : Uint8Array {
+            return this.cryptoEngine.decrypt(data, reference)
         }
 
-        if(!this.data) {
-            throw Error("Data not configured")
+        isUserPasswordCorrect() : boolean {
+            if (!this.cryptoEngine) {
+                throw Error("Crypto engine not configured")
+            }
+
+            return this.cryptoEngine.isUserPasswordCorrect()
         }
 
-        let obj_table = this.documentHistory.createObjectLookupTable()
-        let page_obj = ObjectUtil.extractObject(this.data, ptr, obj_table)
+        isOwnerPasswordCorrect() : boolean {
+            if (!this.cryptoEngine) {
+                throw Error("Crypto engine not configured")
+            }
 
-        this.cryptoConfiguration.version = page_obj.value["/V"]
-        this.cryptoConfiguration.revision = page_obj.value["/R"]
-        this.cryptoConfiguration.filter = page_obj.value["/Filter"]
-        this.cryptoConfiguration.user_pwd_c = page_obj.value["/U"]
-        this.cryptoConfiguration.owner_pwd_c = page_obj.value["/O"]
-        this.cryptoConfiguration.length = page_obj.value["/Length"]
-        this.cryptoConfiguration.permissions = page_obj.value["/P"]
-    }
-}
+            return this.cryptoEngine.isOwnerPasswordCorrect()
+        }
 
-/**
- * Parses the relevant parts of the PDF document and provides functionality to extract the necessary information for
- * adding annotations
- * */
-export class PDFDocumentParser {
+                /**
+                 * Extracts the enrcyption dictionary
+                 * */
+                extractEncryptionDictionary(ptr : XRef) {
+                    if(!this.documentHistory) {
+                        throw Error("Documenthistory not configured")
+                    }
 
-    private version: PDFVersion | undefined = undefined
+                    if(!this.data) {
+                        throw Error("Data not configured")
+                    }
 
-    public documentHistory: DocumentHistory = new DocumentHistory(new Uint8Array([]))
+                    let obj_table = this.documentHistory.createObjectLookupTable()
+                    let page_obj = ObjectUtil.extractObject(this.data, ptr, obj_table)
 
-    private catalogObject: CatalogObject | undefined = undefined
-
-    private pageTree: PageTree | undefined = undefined
-
-    private cryptoInterface: CryptoInterface = new CryptoInterface()
-
-    constructor(private data: Uint8Array, userpwd : string = "", ownerpwd : string = "") {
-        this.data = new Uint8Array(data)
-
-        this.documentHistory = new DocumentHistory(this.data)
-        this.documentHistory.extractDocumentHistory()
-
-        if (this.documentHistory.isEncrypted()) {
-            // extract encryption dictionary
-            let obj_table = this.documentHistory.createObjectLookupTable()
-
-            let enc_obj = this.documentHistory.getRecentUpdate().encrypt
-
-            if(!enc_obj)
-                throw Error("Invalid encryption indication")
-
-            let enc_obj_ptr = obj_table[enc_obj.obj]
-
-            this.cryptoInterface = new CryptoInterface(this.data, this.documentHistory, enc_obj_ptr, userpwd, ownerpwd)
-
-            // verify keys
-            if(!this.cryptoInterface.isUserPasswordCorrect()) {
-                if(!this.cryptoInterface.isOwnerPasswordCorrect()) {
-                    throw Error("No valid user credentials")
+                    this.cryptoConfiguration.version = page_obj.value["/V"]
+                    this.cryptoConfiguration.revision = page_obj.value["/R"]
+                    this.cryptoConfiguration.filter = page_obj.value["/Filter"]
+                    this.cryptoConfiguration.user_pwd_c = page_obj.value["/U"]
+                    this.cryptoConfiguration.owner_pwd_c = page_obj.value["/O"]
+                    this.cryptoConfiguration.length = page_obj.value["/Length"]
+                    this.cryptoConfiguration.permissions = page_obj.value["/P"]
                 }
             }
 
-        }
+                /**
+                 * Parses the relevant parts of the PDF document and provides functionality to extract the necessary information for
+                 * adding annotations
+                 * */
+                export class PDFDocumentParser {
+
+                    private version: PDFVersion | undefined = undefined
+
+                    public documentHistory: DocumentHistory = new DocumentHistory(new Uint8Array([]))
+
+                    private catalogObject: CatalogObject | undefined = undefined
+
+                    private pageTree: PageTree | undefined = undefined
+
+                    private cryptoInterface: CryptoInterface = new CryptoInterface()
+
+                    constructor(private data: Uint8Array, userpwd : string = "", ownerpwd : string = "") {
+                        this.data = new Uint8Array(data)
+
+                        this.documentHistory = new DocumentHistory(this.data)
+                        this.documentHistory.extractDocumentHistory()
+
+                        if (this.documentHistory.isEncrypted()) {
+                            // extract encryption dictionary
+                            let obj_table = this.documentHistory.createObjectLookupTable()
+
+                            let enc_obj = this.documentHistory.getRecentUpdate().encrypt
+
+                            if(!enc_obj)
+                                throw Error("Invalid encryption indication")
+
+                            let enc_obj_ptr = obj_table[enc_obj.obj]
+
+                            this.cryptoInterface = new CryptoInterface(this.data, this.documentHistory, enc_obj_ptr, userpwd, ownerpwd)
+
+                            // verify keys
+                            if(!this.cryptoInterface.isUserPasswordCorrect()) {
+                                if(!this.cryptoInterface.isOwnerPasswordCorrect()) {
+                                    throw Error("No valid user credentials")
+                                }
+                            }
+
+                        }
     }
 
-    /**
-     * Returns the crypto interface
-     * */
-    getCryptoInterface(): CryptoInterface {
-        return this.cryptoInterface
-    }
+                    /**
+                     * Returns the crypto interface
+                     * */
+                    getCryptoInterface(): CryptoInterface {
+                        return this.cryptoInterface
+                    }
 
-    /**
-     * Returns the major and minor version of the pdf document
-     * */
+                        /**
+                         * Returns the major and minor version of the pdf document
+                         * */
     getPDFVersion(): PDFVersion {
         if (this.version)
             return this.version
@@ -743,106 +755,106 @@ export class PDFDocumentParser {
         return this.version
     }
 
-    /**
-     * Returns a free object id. It first checks wether there can be an freed object id reused. If that is not the case
-     * it creates a new one
-     * */
-    getFreeObjectId(): ReferencePointer {
-        return this.documentHistory.getFreeObjectId()
-    }
+                    /**
+                     * Returns a free object id. It first checks wether there can be an freed object id reused. If that is not the case
+                     * it creates a new one
+                     * */
+                    getFreeObjectId(): ReferencePointer {
+                        return this.documentHistory.getFreeObjectId()
+                    }
 
-    /**
-     * Returns the catalog object of the PDF file
-     * */
-    getCatalog(): CatalogObject {
-        let recent_update = this.documentHistory.getRecentUpdate()
-        if (recent_update.root) {
-            let root_obj = recent_update.root
+        /**
+         * Returns the catalog object of the PDF file
+         * */
+        getCatalog(): CatalogObject {
+            let recent_update = this.documentHistory.getRecentUpdate()
+            if (recent_update.root) {
+                let root_obj = recent_update.root
+
+                let obj_table = this.documentHistory.createObjectLookupTable()
+
+                return new CatalogObject(this.data, obj_table[root_obj.obj], obj_table)
+            } else { // If we do not know the catalogue object we need to look it up
+                // In cross reference stream objects no /ROOT field is required, however often it is provided anyway
+                // otherwise run this routine, but buffer the catalog object
+                if (this.catalogObject)
+                    return this.catalogObject
+
+                throw Error("Does not work for compressed data")
+
+                //let obj_table = this.documentHistory.createObjectLookupTable()
+
+                //for (let i = 1; i < recent_update.size; ++i) {
+                //    let _type = Util.extractField(this.data, Util._TYPE, obj_table[i].pointer)
+
+                //    if (Util.areArraysEqual(_type, Util.CATALOG)) {
+                //        this.catalogObject = new CatalogObject(this.data, obj_table[i])
+
+                //        if (this.catalogObject)
+                //            return this.catalogObject
+                //    }
+                //}
+            }
+
+            throw Error("Could not identify catalog object")
+        }
+
+        /**
+         * Returns the latest version of the page tree object of the document
+         * */
+        getPageTree(): PageTree {
+            if (this.pageTree)
+                return this.pageTree
+            let obj_table: ObjectLookupTable = this.documentHistory.createObjectLookupTable()
+
+            let catalog_object = this.getCatalog()
+
+            let pages_id = catalog_object.getPagesObjectId()
+            let pages_ref = obj_table[pages_id.obj]
+
+            let pageTree = new PageTree(this.data, obj_table)
+            pageTree.extract(pages_ref, obj_table)
+
+            this.pageTree = pageTree
+
+            return pageTree
+        }
+
+        /**
+         * Returns the latest version of the page with the given pageNumber
+         * */
+        getPage(pageNumber: number): Page {
+            let pageTree = this.getPageTree()
+            let pageId = pageTree.getPageReferences()[pageNumber]
 
             let obj_table = this.documentHistory.createObjectLookupTable()
 
-            return new CatalogObject(this.data, obj_table[root_obj.obj], obj_table)
-        } else { // If we do not know the catalogue object we need to look it up
-            // In cross reference stream objects no /ROOT field is required, however often it is provided anyway
-            // otherwise run this routine, but buffer the catalog object
-            if (this.catalogObject)
-                return this.catalogObject
+            let obj_ptr = obj_table[pageId.obj]
 
-            throw Error("Does not work for compressed data")
+            let page = new Page(this.data, this.documentHistory)
+            page.extract(obj_ptr, obj_table)
 
-            //let obj_table = this.documentHistory.createObjectLookupTable()
-
-            //for (let i = 1; i < recent_update.size; ++i) {
-            //    let _type = Util.extractField(this.data, Util._TYPE, obj_table[i].pointer)
-
-            //    if (Util.areArraysEqual(_type, Util.CATALOG)) {
-            //        this.catalogObject = new CatalogObject(this.data, obj_table[i])
-
-            //        if (this.catalogObject)
-            //            return this.catalogObject
-            //    }
-            //}
+            return page
         }
 
-        throw Error("Could not identify catalog object")
-    }
+        /**
+         * Returns the annotations that exist in the document
+         * */
+        extractAnnotations(factory: AnnotationFactory): Annotation[][] {
+            let annots: Annotation[][] = []
+            let pt: PageTree = this.getPageTree()
+            let obj_table = this.documentHistory.createObjectLookupTable()
 
-    /**
-     * Returns the latest version of the page tree object of the document
-     * */
-    getPageTree(): PageTree {
-        if (this.pageTree)
-            return this.pageTree
-        let obj_table: ObjectLookupTable = this.documentHistory.createObjectLookupTable()
+            let pageCount: number = pt.getPageCount()
 
-        let catalog_object = this.getCatalog()
+            for (let i = 0; i < pageCount; ++i) {
+                let page: Page = this.getPage(i)
 
-        let pages_id = catalog_object.getPagesObjectId()
-        let pages_ref = obj_table[pages_id.obj]
+                let annotationReferences: ReferencePointer[] = page.annots
 
-        let pageTree = new PageTree(this.data, obj_table)
-        pageTree.extract(pages_ref, obj_table)
+                let pageAnnots: Annotation[] = []
 
-        this.pageTree = pageTree
-
-        return pageTree
-    }
-
-    /**
-     * Returns the latest version of the page with the given pageNumber
-     * */
-    getPage(pageNumber: number): Page {
-        let pageTree = this.getPageTree()
-        let pageId = pageTree.getPageReferences()[pageNumber]
-
-        let obj_table = this.documentHistory.createObjectLookupTable()
-
-        let obj_ptr = obj_table[pageId.obj]
-
-        let page = new Page(this.data, this.documentHistory)
-        page.extract(obj_ptr, obj_table)
-
-        return page
-    }
-
-    /**
-     * Returns the annotations that exist in the document
-     * */
-    extractAnnotations(factory: AnnotationFactory): Annotation[][] {
-        let annots: Annotation[][] = []
-        let pt: PageTree = this.getPageTree()
-        let obj_table = this.documentHistory.createObjectLookupTable()
-
-        let pageCount: number = pt.getPageCount()
-
-        for (let i = 0; i < pageCount; ++i) {
-            let page: Page = this.getPage(i)
-
-            let annotationReferences: ReferencePointer[] = page.annots
-
-            let pageAnnots: Annotation[] = []
-
-            for (let refPtr of annotationReferences) {
+                for (let refPtr of annotationReferences) {
                 let a = AnnotationParser.extract(factory, this.data, obj_table[refPtr.obj], page, obj_table, this.cryptoInterface)
                 a.page = i
                 pageAnnots.push(a)
@@ -850,15 +862,15 @@ export class PDFDocumentParser {
             annots.push(pageAnnots)
         }
 
-        return annots
-    }
+            return annots
+        }
 
-    /**
-     * Extracts the XObject with the provided reference pointer
-     * */
-    extractXObject(p : ReferencePointer): XObject {
-        let obj_table = this.documentHistory.createObjectLookupTable()
-        return XObjectParser.extract(this.data, obj_table[p.obj], obj_table, this.cryptoInterface)
-    }
+        /**
+         * Extracts the XObject with the provided reference pointer
+         * */
+        extractXObject(p : ReferencePointer): XObject {
+            let obj_table = this.documentHistory.createObjectLookupTable()
+            return XObjectParser.extract(this.data, obj_table[p.obj], obj_table, this.cryptoInterface)
+        }
 
-}
+    }
