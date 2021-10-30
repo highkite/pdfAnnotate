@@ -144,6 +144,8 @@ It is possible to define multiple rectangles in a quadpoint array. The length of
 
 Please note that the coordinate system origin in PDF canvas is the **left bottom** corner.
 
+From the PDF specification: If a conforming reader does not recognize a QuadPoint array (e.g., it is not present) the Rect entry is used. Also the QuadPoints array will be ignored by conforming readers, if the specified points are outside the bounding box specified by the Rect array.
+
 ## <a name="API"></a>API Documentation
 
 In the following we introduce the API.

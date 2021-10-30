@@ -89,3 +89,29 @@ test('HighlightAnnotation_color', () => {
 
     expect(CryptoUtil.MD5Hex(factory.write())).toBe("44bc2bf8675ab797dd549f1f449b7da8")
 })
+
+test('HighlightAnnotation_QuadPoints', () => {
+    let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
+    let factory = new AnnotationFactory(data)
+
+    let textAnnotColor = {r:1, g:1, b:0}
+
+    let val = {
+        page: 0,
+        rect: [50, 50, 80, 80],
+        quadPoints: [50, 50, 60, 50, 50, 60, 60, 60, 65, 65, 75, 65, 65, 75, 75, 75],
+        contents: "Test123",
+        author: "John",
+        updateDate: new Date(2021, 1, 1),
+        creationDate: new Date(2021, 1, 1),
+        id: "test-id-123",
+        color: textAnnotColor,
+        open: false,
+        opacity: 0.5,
+        subject: "A subject",
+        richtextString: "A very rich text string"
+    }
+    factory.createHighlightAnnotation(val)
+
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("f100ea840490457474cc8e76c54cdb4d")
+})
