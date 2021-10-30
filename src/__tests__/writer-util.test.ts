@@ -20,14 +20,10 @@ test('replaceAnnotsFieldInPageObject_1', () => {
     let data = pageObject_string
     let page = new Page(data, undefined!)
     page.extract(<XRef>{ pointer: 0 }, undefined!)
-    expect(decode(WriterUtil.replaceAnnotsFieldInPageObject(data, page, 0, { obj: 44, generation: 20 })).trim()).toEqual(`2 0 obj <<
-/Type /Page
-/Contents 10 0 R
-/Resources 9 0 R
-/MediaBox [0 0 612 792]
-/Parent 23 0 R
-/Annots 44 20 R
->> endobj`)
+    debugger;
+    let replaced = WriterUtil.replaceAnnotsFieldInPageObject(data, page, 0, { obj: 44, generation: 20 })
+    let replaced_decoded = decode(replaced).trim().replaceAll('\n', '')
+    expect(replaced_decoded).toEqual(`2 0 obj <</Type /Page/Contents 10 0 R/Resources 9 0 R/MediaBox [0 0 612 792]/Parent 23 0 R/Annots 44 20 R >> endobj`)
 })
 
 test('replaceAnnotsFieldInPageObject_2', () => {
@@ -65,7 +61,8 @@ test('replaceAnnotsFieldInPageObject_4', () => {
     let data = pageObject_string_4
     let page = new Page(data, undefined!)
     page.extract(<XRef>{ pointer: 0 }, undefined!)
-    expect(decode(WriterUtil.replaceAnnotsFieldInPageObject(data, page, 0, { obj: 44, generation: 20 })).trim()).toEqual(`22 0 obj
+    let decoded = decode(WriterUtil.replaceAnnotsFieldInPageObject(data, page, 0, { obj: 44, generation: 20 })).trim().replace("/Annots 44 20 R ", "/Annots 44 20 R") // the replace makes this test robust against trailing whitespace removal from editors and IDEs
+    expect(decoded).toEqual(`22 0 obj
 <<
 /Type /Page
 /Resources <<
