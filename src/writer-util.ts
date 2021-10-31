@@ -31,7 +31,16 @@ export class WriterUtil {
     public static DICT_END: number[] = [62, 62]
     public static TYPE_ANNOT: number[] = [47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 65, 110, 110, 111, 116]
     public static TYPE_XOBJECT: number[] = [47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 88, 79, 98, 106, 101, 99, 116]
+    public static XOBJECT: number[] = [47, 88, 79, 98, 106, 101, 99, 116] // = '/XObject'
+    public static EXTGSTATE: number[] = [47, 69, 120, 116, 79, 83, 116, 97, 116, 101] // = '/ExtGState'
+    public static COLORSPACE: number[] = [47, 67, 111, 108, 111, 114, 83, 112, 97, 99, 101] // = '/ColorSpace'
+    public static PATTERN: number[] = [47, 80, 97, 116, 116, 101, 114, 110] // = '/Pattern'
+    public static SHADING: number[] = [47, 83, 104, 97, 100, 105, 110, 103] // = '/Shading'
+    public static FONT: number[] = [47, 70, 111, 110, 116] // = '/Font'
+    public static PROCSET: number[] = [47, 80, 114, 111, 99, 83, 101, 116] // = '/ProcSet'
+    public static PROPERTIES: number[] = [47, 80, 114, 111, 112, 101, 114, 116, 105, 101, 115] // = '/Properties'
     public static RECT: number[] = [47, 82, 101, 99, 116]
+    public static RESOURCES: number[] = [47, 82, 101, 115, 111, 117, 114, 99, 101, 115] // = '/Resources'
     public static SUBTYPE: number[] = [47, 83, 117, 98, 116, 121, 112, 101]
     public static FORM: number[] = [47, 70, 111, 114, 109] // = '/Form'
     public static UPDATE_DATE: number[] = [47, 77] // = '/M'

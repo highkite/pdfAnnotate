@@ -195,6 +195,23 @@ export class GraphicsObject extends Operator {
         return this
     }
 
+    fillPolygon(points: number[]) : GraphicsObject {
+        if(points.length <= 2)
+            return this
+
+        if(points.length % 2 !== 0)
+            throw Error("Number of points must be even")
+
+        this.addOperator("m", [points[0], points[1]])
+
+        for(let i = 2; i < points.length; i+=2) {
+            this.addOperator("l", [points[i], points[i+1]])
+        }
+        this.addOperator("f")
+
+        return this
+    }
+
     drawLine(x_1 : number, y_1 : number, x_2 : number, y_2 : number, linewidth: number = 2) : GraphicsObject {
         this.addOperator("w", [linewidth])
         this.addOperator("m", [x_1, y_1])
