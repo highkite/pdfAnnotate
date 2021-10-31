@@ -68,6 +68,7 @@ export interface BaseAnnotation {
 export class BaseAnnotationObj implements BaseAnnotation {
     object_id: ReferencePointer | undefined = undefined// an unused object id
     is_deleted: boolean = false// internal flag to determine whether the annotation was deleted
+    additional_objects_to_write: {obj: any, func: any}[] = [] // holds objects, that must be written, since they are used by the annotation
 
     raw_parameters: number[][] | undefined
 

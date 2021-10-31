@@ -151,11 +151,6 @@ export class Writer {
         return { ptr: refArray_id, data: ret, pageReference: page.object_id, pageData: page_data }
     }
 
-    writeXObject(xobject: XObjectObj): { ptr: ReferencePointer, data: number[] } {
-        let ret: number[] = xobject.writeXObject()
-        return { ptr: xobject.object_id!, data: ret }
-    }
-
     /**
      * Writes an annotation object
      * */
@@ -423,24 +418,22 @@ export class Writer {
 
             // writes the actual annotation object
             for (let annot of pageAnnots) {
-                // write appearance stream object
-                if (annot.appearanceStream && annot.appearanceStream.new_object) {
-                    if (annot.appearanceStream.N && (annot.appearanceStream.N instanceof XObjectObj) && annot.appearanceStream.N.new_object) {
-                        let xobj = this.writeXObject(annot.appearanceStream.N)
+                /**
+                 * write additional objects, that are related to the newly created or adapted annotation
+                 * */
+                for (let add_obj of annot.additional_objects_to_write) {
+                    let data : number[] = add_obj.func(add_obj.obj)
+                    this.xrefs.push({
+                        id: add_obj.obj.object_id.obj,
+                        pointer: ptr,
+                        generation: add_obj.obj.object_id.generation,
+                        free: false,
+                        update: true
+                    })
 
-                        this.xrefs.push({
-                            id: xobj.ptr.obj,
-                            pointer: ptr,
-                            generation: xobj.ptr.generation,
-                            free: false,
-                            update: true
-                        })
-
-                        new_data = new_data.concat(xobj.data)
-                        ptr += xobj.data.length
-                    }
+                    new_data = new_data.concat(data)
+                    ptr += data.length
                 }
-
 
                 let annot_obj = this.writeAnnotationObject(annot)
                 this.xrefs.push({

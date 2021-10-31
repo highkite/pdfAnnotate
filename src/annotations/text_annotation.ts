@@ -73,6 +73,7 @@ export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnota
                 go.drawPolygon([10, 10, 10, 90, 80, 90, 80, 80, 90, 80, 90, 10, 10, 10]).drawLine(80, 90, 90, 80)
         }
         this.appearanceStream.N = xobj
+        this.additional_objects_to_write.push({obj: xobj, func: ((ob : any) => ob.writeXObject())})
     }
 
     convertAnnotationIcon(icon : AnnotationIcon) : number[] {

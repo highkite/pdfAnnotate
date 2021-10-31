@@ -98,6 +98,10 @@ export class HighlightAnnotationObj extends TextMarkupAnnotationObj {
         let cmo = cs.addMarkedContentObject(["/Tx"])
         let go = cmo.addGraphicObject()
 
+        if (this.opacity !== 1) {
+            go.addOperator("gs", ["/GParameters"])
+        }
+
         if (this.quadPoints && this.quadPoints.length > 8) {
             go.setLineColor({r: 0, g: 0, b:0}).setFillColor(this.color)
             for(let i = 0; i < this.quadPoints.length; i+=8) {
@@ -110,6 +114,7 @@ export class HighlightAnnotationObj extends TextMarkupAnnotationObj {
         }
 
         this.appearanceStream.N = xobj
+        this.additional_objects_to_write.push({obj: xobj, func: ((ob: any) => ob.writeXObject())})
     }
 
     public validate(enact : boolean = true) : ErrorList {
