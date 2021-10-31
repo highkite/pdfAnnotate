@@ -347,3 +347,52 @@ export class DefaultUnderlineAppearanceStream extends AppStream {
         //xobj.addOperator(`${bBox[2]} ${bBox[3]} l`)
     }
 }
+
+export class GraphicsStateParameter {
+    object_id: ReferencePointer | undefined = undefined
+    new_object: boolean = false // indicates to the factory that this object must be created when writing the document
+    type: string = "/ExtGState"
+    type_encoded: number[] = WriterUtil.EXTGSTATE // = '/ExtGState'
+
+    CA : number | undefined = undefined
+    ca : number | undefined = undefined
+
+    constructor(object_id: ReferencePointer | undefined = undefined) {
+        this.object_id = object_id
+    }
+
+    public writeGStateParameter() : number[] {
+        if (!this.object_id)
+            throw Error("GStateParameter dictionary has no object id")
+
+        let ret: number[] = WriterUtil.writeReferencePointer(this.object_id)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.OBJ)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
+        ret = ret.concat(WriterUtil.DICT_START)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.TYPE_EXTGSTATE)
+        ret.push(WriterUtil.SPACE)
+
+        // opacity stroking operations
+        if (this.CA) {
+            ret = ret.concat(WriterUtil.OPACITY)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.CA))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        // opacity non stroking operations
+        if (this.ca) {
+            ret = ret.concat(WriterUtil._OPACITY)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.ca))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        ret = ret.concat(WriterUtil.DICT_END)
+
+        return ret
+    }
+}
