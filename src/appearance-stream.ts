@@ -325,29 +325,6 @@ export class XObjectObj implements XObject {
     }
 }
 
-export class DefaultFreeTextAppearanceStream extends AppStream {
-    constructor(annot: Annotation) {
-        super(annot)
-
-        this.N = new XObjectObj()
-    }
-}
-
-export class DefaultUnderlineAppearanceStream extends AppStream {
-    constructor(annot: Annotation, bBox : number[]) {
-        super(annot)
-
-        let xobj = new XObjectObj()
-        this.N = xobj
-        xobj.bBox = bBox
-
-        //xobj.addOperator("1 0 0 RG") // stroke color red
-        //xobj.addOperator("2 w") // linewidth 2
-        //xobj.addOperator(`${bBox[0]} ${bBox[1]} m`)
-        //xobj.addOperator(`${bBox[2]} ${bBox[3]} l`)
-    }
-}
-
 export class GraphicsStateParameter {
     object_id: ReferencePointer | undefined = undefined
     new_object: boolean = false // indicates to the factory that this object must be created when writing the document

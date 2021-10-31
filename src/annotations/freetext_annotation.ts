@@ -3,7 +3,6 @@ import { ErrorList, InvalidAnnotationTypeError } from './annotation_errors';
 import { CryptoInterface } from '../parser';
 import { WriterUtil } from '../writer-util';
 import { Util } from '../util'
-import { DefaultFreeTextAppearanceStream } from '../appearance-stream';
 
 export enum TextJustification {
     Left, Centered, Right
@@ -139,12 +138,5 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
         }
 
         return errorList
-    }
-
-    /**
-     * Creates a default appearance stream for the given annotation type and assigns it to the annotation
-     * */
-    public createDefaultAppearanceStream() {
-        this.appearanceStream = new DefaultFreeTextAppearanceStream(this)
     }
 }

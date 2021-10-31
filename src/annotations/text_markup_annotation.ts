@@ -2,7 +2,8 @@ import { MarkupAnnotation, MarkupAnnotationObj } from './annotation_types';
 import { CryptoInterface } from '../parser';
 import { ErrorList, InvalidRectError, InvalidAnnotationTypeError, InvalidQuadPointError } from './annotation_errors';
 import { WriterUtil } from '../writer-util';
-import { DefaultUnderlineAppearanceStream } from '../appearance-stream';
+import { AppStream, XObjectObj } from '../appearance-stream';
+import { ContentStream } from '../content-stream';
 
 export interface TextMarkupAnnotation extends MarkupAnnotation {
     quadPoints: number[] // specifies how the annotation goes arround the text
@@ -84,6 +85,33 @@ export class HighlightAnnotationObj extends TextMarkupAnnotationObj {
         this.type_encoded = [47, 72, 105, 103, 104, 108, 105, 103, 104, 116] // = '/Highlight'
     }
 
+    public createDefaultAppearanceStream() {
+        this.appearanceStream = new AppStream(this)
+        this.appearanceStream.new_object = true
+        let xobj = new XObjectObj()
+        xobj.object_id = this.factory.parser.getFreeObjectId()
+        xobj.new_object = true
+        xobj.bBox = [0, 0, 100, 100]
+        xobj.matrix = [1, 0, 0, 1, 0, 0]
+        let cs  = new ContentStream()
+        xobj.contentStream = cs
+        let cmo = cs.addMarkedContentObject(["/Tx"])
+        let go = cmo.addGraphicObject()
+
+        if (this.quadPoints && this.quadPoints.length > 8) {
+            go.setLineColor({r: 0, g: 0, b:0}).setFillColor(this.color)
+            for(let i = 0; i < this.quadPoints.length; i+=8) {
+                let points : number[] = []
+                this.quadPoints.slice(i, i+8).forEach((value, index) => index % 2 === 0 ? points.push(value - this.rect[0]) : points.push(value - this.rect[1]))
+                go.fillPolygon(points)
+            }
+        } else {
+            go.setLineColor({r: 0, g: 0, b:0}).setFillColor(this.color).fillRect(0, 0, 100, 100, 25)
+        }
+
+        this.appearanceStream.N = xobj
+    }
+
     public validate(enact : boolean = true) : ErrorList {
         let errorList : ErrorList = super.validate(false)
 
@@ -123,13 +151,6 @@ export class UnderlineAnnotationObj extends TextMarkupAnnotationObj {
         }
 
         return errorList
-    }
-
-    /**
-     * Creates a default appearance stream for the given annotation type and assigns it to the annotation
-     * */
-    public createDefaultAppearanceStream() {
-        this.appearanceStream = new DefaultUnderlineAppearanceStream(this, this.quadPoints)
     }
 }
 
