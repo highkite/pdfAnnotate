@@ -110,7 +110,6 @@ export class HighlightAnnotationObj extends TextMarkupAnnotationObj {
         }
 
         if (this.quadPoints && this.quadPoints.length > 8) {
-            debugger;
             go.setLineColor({r: 0, g: 0, b:0}).setFillColor(this.color)
             for(let i = 0; i < this.quadPoints.length; i+=8) {
                 let points : number[] = []
@@ -164,6 +163,45 @@ export class UnderlineAnnotationObj extends TextMarkupAnnotationObj {
         }
 
         return errorList
+    }
+
+    public createDefaultAppearanceStream() {
+        this.appearanceStream = new AppStream(this)
+        this.appearanceStream.new_object = true
+        let xobj = new XObjectObj()
+        xobj.object_id = this.factory.parser.getFreeObjectId()
+        xobj.new_object = true
+        xobj.bBox = [0, 0, 100, 100]
+        xobj.matrix = [1, 0, 0, 1, 0, 0]
+        let cs  = new ContentStream()
+        xobj.contentStream = cs
+        let cmo = cs.addMarkedContentObject(["/Tx"])
+        let go = cmo.addGraphicObject()
+
+        if (this.opacity !== 1) {
+            go.addOperator("gs", ["/GParameters"])
+
+            let gsp = new GraphicsStateParameter(this.factory.parser.getFreeObjectId())
+            gsp.CA = gsp.ca = this.opacity
+            this.additional_objects_to_write.push({obj: gsp, func: ((ob: any) => ob.writeGStateParameter())})
+            let res = new Resource()
+            res.addGStateDef({name: "/GParameters", refPtr: gsp.object_id})
+            xobj.resources = res
+        }
+
+        if (this.quadPoints && this.quadPoints.length > 8) {
+            go.setLineColor(this.color)
+            for(let i = 0; i < this.quadPoints.length; i+=8) {
+                let points : number[] = []
+                this.quadPoints.slice(i, i+8).forEach((value, index) => index % 2 === 0 ? points.push(value - this.rect[0]) : points.push(value - this.rect[1]))
+                go.drawLine(points[0], points[1], points[2], points[1])
+            }
+        } else {
+            go.setLineColor(this.color).drawLine(0, 0, 100, 0)
+        }
+
+        this.appearanceStream.N = xobj
+        this.additional_objects_to_write.push({obj: xobj, func: ((ob: any) => ob.writeXObject())})
     }
 }
 
