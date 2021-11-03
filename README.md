@@ -324,7 +324,7 @@ Note that there are more optional parameters available, as described in [Configu
 Example usage:
 
 ```
-import { AnnotationFactory, AnnotationIcon } from 'annotpdf';
+import { AnnotationFactory } from 'annotpdf';
 
 AnnotationFactory.loadFile(path).then((factory) => {
         factory.createHighlightAnnotation({
@@ -360,7 +360,7 @@ Note that there are more optional parameters available, as described in [Configu
 Example usage:
 
 ```
-import { AnnotationFactory, AnnotationIcon } from 'annotpdf';
+import { AnnotationFactory } from 'annotpdf';
 
 AnnotationFactory.loadFile(path).then((factory) => {
         factory.createUnderlineAnnotation({
@@ -396,7 +396,7 @@ Note that there are more optional parameters available, as described in [Configu
 Example usage:
 
 ```
-import { AnnotationFactory, AnnotationIcon } from 'annotpdf';
+import { AnnotationFactory } from 'annotpdf';
 
 AnnotationFactory.loadFile(path).then((factory) => {
         factory.createSquigglyAnnotation({
@@ -431,7 +431,7 @@ Note that there are more optional parameters available, as described in [Configu
 Example usage:
 
 ```
-import { AnnotationFactory, AnnotationIcon } from 'annotpdf';
+import { AnnotationFactory } from 'annotpdf';
 
 AnnotationFactory.loadFile(path).then((factory) => {
         factory.createStrikeOutAnnotation({
