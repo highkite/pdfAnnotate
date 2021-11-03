@@ -204,7 +204,6 @@ test('TextAnnotation_icon_help', () => {
     }
     factory.createTextAnnotation(val)
 
-
     expect(CryptoUtil.MD5Hex(factory.write())).toBe("df5350c54dae07fff94f991460da40a9")
 })
 
@@ -389,6 +388,36 @@ test('TextAnnotation_appearance_stream_help', () => {
         color: textAnnotColor,
         open: true,
         icon: icon,
+        opacity: 1,
+        subject: "A subject",
+        stateModel: AnnotationStateModel.Review,
+        richtextString: "A very rich text string"
+    }
+    let ta = factory.createTextAnnotation(val)
+    ta.createDefaultAppearanceStream()
+
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("ea797f71e6c85a190c00d1243e98ec50")
+})
+
+
+test('TextAnnotation_appearance_stream_opacity', () => {
+    let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
+    let factory = new AnnotationFactory(data)
+
+    let textAnnotColor = {r:1, g:1, b:0}
+    let icon = AnnotationIcon.Help
+
+    let val = {
+        page: 0,
+        rect: [50, 50, 80, 80],
+        contents: "Test123",
+        author: "John",
+        updateDate: new Date(2021, 1, 1),
+        creationDate: new Date(2021, 1, 1),
+        id: "test-id-123",
+        color: textAnnotColor,
+        open: true,
+        icon: icon,
         opacity: 0.5,
         subject: "A subject",
         stateModel: AnnotationStateModel.Review,
@@ -397,7 +426,6 @@ test('TextAnnotation_appearance_stream_help', () => {
     let ta = factory.createTextAnnotation(val)
     ta.createDefaultAppearanceStream()
 
-    expect(CryptoUtil.MD5Hex(factory.write())).toBe("c66e1e5e801a225440aaf7db5ac97ed5")
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("68651ff0447d857be2cf77709fc702de")
 })
-
 //    factory.save("test123.pdf")

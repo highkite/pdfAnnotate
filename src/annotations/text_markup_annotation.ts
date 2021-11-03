@@ -2,7 +2,7 @@ import { MarkupAnnotation, MarkupAnnotationObj } from './annotation_types';
 import { CryptoInterface } from '../parser';
 import { ErrorList, InvalidRectError, InvalidAnnotationTypeError, InvalidQuadPointError } from './annotation_errors';
 import { WriterUtil } from '../writer-util';
-import { AppStream, XObjectObj } from '../appearance-stream';
+import { AppStream, XObjectObj, Resource, GraphicsStateParameter } from '../appearance-stream';
 import { ContentStream } from '../content-stream';
 
 export interface TextMarkupAnnotation extends MarkupAnnotation {
@@ -100,14 +100,22 @@ export class HighlightAnnotationObj extends TextMarkupAnnotationObj {
 
         if (this.opacity !== 1) {
             go.addOperator("gs", ["/GParameters"])
+
+            let gsp = new GraphicsStateParameter(this.factory.parser.getFreeObjectId())
+            gsp.CA = gsp.ca = this.opacity
+            this.additional_objects_to_write.push({obj: gsp, func: ((ob: any) => ob.writeGStateParameter())})
+            let res = new Resource()
+            res.addGStateDef({name: "/GParameters", refPtr: gsp.object_id})
+            xobj.resources = res
         }
 
         if (this.quadPoints && this.quadPoints.length > 8) {
+            debugger;
             go.setLineColor({r: 0, g: 0, b:0}).setFillColor(this.color)
             for(let i = 0; i < this.quadPoints.length; i+=8) {
                 let points : number[] = []
                 this.quadPoints.slice(i, i+8).forEach((value, index) => index % 2 === 0 ? points.push(value - this.rect[0]) : points.push(value - this.rect[1]))
-                go.fillPolygon(points)
+                go.fillPolygon([points[0], points[1], points[2], points[3], points[6], points[7], points[4], points[5]])
             }
         } else {
             go.setLineColor({r: 0, g: 0, b:0}).setFillColor(this.color).fillRect(0, 0, 100, 100, 25)

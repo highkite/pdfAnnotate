@@ -140,6 +140,10 @@ export class Resource {
 
     constructor() {}
 
+    public addGStateDef(def: ResourceDef) {
+        this.extGState.push(def)
+    }
+
     private writeDictAttribute(defs: ResourceDef[]) : number[] {
         let ret_val : number[] = []
 
@@ -158,7 +162,7 @@ export class Resource {
             if(!def.refPtr)
                 throw Error("Missing reference pointer in resource definition")
 
-            ret_val = ret_val.concat(WriterUtil.writeReferencePointer(def.refPtr))
+            ret_val = ret_val.concat(WriterUtil.writeReferencePointer(def.refPtr, true))
             ret_val.push(WriterUtil.SPACE)
         }
 
@@ -369,6 +373,12 @@ export class GraphicsStateParameter {
         }
 
         ret = ret.concat(WriterUtil.DICT_END)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
+
+        ret = ret.concat(WriterUtil.ENDOBJ)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
 
         return ret
     }

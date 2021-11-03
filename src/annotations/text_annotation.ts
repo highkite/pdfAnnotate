@@ -3,7 +3,7 @@ import { CryptoInterface } from '../parser';
 import { ErrorList, InvalidAnnotationTypeError, InvalidStateError } from './annotation_errors';
 import { WriterUtil } from '../writer-util';
 import { Util } from '../util'
-import { AppStream, XObjectObj } from '../appearance-stream';
+import { AppStream, XObjectObj, Resource, GraphicsStateParameter } from '../appearance-stream';
 import { ContentStream } from '../content-stream';
 
 export enum AnnotationIcon {
@@ -51,6 +51,18 @@ export class TextAnnotationObj extends MarkupAnnotationObj implements TextAnnota
         xobj.contentStream = cs
         let cmo = cs.addMarkedContentObject(["/Tx"])
         let go = cmo.addGraphicObject()
+
+        if (this.opacity !== 1) {
+            go.addOperator("gs", ["/GParameters"])
+
+            let gsp = new GraphicsStateParameter(this.factory.parser.getFreeObjectId())
+            gsp.CA = gsp.ca = this.opacity
+            this.additional_objects_to_write.push({obj: gsp, func: ((ob: any) => ob.writeGStateParameter())})
+            let res = new Resource()
+            res.addGStateDef({name: "/GParameters", refPtr: gsp.object_id})
+            xobj.resources = res
+        }
+
         go.setLineColor({r: 0, g: 0, b:0}).setFillColor(this.color).drawFillRect(0, 0, 100, 100, 25)
 
         switch (this.icon) {

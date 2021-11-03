@@ -31,9 +31,9 @@ export class WriterUtil {
     public static DICT_END: number[] = [62, 62]
     public static TYPE_ANNOT: number[] = [47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 65, 110, 110, 111, 116]
     public static TYPE_XOBJECT: number[] = [47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 88, 79, 98, 106, 101, 99, 116]
-    public static TYPE_EXTGSTATE: number[] = [47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 69, 120, 116, 79, 83, 116, 97, 116, 101]
+    public static TYPE_EXTGSTATE: number[] = [47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 69, 120, 116, 71, 83, 116, 97, 116, 101]
     public static XOBJECT: number[] = [47, 88, 79, 98, 106, 101, 99, 116] // = '/XObject'
-    public static EXTGSTATE: number[] = [47, 69, 120, 116, 79, 83, 116, 97, 116, 101] // = '/ExtGState'
+    public static EXTGSTATE: number[] = [47, 69, 120, 116, 71, 83, 116, 97, 116, 101] // = '/ExtGState'
     public static COLORSPACE: number[] = [47, 67, 111, 108, 111, 114, 83, 112, 97, 99, 101] // = '/ColorSpace'
     public static PATTERN: number[] = [47, 80, 97, 116, 116, 101, 114, 110] // = '/Pattern'
     public static SHADING: number[] = [47, 83, 104, 97, 100, 105, 110, 103] // = '/Shading'
