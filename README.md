@@ -66,7 +66,7 @@ import {AnnotationFactory} from 'annotpdf';
 
 You can also load the bundled files from the *_bundles* directory.
 
-To add annotations the *AnnotationFactory* needs to be initialized. One approach is to use the static *loadFile* method that takes as argument a filepath and than initializes the factory with the corresponding PDF document data.
+To add annotations the *AnnotationFactory* needs to be initialized. One approach is to use the static *loadFile* method that takes as argument a filepath and then initializes the factory with the corresponding PDF document data.
 
 Annotations can be easily created by calling `creator` methods (see [API Documentation](#API)). Finally the extended document can be downloaded by calling the *download* method.
 
@@ -151,7 +151,7 @@ From the PDF specification: If a conforming reader does not recognize a QuadPoin
 In the following we introduce the API.
 
 ### <a name="configurationOptions"></a>Configuration Options
-It is possible to provide additional options to the functions, that create the annotations to configure the appearance and behavior. In the following we provide an overview of existing options. Note that not every annotation type support every option. The PDF specification differentiates between different annotation classes. For once, there exists parameters, that are supported by every annotation, than there exists parameters, that are only supported by *Markup* annotations and than there exists individual options.
+It is possible to provide additional options to the functions, that create the annotations to configure the appearance and behavior. In the following we provide an overview of existing options. Note that not every annotation type support every option. The PDF specification differentiates between different annotation classes. For once, there exists parameters, that are supported by every annotation and there exists parameters, that are only supported by *Markup* annotations and there exists individual options.
 
 Please also note, that just because the specification supports these options, there is no guarantee that a specific PDF reader (as for instance, pdfjs, Foxit reader, or the Adobe reader) implemented the option.
 
@@ -227,14 +227,14 @@ AnnotationFactory.loadFile(path).then((factory) => {
 ```
 
 ### <a name="constructor"></a>constructor(...)
-It is possible to create an annotation factory and initialize it directly with the data of a PDF document given as *Int8Array*. This is for instance useful, when using the pdfAnnotate library with *PDFjs*.
+It is possible to create an annotation factory and initialize it directly with the data of a PDF document given as *UInt8Array*. This is for instance useful, when using the pdfAnnotate library with *PDFjs*.
 
 #### Parameters:
-| Paramater     | Type      | Description                                    |
-|---------------|-----------|------------------------------------------------|
-| data          | Int8Array | The PDF document data                          |
-| userPassword  | string    | User password if the document is encrypted  |
-| ownerPassword | string    | Owner password if the document is encrypted |
+| Paramater     | Type       | Description                                 |
+|---------------|------------|---------------------------------------------|
+| data          | UInt8Array | The PDF document data                       |
+| userPassword  | string     | User password if the document is encrypted  |
+| ownerPassword | string     | Owner password if the document is encrypted |
 
 ### <a name="loadfile"></a>loadFile(...)
 
@@ -584,7 +584,7 @@ Returns the annotations that originally exist in the PDF document and those that
 
 ### <a name="write"></a>write(...)
 
-Appends the created annotations to the PDF file and returns the complete file encoded as *Int8Array*.
+Appends the created annotations to the PDF file and returns the complete file encoded as *UInt8Array*.
 
 ### <a name="download"></a>download(...)
 
@@ -664,7 +664,7 @@ startxref
 
 The first part contains the body update. In this example the objects *7* and *8* are updated. Thereby the object *7* represents the list of annotations of a certain page. This list is extended by another new annotation defined in object *8*.
 
-The next part starting with the *xref* keyword represents the *cross-reference section*. The cross-reference section can be devided into sub sections that are always separated by the two numbers, which are again separated by a blank. So in the example, we have two subsections one starting with **0 1** and one starting with **7 2**. The first number represents the object id of the first referenced object and the second the number of references contained in subsection. So in the subsection starting with **7 2** we know that the first entry refers to the object with id *7* and has two entries. The second entry than refers to an object with id **8**.
+The next part starting with the *xref* keyword represents the *cross-reference section*. The cross-reference section can be devided into sub sections that are always separated by the two numbers, which are again separated by a blank. So in the example, we have two subsections one starting with **0 1** and one starting with **7 2**. The first number represents the object id of the first referenced object and the second the number of references contained in subsection. So in the subsection starting with **7 2** we know that the first entry refers to the object with id *7* and has two entries. The second entry refers to an object with id **8**.
 
 If there is a gap in the consecutive enumeration of updated objects a new subsection is created that starts with the id of the first updated object in a consecutive row of updated objects. In this way uninvolved objects must not be mentioned in the table.
 
@@ -674,7 +674,7 @@ There is an additional particularity when freeing an object: The first number in
 
 The last part of the update section contains the file trailer. It starts with the keyword trailer and is followed by the trailer dictionary. The trailer dictionary has commonly three sections: The **Root** key refers to the catalog dictionary object of the PDF document, the **Prev** key points to the previous cross reference section. This entry does not exists in the first document trailer, which marks the start of the document update history. The **Size** key contains the total number of entries in the cross-reference table with respect to the complete update history. So for instance in the example we have a size of *9*, which means that the complete cross-reference table (covering the total history) has 8 objects. In the body update section we created the object with id *8*, thus together with the 0'th object we have *9* objects maintained by the table. This number will always increment when using a new object id. It can also be used to easily identify the newest object id.
 
-The last part of the trailer starts with the keyword **startxref** and than the position of the **xref** keyword. This represents the byte poisiton of the cross reference table start.
+The last part of the trailer starts with the keyword **startxref** and the position of the **xref** keyword. This represents the byte poisiton of the cross reference table start.
 
 ### <a name="PDFObjects"></a>PDF Objects
 
@@ -756,7 +756,7 @@ as in the case of cross-reference tables multiple incoherent sequences can be en
 ```
 /Index [0 4 10 2]
 ```
-This for example can be interpreted that the tream first encodes four objects starting with id *0* (so objects with ids: 0, 1, 2 and 3) and than again two objects starting with id *10* (so objects with ids: 10 and 11).
+This for example can be interpreted that the tream first encodes four objects starting with id *0* (so objects with ids: 0, 1, 2 and 3) and two objects starting with id *10* (so objects with ids: 10 and 11).
 
 Note that as in case of cross-reference tables there might be mulitple cross-reference stream objects that build upon each other. In this case a stream object contains a `/Prev` attribute that points to the previous object.
 
