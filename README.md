@@ -275,8 +275,8 @@ Note that there are more optional parameters available, as described in [Configu
 In *evince* the annotation icons ar displayed as follows:
 
 | ![AnnotationIcon.Help](./documentation/icon_help.png  "Annotation Icon Help") | ![AnnotationIcon.Insert](./documentation/icon_insert.png  "Annotation Icon Insert") | ![AnnotationIcon.Key](./documentation/icon_key.png  "Annotation Icon Key") | ![AnnotationIcon.NewParagraph](./documentation/icon_new_paragraph.png  "Annotation Icon New Paragraph") | ![AnnotationIcon.Paragraph](./documentation/icon_paragraph.png  "Annotation Icon Paragraph") | ![AnnotationIcon.Note](./documentation/icon_note.png  "Annotation Icon Note") |
-|-------------------------|----------------------------|---------------|---------------|---------------|
-| AnnationIcon.Help | AnnotationIcon.Insert | AnnotationIcon.Key | AnnotationIcon.NewParagraph | AnnotationIcon.Paragraph | AnnotationIcon.Note |
+|-------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|----------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| AnnationIcon.Help                                                             | AnnotationIcon.Insert                                                               | AnnotationIcon.Key                                                         | AnnotationIcon.NewParagraph                                                                             | AnnotationIcon.Paragraph                                                                     | AnnotationIcon.Note                                                           |
 
 When using the default appearance stream, the icons look as follows:
 
@@ -284,6 +284,8 @@ When using the default appearance stream, the icons look as follows:
 | ![AnnotationIcon.Help](./documentation/icon_help_app.png  "Annotation Icon Help") | ![AnnotationIcon.Note](./documentation/icon_note_app.png  "Annotation Icon Note") |
 |-----------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
 | AnnationIcon.Help                                                                 | AnnotationIcon.Note                                                               |
+
+Note that currently only the icons *Help* and *Note* are supported. If you need other icons you can either adapt the appearance stream or create a feature request.
 
 Example usage:
 
@@ -355,7 +357,7 @@ The underline annotation underlines a selected text. However, see the remark: Th
 
 Note that there are more optional parameters available, as described in [Configuration Options](#configurationOptions). Also note, that a text annotation is a **Markup** annotation.
 
-**Note** The underline annotation is not displayed by the PDFjs renderer. However, it is displayed in the chrome PDF viewer. Sometimes it is wrongly rendered. In the Ubuntu Gnome PDF viewer *Evince* it is displayed as *overline*.
+**Note** The underline annotation is not displayed by the PDFjs renderer. However, it is displayed in the chrome PDF viewer. Sometimes it is wrongly rendered. In the Ubuntu Gnome PDF viewer *Evince* it is displayed as *overline*. Use the `createDefaultAppearanceStream()` option to support all PDF renderers.
 
 Example usage:
 
