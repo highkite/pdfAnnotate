@@ -12,6 +12,7 @@ import { PolygonAnnotationObj, PolyLineAnnotationObj } from './annotations/polyg
 import { InkAnnotationObj } from './annotations/ink_annotation';
 import { ContentStream, Operator, TextObject, MarkedContent } from './content-stream';
 import { AppearanceStream, AppStream, XObject, XObjectObj, OnOffAppearanceStream } from './appearance-stream';
+import { Font, FontManager } from './fonts';
 
 /**
  * Note that this parser does not parses the PDF file completely. It lookups those
@@ -327,8 +328,14 @@ export class PageTree {
 
     private pageCount: number = -1
 
+    /**
+     * References to page objects
+     * */
     private pageReferences: ReferencePointer[] = []
 
+    /**
+     * References to pages objects
+     * */
     private visitedPages: ReferencePointer[] = []
 
     constructor(private data: Uint8Array, private objectLookupTable: ObjectLookupTable) {
@@ -395,6 +402,33 @@ export class PageTree {
      * */
     getPageReferences(): ReferencePointer[] {
         return this.pageReferences
+    }
+
+    /**
+     * Returns the references to the pages objects
+     * */
+    getPagesReferences(): ReferencePointer[] {
+        return this.visitedPages
+    }
+}
+
+/**
+ * Represent a pages object in the PDF document
+ * */
+export class Pages {
+    public object_id: ReferencePointer | undefined // The object id and generation of the object
+
+    constructor(private data: Uint8Array, private documentHistory: DocumentHistory) {
+        this.data = data
+    }
+
+    /**
+     * Extracts the page object starting at position ptr
+     * */
+    extract(xref: XRef, objectLookupTable: ObjectLookupTable) {
+        let page_obj = ObjectUtil.extractObject(this.data, xref, objectLookupTable)
+
+        this.object_id = page_obj.id
     }
 }
 
@@ -544,6 +578,25 @@ export class CryptoInterface {
     }
 }
 
+class ObjectCache {
+    private cache : {[key: string] : any} = {}
+
+    constructor() {
+    }
+
+    public set(key : ReferencePointer, value: any) {
+        this.cache[`${key.obj}_${key.generation}`] = value
+    }
+
+    public get(key : ReferencePointer, otherwise : any = undefined) : any {
+        return this.cache[`${key.obj}_${key.generation}`] || otherwise
+    }
+
+    public has(key : ReferencePointer) : boolean {
+        return typeof this.cache[`${key.obj}_${key.generation}`] !== 'undefined'
+    }
+}
+
 /**
  * Parses the relevant parts of the PDF document and provides functionality to extract the necessary information for
  * adding annotations
@@ -558,8 +611,17 @@ export class PDFDocumentParser {
 
     private pageTree: PageTree | undefined = undefined
 
+    private objectCache: ObjectCache = new ObjectCache()
+
     private cryptoInterface: CryptoInterface = new CryptoInterface()
 
+    private fontManager: FontManager | undefined = undefined
+
+    /**
+     * Parses a PDF document and allows access to the cross reference table and individual PDF objects.
+     *
+     * Note that this class heavily relies on caching to prevent expensive lookup operations.
+     * */
     constructor(private data: Uint8Array, userpwd : string = "", ownerpwd : string = "") {
         this.data = new Uint8Array(data)
 
@@ -663,9 +725,27 @@ export class PDFDocumentParser {
     /**
      * Returns the latest version of the page with the given pageNumber
      * */
-    getPage(pageNumber: number): Page {
-        let pageTree = this.getPageTree()
-        let pageId = pageTree.getPageReferences()[pageNumber]
+    getPage(pageNumber: number | ReferencePointer): Page {
+        let pageId : ReferencePointer | undefined = undefined
+
+        if (typeof pageNumber === 'number') {
+            let pageTree = this.getPageTree()
+            pageId = pageTree.getPageReferences()[pageNumber]
+        } else if (Util.isReferencePointer(pageNumber)) {
+            pageId = pageNumber
+        }
+
+        if (!pageId)
+            throw Error("Could not determine reference pointer from page number")
+
+        if(this.objectCache.has(pageId)) {
+            let cached : any = this.objectCache.get(pageId)
+
+            if (!(cached instanceof Page))
+                throw Error("Invalid cached Page object")
+
+            return cached
+        }
 
         let obj_table = this.documentHistory.createObjectLookupTable()
 
@@ -674,6 +754,31 @@ export class PDFDocumentParser {
         let page = new Page(this.data, this.documentHistory)
         page.extract(obj_ptr, obj_table)
 
+        this.objectCache.set(pageId, page)
+        return page
+    }
+
+    /**
+     * Returns the pages object with the given reference pointer
+     * */
+    getPages(refPtr: ReferencePointer) : Pages {
+        if(this.objectCache.has(refPtr)) {
+            let cached : any = this.objectCache.get(refPtr)
+
+            if (!(cached instanceof Pages))
+                throw Error("Invalid cached Pages object")
+
+            return cached
+        }
+
+        let obj_table = this.documentHistory.createObjectLookupTable()
+
+        let obj_ptr = obj_table[refPtr.obj]
+
+        let page = new Pages(this.data, this.documentHistory)
+        page.extract(obj_ptr, obj_table)
+
+        this.objectCache.set(refPtr, page)
         return page
     }
 
@@ -703,6 +808,36 @@ export class PDFDocumentParser {
         }
 
         return annots
+    }
+
+    /**
+     * Extracts the fonts, hat are available in the document and setups the font manager
+     * */
+    extractFonts() {
+        let pageTree = this.getPageTree()
+        let pageReferences = pageTree.getPageReferences()
+
+        for (let reference of pageReferences) {
+            let page: Page = this.getPage(reference)
+        }
+
+        let pagesReferences = pageTree.getPagesReferences()
+
+        for (let reference of pagesReferences) {
+            let pages : Pages = this.getPages(reference)
+        }
+    }
+
+    /**
+     * Returns the font manager, that manages the available fonts in the document
+     * */
+    getFonts() : FontManager {
+        if(this.fontManager)
+            return this.fontManager
+
+        this.fontManager = new FontManager()
+        this.extractFonts()
+        return this.fontManager
     }
 
     /**
