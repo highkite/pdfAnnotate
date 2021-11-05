@@ -221,7 +221,7 @@ export class GraphicsObject extends Operator {
         return this
     }
 
-    setLineColor(color : Color | undefined) : GraphicsObject {
+    setLineColor(color : Color | undefined = undefined) : GraphicsObject {
         if (!color)
             color = {r: 0, g: 0, b: 0}
 
@@ -232,7 +232,7 @@ export class GraphicsObject extends Operator {
         return this
     }
 
-    setFillColor(color : Color | undefined) : GraphicsObject {
+    setFillColor(color : Color | undefined = undefined) : GraphicsObject {
         if (!color)
             color = {r: 0, g: 0, b: 0}
 
