@@ -11,6 +11,11 @@ export class Resource {
     object_id: ReferencePointer | undefined = undefined
     new_object: boolean = false // indicates to the factory that this object must be created when writing the document
 
+    /**
+     * Hoelds the reference pointer of the object to which the resource dictionary is related
+     * */
+    associatedWith : ReferencePointer | undefined = undefined
+
     extGState: ResourceDef[] = []
     colorSpace: ResourceDef[] = []
     pattern: ResourceDef[] = []
@@ -24,6 +29,34 @@ export class Resource {
 
     public addGStateDef(def: ResourceDef) {
         this.extGState.push(def)
+    }
+
+    public addColorSpaceDef(def : ResourceDef) {
+        this.colorSpace.push(def)
+    }
+
+    public addPatternDef(def : ResourceDef) {
+        this.pattern.push(def)
+    }
+
+    public addShadingDef(def : ResourceDef) {
+        this.shading.push(def)
+    }
+
+    public addXObjectDef(def : ResourceDef) {
+        this.xObject.push(def)
+    }
+
+    public addFontDef(def : ResourceDef) {
+        this.font.push(def)
+    }
+
+    public addProcSetDef(def : ResourceDef) {
+        this.procSet.push(def)
+    }
+
+    public addProperty(def : ResourceDef) {
+        this.properties.push(def)
     }
 
     private writeDictAttribute(defs: ResourceDef[]) : number[] {
@@ -136,5 +169,58 @@ export class Resource {
 
         ret_val = ret_val.concat(WriterUtil.DICT_END)
         return ret_val
+    }
+
+    /**
+     * Extract the resource mappings from a dictionary
+     * */
+    public extract(value: any) {
+        if (value["/ExtGState"]) {
+            for(let key of Object.keys(value["/ExtGState"])) {
+                this.addGStateDef({name : key, refPtr: value["/ExtGState"][key]})
+            }
+        }
+
+        if (value["/ColorSpace"]) {
+            for(let key of Object.keys(value["/ColorSpace"])) {
+                this.addColorSpaceDef({name : key, refPtr: value["/ColorSpace"][key]})
+            }
+        }
+
+        if (value["/Pattern"]) {
+            for(let key of Object.keys(value["/Pattern"])) {
+                this.addPatternDef({name : key, refPtr: value["/Pattern"][key]})
+            }
+        }
+
+        if (value["/Shading"]) {
+            for(let key of Object.keys(value["/Shading"])) {
+                this.addShadingDef({name : key, refPtr: value["/Shading"][key]})
+            }
+        }
+
+        if (value["/XObject"]) {
+            for(let key of Object.keys(value["/XObject"])) {
+                this.addXObjectDef({name : key, refPtr: value["/XObject"][key]})
+            }
+        }
+
+        if (value["/Font"]) {
+            for(let key of Object.keys(value["/Font"])) {
+                this.addFontDef({name : key, refPtr: value["/Font"][key]})
+            }
+        }
+
+        if (value["/ProcSet"]) {
+            for(let key of Object.keys(value["/ProcSet"])) {
+                this.addProcSetDef({name : key, refPtr: value["/ProcSet"][key]})
+            }
+        }
+
+        if (value["/Properties"]) {
+            for(let key of Object.keys(value["/Properties"])) {
+                this.addProperty({name : key, refPtr: value["/Properties"][key]})
+            }
+        }
     }
 }

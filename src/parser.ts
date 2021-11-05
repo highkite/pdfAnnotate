@@ -13,6 +13,7 @@ import { InkAnnotationObj } from './annotations/ink_annotation';
 import { ContentStream, Operator, TextObject, MarkedContent } from './content-stream';
 import { AppearanceStream, AppStream, XObject, XObjectObj, OnOffAppearanceStream } from './appearance-stream';
 import { Font, FontManager } from './fonts';
+import { Resource } from './resources';
 
 /**
  * Note that this parser does not parses the PDF file completely. It lookups those
@@ -418,6 +419,11 @@ export class PageTree {
 export class Pages {
     public object_id: ReferencePointer | undefined // The object id and generation of the object
 
+    /**
+     * Holds the resource dictionary that might be associated with the object
+     * */
+    public resources : Resource | undefined = undefined
+
     constructor(private data: Uint8Array, private documentHistory: DocumentHistory) {
         this.data = data
     }
@@ -429,6 +435,14 @@ export class Pages {
         let page_obj = ObjectUtil.extractObject(this.data, xref, objectLookupTable)
 
         this.object_id = page_obj.id
+
+        let resources = page_obj.value["/Resources"]
+
+        if (resources) {
+            this.resources = new Resource()
+            this.resources.associatedWith = this.object_id
+            this.resources.extract(resources)
+        }
     }
 }
 
@@ -437,6 +451,11 @@ export class Pages {
  * */
 export class Page {
     public object_id: ReferencePointer | undefined // The object id and generation of the object
+
+    /**
+     * Holds the resource dictionary that might be associated with the object
+     * */
+    public resources : Resource | undefined = undefined
 
     public annots: ReferencePointer[] = []
 
@@ -484,6 +503,14 @@ export class Page {
 
                 this.extractAnnotationArray()
             }
+        }
+
+        let resources = page_obj.value["/Resources"]
+
+        if (resources) {
+            this.resources = new Resource()
+            this.resources.associatedWith = this.object_id
+            this.resources.extract(resources)
         }
     }
 }
