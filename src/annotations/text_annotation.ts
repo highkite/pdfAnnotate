@@ -3,7 +3,8 @@ import { CryptoInterface } from '../parser';
 import { ErrorList, InvalidAnnotationTypeError, InvalidStateError } from './annotation_errors';
 import { WriterUtil } from '../writer-util';
 import { Util } from '../util'
-import { AppStream, XObjectObj, Resource, GraphicsStateParameter } from '../appearance-stream';
+import { AppStream, XObjectObj, GraphicsStateParameter } from '../appearance-stream';
+import { Resource } from '../resources';
 import { ContentStream } from '../content-stream';
 
 export enum AnnotationIcon {

@@ -2,7 +2,8 @@ import { MarkupAnnotation, MarkupAnnotationObj } from './annotation_types';
 import { CryptoInterface } from '../parser';
 import { ErrorList, InvalidRectError, InvalidAnnotationTypeError, InvalidQuadPointError } from './annotation_errors';
 import { WriterUtil } from '../writer-util';
-import { AppStream, XObjectObj, Resource, GraphicsStateParameter } from '../appearance-stream';
+import { AppStream, XObjectObj, GraphicsStateParameter } from '../appearance-stream';
+import { Resource } from '../resources';
 import { ContentStream, GraphicsObject } from '../content-stream';
 
 export interface TextMarkupAnnotation extends MarkupAnnotation {

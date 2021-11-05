@@ -3,7 +3,8 @@ import { ErrorList, InvalidAnnotationTypeError } from './annotation_errors';
 import { CryptoInterface } from '../parser';
 import { WriterUtil } from '../writer-util';
 import { Util } from '../util'
-import { AppStream, XObjectObj, Resource, GraphicsStateParameter } from '../appearance-stream';
+import { AppStream, XObjectObj, GraphicsStateParameter } from '../appearance-stream';
+import { Resource } from '../resources';
 import { ContentStream, GraphicsObject } from '../content-stream';
 
 export enum TextJustification {
@@ -148,7 +149,6 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
         let xobj = new XObjectObj()
         xobj.object_id = this.factory.parser.getFreeObjectId()
         xobj.new_object = true
-        //xobj.bBox = [0, 0, 160, 100]
         xobj.bBox = this.rect
         xobj.matrix = [1, 0, 0, 1, -this.rect[0], -this.rect[1]]
         let cs  = new ContentStream()
@@ -160,11 +160,7 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
         to.addOperator("Tm", [1, 0, 0, 1, this.rect[0], this.rect[1]])
         to.setFont()
         to.setText(this.contents, [0, 0])
-        //xobj.bBox[2] = 14 * this.contents.length
-        //xobj.bBox[3] = 14
-        //this.rect[2] = this.rect[0] + 14 * this.contents.length
-        //xobj.bBox = [...this.rect]
-        //
+
         // 1) determine text width
         // 2) determine line breaks
 
