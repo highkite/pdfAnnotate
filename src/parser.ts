@@ -12,8 +12,8 @@ import { PolygonAnnotationObj, PolyLineAnnotationObj } from './annotations/polyg
 import { InkAnnotationObj } from './annotations/ink_annotation';
 import { ContentStream, Operator, TextObject, MarkedContent } from './content-stream';
 import { AppearanceStream, AppStream, XObject, XObjectObj, OnOffAppearanceStream } from './appearance-stream';
-import { Font, FontManager } from './fonts';
-import { Resource } from './resources';
+import { Font, FontManager, FontType } from './fonts';
+import { Resource, ResourceDef } from './resources';
 
 /**
  * Note that this parser does not parses the PDF file completely. It lookups those
@@ -207,6 +207,49 @@ export class AppearanceStreamParser {
 
 
         return appStream
+    }
+}
+
+/**
+ * Parses a font object
+ * */
+export class FontParser {
+    /**
+     * Extract the font dictionary
+     * */
+    public static extract(data: Uint8Array, xref: XRef, objectLookupTable: ObjectLookupTable, name : string) : Font {
+        let res = ObjectUtil.extractObject(data, xref, objectLookupTable)
+        let ftype : FontType | undefined = FontType.Type1
+
+        switch (res.value["/Subtype"]) {
+            case "/Type0":
+                ftype = FontType.Type0
+                break
+            case "/Type1":
+                ftype = FontType.Type1
+                break
+            case "/Type3":
+                ftype = FontType.Type3
+                break
+            case "/MMType1":
+                ftype = FontType.MMType1
+                break
+            case "/TrueType":
+                ftype = FontType.TrueType
+                break
+            case "/CIDFontType0":
+                ftype = FontType.CIDFontType0
+                break
+            case "/CIDFontType2":
+                ftype = FontType.CIDFontType2
+                break
+            default:
+                ftype = undefined
+        }
+
+        let font = new Font(ftype, name, res.value["/BaseFont"])
+
+        return font
     }
 }
 
@@ -843,15 +886,48 @@ export class PDFDocumentParser {
     extractFonts() {
         let pageTree = this.getPageTree()
         let pageReferences = pageTree.getPageReferences()
+        let obj_table = this.documentHistory.createObjectLookupTable()
+
+        if (!this.fontManager) {
+            throw Error("FontManager not set")
+        }
 
         for (let reference of pageReferences) {
             let page: Page = this.getPage(reference)
+            if (page.resources) {
+                for (let resDef of page.resources.font) {
+                    if (!resDef.refPtr) {
+                        throw Error("Reference pointer not set in resource definition")
+                    }
+
+                    if (!this.fontManager.hasFont(resDef.refPtr)) {
+                        let font = FontParser.extract(this.data, obj_table[resDef.refPtr.obj], obj_table, name)
+                        this.fontManager.addFont(font)
+                    }
+
+                    this.fontManager.registerDependency(resDef.refPtr, resDef.name, page.object_id)
+                }
+            }
         }
 
         let pagesReferences = pageTree.getPagesReferences()
 
         for (let reference of pagesReferences) {
             let pages : Pages = this.getPages(reference)
+            if (pages.resources) {
+                for (let resDef of pages.resources.font) {
+                    if (!resDef.refPtr) {
+                        throw Error("Reference pointer not set in resource definition")
+                    }
+
+                    if (!this.fontManager.hasFont(resDef.refPtr)) {
+                        let font = FontParser.extract(this.data, obj_table[resDef.refPtr.obj], obj_table, name)
+                        this.fontManager.addFont(font)
+                    }
+
+                    this.fontManager.registerDependency(resDef.refPtr, resDef.name, pages.object_id)
+                }
+            }
         }
     }
 

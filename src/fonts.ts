@@ -1,4 +1,4 @@
-import { ReferencePointer } from '../parser';
+import { ReferencePointer } from './parser';
 
 export enum FontType {
     Type0, Type1, Type3, MMType1, TrueType, CIDFontType0, CIDFontType2
@@ -35,13 +35,36 @@ export class Font {
         this.name = name
         this.baseFont = baseFont
 
-        if (this.isStandardFont(this.baseFont)) {
-            this.widths = STANDARD_FONT_WIDTHS[this.baseFont]
+        if (this.baseFont && this.isStandardFont(this.baseFont)) {
+            this.widths = Font.standardFontToWidths(this.baseFont)
 
-            if(!this.width) {
+            if(!this.widths) {
                 throw Error(`No widths found for standard font "${this.baseFont}"`)
             }
         }
+    }
+
+    /**
+     * Returns the widths array of a standard font
+     * */
+    private static standardFontToWidths(font_name : string) : number[] {
+        if(font_name.startsWith("/")) {
+            font_name = font_name.substring(1)
+        }
+
+        let key = Object.keys(STANDARD_FONT_WIDTHS).filter(name => name.indexOf(font_name) === 0)
+
+        if (!key || key.length === 0 || key.length > 1) {
+            throw Error(`No font widths for standard font ${font_name}`)
+        }
+
+        let widths : number[] =  STANDARD_FONT_WIDTHS[key[0] as keyof typeof STANDARD_FONT_WIDTHS]
+
+        if(!widths) {
+            throw Error(`No font widths for standard font ${font_name}`)
+        }
+
+        return widths as number[]
     }
 
     /**
@@ -88,4 +111,36 @@ export class FontManager {
      * The fonts in the document
      * */
     fonts: Font[] = []
+
+    public addFont(font : Font) {
+        let font_exist : Font[] = this.fonts.filter(f => f.object_id === font.object_id)
+
+        if (font_exist || (font_exist as Font[]).length > 0) {
+            return
+        }
+
+        this.fonts.push(font)
+    }
+
+    /**
+     * Returns the font name if it is specified in a parent object, otherwise it returns undefined
+     *
+     * Specified fonts are heritable
+     * */
+    public getFontName(font_ptr : ReferencePointer) : string | undefined {
+        return undefined
+    }
+
+    /**
+     * Retutrns true, if the font is already part of the font manager
+     * */
+    public hasFont(font_ptr : ReferencePointer) : boolean {
+        return false
+    }
+
+    /**
+     * Build up dependency graph for heritable fonts
+     * */
+    public registerDependency(font_ptr: ReferencePointer, name : string, associated : ReferencePointer | undefined) {
+    }
 }

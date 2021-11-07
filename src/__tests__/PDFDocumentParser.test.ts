@@ -424,3 +424,8 @@ test('parseContentStream_4', () => {
     expect(content_stream.operators[0].operators[8].name).toBe("Tj")
     expect(content_stream.operators[0].operators[8].parameters[0]).toBe("4")
 })
+
+test('getFonts', () => {
+    let doc = new PDFDocumentParser(new Uint8Array(loadFromFile("./test_documents/test.pdf")))
+    console.log(doc.getFonts())
+})

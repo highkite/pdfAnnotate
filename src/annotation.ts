@@ -8,6 +8,7 @@ import { PolygonAnnotationObj, PolyLineAnnotationObj } from './annotations/polyg
 import { InkAnnotationObj } from './annotations/ink_annotation';
 import { Util } from './util';
 import { Writer } from './writer';
+import { Font } from './fonts';
 
 export class ParameterParser {
     /**
@@ -561,6 +562,15 @@ export class AnnotationFactory {
     getAnnotations(): Promise<Annotation[][]> {
         return new Promise((resolve) => {
             resolve(this._getAnnotations())
+        })
+    }
+
+    /**
+     * Returns the fonts, that are available in the PDF document
+     * */
+    getFonts(): Promise<Font[]> {
+        return new Promise((resolve) => {
+            resolve([])
         })
     }
 
