@@ -35,12 +35,20 @@ export class Font {
         this.name = name
         this.baseFont = baseFont
 
+        if(this.baseFont && this.baseFont.startsWith("/")) {
+            this.baseFont = this.baseFont.substring(1)
+        }
+
+
         if (this.baseFont && this.isStandardFont(this.baseFont)) {
             this.widths = Font.standardFontToWidths(this.baseFont)
 
             if(!this.widths) {
                 throw Error(`No widths found for standard font "${this.baseFont}"`)
             }
+
+            this.firstChar = 0
+            this.lastChar = this.widths.length
         }
     }
 
@@ -48,10 +56,6 @@ export class Font {
      * Returns the widths array of a standard font
      * */
     private static standardFontToWidths(font_name : string) : number[] {
-        if(font_name.startsWith("/")) {
-            font_name = font_name.substring(1)
-        }
-
         let key = Object.keys(STANDARD_FONT_WIDTHS).filter(name => name.indexOf(font_name) === 0)
 
         if (!key || key.length === 0 || key.length > 1) {
@@ -112,10 +116,14 @@ export class FontManager {
      * */
     fonts: Font[] = []
 
+    /**
+     * Adds a font, if it does not already exists
+     * */
     public addFont(font : Font) {
-        let font_exist : Font[] = this.fonts.filter(f => f.object_id === font.object_id)
+        let font_exist : Font[] = this.fonts.filter(f => f.object_id && font.object_id &&
+            f.object_id.obj === font.object_id.obj && f.object_id.generation === font.object_id.generation)
 
-        if (font_exist || (font_exist as Font[]).length > 0) {
+        if (font_exist.length > 0) {
             return
         }
 
@@ -123,24 +131,10 @@ export class FontManager {
     }
 
     /**
-     * Returns the font name if it is specified in a parent object, otherwise it returns undefined
-     *
-     * Specified fonts are heritable
-     * */
-    public getFontName(font_ptr : ReferencePointer) : string | undefined {
-        return undefined
-    }
-
-    /**
      * Retutrns true, if the font is already part of the font manager
      * */
     public hasFont(font_ptr : ReferencePointer) : boolean {
-        return false
-    }
-
-    /**
-     * Build up dependency graph for heritable fonts
-     * */
-    public registerDependency(font_ptr: ReferencePointer, name : string, associated : ReferencePointer | undefined) {
+        return this.fonts.filter(f => f.object_id && f.object_id.obj === font_ptr.obj &&
+            f.object_id.generation === font_ptr.generation).length > 0
     }
 }

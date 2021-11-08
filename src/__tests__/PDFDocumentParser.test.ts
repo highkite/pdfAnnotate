@@ -427,5 +427,14 @@ test('parseContentStream_4', () => {
 
 test('getFonts', () => {
     let doc = new PDFDocumentParser(new Uint8Array(loadFromFile("./test_documents/test.pdf")))
-    console.log(doc.getFonts())
+    let fontManager = doc.getFonts()
+
+    expect(fontManager.fonts[0].object_id!.obj).toBe(4)
+    expect(fontManager.fonts[0].object_id!.generation).toBe(0)
+    expect(fontManager.fonts[0].fontType).toBe(1)
+    expect(fontManager.fonts[0].name).toBe("/F1")
+    expect(fontManager.fonts[0].baseFont).toBe("Times-Roman")
+    expect(fontManager.fonts[0].firstChar).toBe(0)
+    expect(fontManager.fonts[0].lastChar).toBe(315)
+    expect(fontManager.fonts[0].widths!.length).toBe(315)
 })

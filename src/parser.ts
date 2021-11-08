@@ -888,6 +888,7 @@ export class PDFDocumentParser {
         let pageReferences = pageTree.getPageReferences()
         let obj_table = this.documentHistory.createObjectLookupTable()
 
+
         if (!this.fontManager) {
             throw Error("FontManager not set")
         }
@@ -901,11 +902,10 @@ export class PDFDocumentParser {
                     }
 
                     if (!this.fontManager.hasFont(resDef.refPtr)) {
-                        let font = FontParser.extract(this.data, obj_table[resDef.refPtr.obj], obj_table, name)
+                        let font = FontParser.extract(this.data, obj_table[resDef.refPtr.obj], obj_table, resDef.name)
+                        font.object_id = resDef.refPtr
                         this.fontManager.addFont(font)
                     }
-
-                    this.fontManager.registerDependency(resDef.refPtr, resDef.name, page.object_id)
                 }
             }
         }
@@ -921,11 +921,10 @@ export class PDFDocumentParser {
                     }
 
                     if (!this.fontManager.hasFont(resDef.refPtr)) {
-                        let font = FontParser.extract(this.data, obj_table[resDef.refPtr.obj], obj_table, name)
+                        let font = FontParser.extract(this.data, obj_table[resDef.refPtr.obj], obj_table, resDef.name)
+                        font.object_id = resDef.refPtr
                         this.fontManager.addFont(font)
                     }
-
-                    this.fontManager.registerDependency(resDef.refPtr, resDef.name, pages.object_id)
                 }
             }
         }

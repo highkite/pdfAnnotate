@@ -570,7 +570,7 @@ export class AnnotationFactory {
      * */
     getFonts(): Promise<Font[]> {
         return new Promise((resolve) => {
-            resolve([])
+            resolve(this.parser.getFonts().fonts)
         })
     }
 
