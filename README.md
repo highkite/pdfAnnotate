@@ -34,9 +34,10 @@
         19. [createPopupAnnotation(...)](#createpopup)
         20. [deleteAnnotation(...)](#deleteAnnotation)
         21. [getAnnotations()](#getAnnotations)
-        22. [write(...)](#write)
-        23. [download(...)](#download)
-        24. [save(...)](#save)
+        22. [getFonts()](#getFonts)
+        23. [write(...)](#write)
+        24. [download(...)](#download)
+        25. [save(...)](#save)
     5. [How does the Library Works?](#HowWorks)
         1. [Trivia](#Trivia)
         2. [Adding an Annotation](#AddingAnnotation)
@@ -581,6 +582,10 @@ Deletes an existing annotation. Either from the set of newly created annotations
 ### <a name="getAnnotations"></a>getAnnotations()
 
 Returns the annotations that originally exist in the PDF document and those that were created by the library in the mean time. The return values is a list of lists, where every list represents one page in the pdf document.
+
+### <a name="getFonts"></a>getFonts()
+
+Returns the fonts, that are defined in the PDF document.
 
 ### <a name="write"></a>write(...)
 
