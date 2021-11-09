@@ -89,4 +89,18 @@ export class InvalidAppearanceStreamError extends Error {
     }
 }
 
-export type ErrorList = (Error | ColorOutOfRangeError | InvalidReferencePointerError | InvalidDateError | InvalidRectError | InvalidIDError | InvalidColorError | InvalidOpacityError | InvalidAnnotationTypeError | InvalidStateError | InvalidQuadPointError | InvalidVerticesError | InvalidAnnotationReference | InvalidAppearanceStreamError)[]
+export class InvalidFontSizeError extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "InvalidFontSizeError"
+    }
+}
+
+export class InvalidFontError extends Error {
+    constructor(public message : string) {
+        super(message)
+        this.name = "InvalidFontError"
+    }
+}
+
+export type ErrorList = (Error | ColorOutOfRangeError | InvalidReferencePointerError | InvalidDateError | InvalidRectError | InvalidIDError | InvalidColorError | InvalidOpacityError | InvalidAnnotationTypeError | InvalidStateError | InvalidQuadPointError | InvalidVerticesError | InvalidAnnotationReference | InvalidAppearanceStreamError | InvalidFontSizeError | InvalidFontError )[]

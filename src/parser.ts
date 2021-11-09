@@ -937,7 +937,7 @@ export class PDFDocumentParser {
         if(this.fontManager)
             return this.fontManager
 
-        this.fontManager = new FontManager()
+        this.fontManager = new FontManager(this)
         this.extractFonts()
         return this.fontManager
     }

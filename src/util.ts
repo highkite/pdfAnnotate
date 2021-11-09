@@ -741,7 +741,7 @@ export class Util {
      * Returns the HTML color hex code of the provided color
      * */
     public static colorToHex(color : Color) : string {
-        if(color.r < 1 || color.g < 1 || color.b < 1) {
+        if(color.r <= 1 || color.g <= 1 || color.b <= 1) {
             color = Util.colorToRange255(color)
         }
         let r = color.r.toString(16)

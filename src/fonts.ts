@@ -1,4 +1,4 @@
-import { ReferencePointer } from './parser';
+import { ReferencePointer, PDFDocumentParser } from './parser';
 
 export enum FontType {
     Type0, Type1, Type3, MMType1, TrueType, CIDFontType0, CIDFontType2
@@ -23,6 +23,10 @@ const STANDARD_FONT_WIDTHS = {
 
 export class Font {
     object_id : ReferencePointer | undefined = undefined
+    /**
+     * Determines if the font must be written to the PDF document, since it is not yet defined
+     * */
+    is_new : boolean = false
     fontType: FontType | undefined = undefined
     name: string | undefined = undefined
     baseFont: string | undefined = undefined
@@ -35,12 +39,16 @@ export class Font {
         this.name = name
         this.baseFont = baseFont
 
-        if(this.baseFont && this.baseFont.startsWith("/")) {
-            this.baseFont = this.baseFont.substring(1)
+        if(this.name && !this.name.startsWith("/")) {
+            this.name = `/${this.name}`
+        }
+
+        if(this.baseFont && !this.baseFont.startsWith("/")) {
+            this.baseFont = `/${this.baseFont}`
         }
 
 
-        if (this.baseFont && this.isStandardFont(this.baseFont)) {
+        if (this.baseFont && Font.isStandardFont(this.baseFont)) {
             this.widths = Font.standardFontToWidths(this.baseFont)
 
             if(!this.widths) {
@@ -56,6 +64,10 @@ export class Font {
      * Returns the widths array of a standard font
      * */
     private static standardFontToWidths(font_name : string) : number[] {
+        if(font_name.startsWith("/")) {
+            font_name = font_name.substring(1)
+        }
+
         let key = Object.keys(STANDARD_FONT_WIDTHS).filter(name => name.indexOf(font_name) === 0)
 
         if (!key || key.length === 0 || key.length > 1) {
@@ -72,9 +84,26 @@ export class Font {
     }
 
     /**
+     * Returns a standard font
+     * fontName the name reference the font name
+     * baseFont the standard font
+     * */
+    public static createStandardFont(object_id : ReferencePointer, fontName : string, baseFont : string) : Font {
+        let font = new Font(FontType.Type1, fontName, baseFont)
+
+        font.object_id = object_id
+
+        return font
+    }
+
+    /**
      * True, if the name is a standard font name
      * */
-    public isStandardFont(name : string) : boolean {
+    public static isStandardFont(name : string) : boolean {
+        if(name.startsWith("/")) {
+            name = name.substring(1)
+        }
+
         switch (name) {
             case "Times-Roman":
                 return true
@@ -116,25 +145,106 @@ export class FontManager {
      * */
     fonts: Font[] = []
 
-    /**
-     * Adds a font, if it does not already exists
-     * */
-    public addFont(font : Font) {
-        let font_exist : Font[] = this.fonts.filter(f => f.object_id && font.object_id &&
-            f.object_id.obj === font.object_id.obj && f.object_id.generation === font.object_id.generation)
+    constructor(private parser : PDFDocumentParser) { }
 
-        if (font_exist.length > 0) {
-            return
+    /**
+     * Returns the font with the corresponding reference pointer or name or basefont
+     *
+     * If there is no such font it returns undefined
+     * */
+    public getFont(font : ReferencePointer | string) : Font | undefined {
+        for (let f of this.fonts) {
+            if (typeof font === 'string') {
+                if (f.name === font || f.baseFont === font)
+                    return f
+            } else {
+                if (f.object_id!.obj === (font as ReferencePointer).obj && f.object_id!.generation === (font as ReferencePointer).generation)
+                    return f
+            }
         }
 
+        return undefined
+    }
+
+    /**
+     * Adds a font, if it does not already exists.
+     * */
+    public addFont(font : Font | string) : Font | undefined {
+
+        if(this.hasFont(font)) {
+            return undefined
+        }
+
+        if(typeof font === "string") {
+            if(Font.isStandardFont(font)) {
+                font = Font.createStandardFont(this.parser.getFreeObjectId(), this.getUnusedFontName(), font)
+            }
+        }
+
+        if(!(font instanceof Font)) {
+            throw Error('Could not add font')
+        }
+
+        font.is_new = true
+
         this.fonts.push(font)
+
+        return font
+    }
+
+    /**
+     * Returns a font name that is not used yet
+     * */
+    public getUnusedFontName() : string {
+        let font_name : string = `/F${this.fonts.length}`
+
+        let i = 1
+        while(this.hasFont(font_name)) {
+            font_name = `/F${this.fonts.length + i++}`
+        }
+
+        return font_name
     }
 
     /**
      * Retutrns true, if the font is already part of the font manager
+     *
+     * Font can be a Font object, a reference pointer of a font object a font name or a base font
      * */
-    public hasFont(font_ptr : ReferencePointer) : boolean {
-        return this.fonts.filter(f => f.object_id && f.object_id.obj === font_ptr.obj &&
-            f.object_id.generation === font_ptr.generation).length > 0
+    public hasFont(font_ptr : Font | ReferencePointer | string) : boolean {
+        if (font_ptr instanceof Font && font_ptr.object_id) {
+            font_ptr = font_ptr.object_id
+        } else if (typeof font_ptr === "string") {
+            return this.fonts.filter(f => f.name === font_ptr ||
+                f.baseFont === font_ptr).length > 0
+        }
+
+        return this.fonts.filter(f => f.object_id && f.object_id.obj === (font_ptr as ReferencePointer).obj &&
+            f.object_id.generation === (font_ptr as ReferencePointer).generation).length > 0
     }
+
+    /**
+     * Returns true, if the font with the given name is registered, or if it is the name of a standard font.
+     * */
+    public isRegisteredFont(font : string | Font) : boolean {
+        if (typeof font === 'string') {
+            if (Font.isStandardFont(font))
+                return true
+
+            for(let _font of this.fonts) {
+                if (_font.name === font) {
+                    return true
+                }
+            }
+        } else if (font instanceof Font) {
+            for(let _font of this.fonts) {
+                if (_font.name === font.name) {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
 }

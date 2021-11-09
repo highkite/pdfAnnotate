@@ -384,6 +384,8 @@ export class Writer {
             ptr += 2
         }
 
+        console.log("Here start with first writing missing font descriptors!!!")
+
         for (let key in pageWiseSorted) {
             let pageAnnots = pageWiseSorted[key]
 

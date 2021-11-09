@@ -177,9 +177,7 @@ export class BaseAnnotationObj implements BaseAnnotation {
 
 
         if (this.color) {
-            if (this.color.r > 1) this.color.r /= 255
-            if (this.color.g > 1) this.color.g /= 255
-            if (this.color.b > 1) this.color.b /= 255
+            this.color = Util.colorToRange01(this.color)
 
             ret.push(WriterUtil.SPACE)
             ret = ret.concat(WriterUtil.COLOR)

@@ -10,7 +10,7 @@ export class Operator {
     /**
      * Transforms operator to byte array
      * */
-    toByteArray() : number[] {
+    toByteArray(noLineFeed : boolean = false) : number[] {
         let ret: number[] = []
 
         for(let op of this.operators) {
@@ -21,27 +21,48 @@ export class Operator {
 
             if (op instanceof MarkedContent) {
                 ret = ret.concat(WriterUtil.BMC)
-                ret.push(Util.LF)
+                if(!noLineFeed) {
+                    ret.push(Util.LF)
+                } else {
+                    ret.push(Util.SPACE)
+                }
                 ret = ret.concat(op.toByteArray())
                 ret = ret.concat(WriterUtil.EMC)
             } else if (op instanceof GraphicsObject) {
                 ret.push(WriterUtil.q)
-                ret.push(Util.LF)
+                if(!noLineFeed) {
+                    ret.push(Util.LF)
+                } else {
+                    ret.push(Util.SPACE)
+                }
                 ret = ret.concat(op.toByteArray())
                 ret.push(WriterUtil.Q)
             } else if (op instanceof TextObject) {
                 ret = ret.concat(WriterUtil.BT)
-                ret.push(Util.LF)
+                if(!noLineFeed) {
+                    ret.push(Util.LF)
+                } else {
+                    ret.push(Util.SPACE)
+                }
                 ret = ret.concat(op.toByteArray())
                 ret = ret.concat(WriterUtil.ET)
             } else {
                 ret = ret.concat(Util.convertStringToAscii(op.name))
-                ret.push(Util.LF)
+                if(!noLineFeed) {
+                    ret.push(Util.LF)
+                } else {
+                    ret.push(Util.SPACE)
+                }
             }
         }
 
-        if (ret[ret.length - 1] !== Util.LF)
-            ret.push(Util.LF)
+        if (ret[ret.length - 1] !== Util.LF) {
+            if(!noLineFeed) {
+                ret.push(Util.LF)
+            } else {
+                ret.push(Util.SPACE)
+            }
+        }
 
         return ret
     }
@@ -293,9 +314,16 @@ export class TextObject extends Operator {
 export class ContentStream extends Operator {
 
     /**
+     * True, if the content stream is empty
+     * */
+    isEmpty() : boolean {
+        return this.operators.length === 0
+    }
+
+    /**
      * Outputs the content stream as byte sequence
      * */
-    writeContentStream() : number[] {
-        return this.toByteArray()
+    writeContentStream(noLineFeed : boolean = false) : number[] {
+        return this.toByteArray(noLineFeed)
     }
 }

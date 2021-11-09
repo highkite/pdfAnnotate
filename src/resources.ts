@@ -27,36 +27,56 @@ export class Resource {
 
     constructor() {}
 
+    private containsResourceDef(def : ResourceDef, list : ResourceDef[]) : boolean {
+        return list.filter(d => d.name === def.name && def.refPtr && d.refPtr && def.refPtr.obj === d.refPtr.obj && def.refPtr.generation === d.refPtr.generation).length > 0
+    }
+
     public addGStateDef(def: ResourceDef) {
-        this.extGState.push(def)
+        if(!this.containsResourceDef(def, this.extGState)) {
+            this.extGState.push(def)
+        }
     }
 
     public addColorSpaceDef(def : ResourceDef) {
-        this.colorSpace.push(def)
+        if(!this.containsResourceDef(def, this.colorSpace)) {
+            this.colorSpace.push(def)
+        }
     }
 
     public addPatternDef(def : ResourceDef) {
-        this.pattern.push(def)
+        if(!this.containsResourceDef(def, this.pattern)) {
+            this.pattern.push(def)
+        }
     }
 
     public addShadingDef(def : ResourceDef) {
-        this.shading.push(def)
+        if(!this.containsResourceDef(def, this.shading)) {
+            this.shading.push(def)
+        }
     }
 
     public addXObjectDef(def : ResourceDef) {
-        this.xObject.push(def)
+        if(!this.containsResourceDef(def, this.xObject)) {
+            this.xObject.push(def)
+        }
     }
 
     public addFontDef(def : ResourceDef) {
-        this.font.push(def)
+        if(!this.containsResourceDef(def, this.font)) {
+            this.font.push(def)
+        }
     }
 
     public addProcSetDef(def : ResourceDef) {
-        this.procSet.push(def)
+        if(!this.containsResourceDef(def, this.procSet)) {
+            this.procSet.push(def)
+        }
     }
 
     public addProperty(def : ResourceDef) {
-        this.properties.push(def)
+        if(!this.containsResourceDef(def, this.properties)) {
+            this.properties.push(def)
+        }
     }
 
     private writeDictAttribute(defs: ResourceDef[]) : number[] {
