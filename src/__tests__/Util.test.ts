@@ -614,3 +614,67 @@ test('skipSpaces', () => {
     let val : number[] = [10, 13, 9, 32, 97]
     expect(Util.skipSpaces(val, 0)).toBe(4)
 })
+
+test('colorToRange255', () => {
+    let c = Util.colorToRange255({r: 0.235, g: 0.250, b: 0.905})
+    expect(c.r).toBe(60)
+    expect(c.g).toBe(64)
+    expect(c.b).toBe(231)
+
+    c = Util.colorToRange255({r: 0.380, g: 0.905, b: 0.235})
+    expect(c.r).toBe(97)
+    expect(c.g).toBe(231)
+    expect(c.b).toBe(60)
+
+    c = Util.colorToRange255({r: 0, g: 0, b: 0})
+    expect(c.r).toBe(0)
+    expect(c.g).toBe(0)
+    expect(c.b).toBe(0)
+
+    c = Util.colorToRange255({r: 1, g: 1, b: 1})
+    expect(c.r).toBe(255)
+    expect(c.g).toBe(255)
+    expect(c.b).toBe(255)
+
+    c = Util.colorToRange255({r: 97, g:231, b: 60})
+    expect(c.r).toBe(97)
+    expect(c.g).toBe(231)
+    expect(c.b).toBe(60)
+})
+
+test('colorToRange01', () => {
+    let c = Util.colorToRange01({r: 60, g:64, b: 231})
+    expect(c.r).toBe(0.235)
+    expect(c.g).toBe(0.251)
+    expect(c.b).toBe(0.906)
+
+    c = Util.colorToRange01({r: 97, g:231, b: 60})
+    expect(c.r).toBe(0.380)
+    expect(c.g).toBe(0.906)
+    expect(c.b).toBe(0.235)
+
+    c = Util.colorToRange01({r: 0, g: 0, b: 0})
+    expect(c.r).toBe(0)
+    expect(c.g).toBe(0)
+    expect(c.b).toBe(0)
+
+    c = Util.colorToRange01({r: 255, g:255, b: 255})
+    expect(c.r).toBe(1)
+    expect(c.g).toBe(1)
+    expect(c.b).toBe(1)
+
+    c = Util.colorToRange01({r: 0.380, g: 0.905, b: 0.235})
+    expect(c.r).toBe(0.380)
+    expect(c.g).toBe(0.905)
+    expect(c.b).toBe(0.235)
+})
+
+test('colorToHex', () => {
+    expect(Util.colorToHex({r: 205, g: 92, b: 92})).toBe("#CD5C5C")
+    expect(Util.colorToHex({r: 240, g: 128, b: 128})).toBe("#F08080")
+    expect(Util.colorToHex({r: 250, g: 128, b: 114})).toBe("#FA8072")
+    expect(Util.colorToHex({r: 233, g: 150, b: 122})).toBe("#E9967A")
+    expect(Util.colorToHex({r: 255, g: 160, b: 122})).toBe("#FFA07A")
+
+    expect(Util.colorToHex({r: 0.380, g: 0.905, b: 0.235})).toBe("#61E73C")
+})

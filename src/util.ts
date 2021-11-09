@@ -1,4 +1,5 @@
 import { ReferencePointer } from './parser';
+import { Color } from './annotations/annotation_types';
 
 /**
  * The result contains the extraction result and the
@@ -696,5 +697,60 @@ export class Util {
      * */
     public static isReferencePointer (obj : any) : boolean {
         return ("obj" in obj && "generation" in obj && Object.keys(obj).length == 2)
+    }
+
+    /**
+     * If color is provided in range [0,1) it will map these values in the color range [0, 255]
+     * */
+    public static colorToRange255(color : Color) : Color {
+        if (color.r <= 1) {
+            color.r = Math.round(color.r * 255)
+        }
+
+        if (color.g <= 1) {
+            color.g =  Math.round(color.g * 255)
+        }
+
+        if (color.b <= 1) {
+            color.b = Math.round(color.b * 255)
+        }
+
+        return color
+    }
+
+    /**
+     * If color is provided in range [0,255] it will map these values in the color range [0, 1]
+     * */
+    public static colorToRange01(color : Color) : Color {
+        if (color.r > 1) {
+            color.r = +(color.r / 255).toFixed(3)
+        }
+
+        if (color.g > 1) {
+            color.g = +(color.g / 255).toFixed(3)
+        }
+
+        if (color.b > 1) {
+            color.b =  +(color.b / 255).toFixed(3)
+        }
+
+        return color
+    }
+
+    /**
+     * Returns the HTML color hex code of the provided color
+     * */
+    public static colorToHex(color : Color) : string {
+        if(color.r < 1 || color.g < 1 || color.b < 1) {
+            color = Util.colorToRange255(color)
+        }
+        let r = color.r.toString(16)
+        r = r.length === 1 ? "0" + r : r
+        let g = color.g.toString(16)
+        g = g.length === 1 ? "0" + g : g
+        let b = color.b.toString(16)
+        b = b.length === 1 ? "0" + b : b
+
+        return `#${r.toUpperCase()}${g.toUpperCase()}${b.toUpperCase()}`
     }
 }
