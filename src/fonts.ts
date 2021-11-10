@@ -447,6 +447,7 @@ export class FontManager {
         if(typeof font === "string") {
             if(Font.isStandardFont(font)) {
                 font = Font.createStandardFont(this.parser.getFreeObjectId(), this.getUnusedFontName(), font)
+                font.is_new = true
             }
         }
 
@@ -454,72 +455,71 @@ export class FontManager {
             throw Error('Could not add font')
         }
 
-        font.is_new = true
 
         this.fonts.push(font)
 
         return font
     }
 
-                /**
-                 * Returns a font name that is not used yet
-                 * */
-                public getUnusedFontName() : string {
-                    let font_name : string = `/F${this.fonts.length}`
+    /**
+     * Returns a font name that is not used yet
+     * */
+    public getUnusedFontName() : string {
+        let font_name : string = `/F${this.fonts.length}`
 
-                    let i = 1
-                    while(this.hasFont(font_name)) {
-                        font_name = `/F${this.fonts.length + i++}`
-                    }
+        let i = 1
+        while(this.hasFont(font_name)) {
+            font_name = `/F${this.fonts.length + i++}`
+        }
 
-                    return font_name
-                }
+        return font_name
+    }
 
-                /**
-                 * Retutrns true, if the font is already part of the font manager
-                 *
-                 * Font can be a Font object, a reference pointer of a font object a font name or a base font
-                 * */
-                public hasFont(font_ptr : Font | ReferencePointer | string) : boolean {
-                    if (font_ptr instanceof Font && font_ptr.object_id) {
-                        font_ptr = font_ptr.object_id
-                    } else if (typeof font_ptr === "string") {
-                        return this.fonts.filter(f => f.name === font_ptr ||
-                            f.baseFont === font_ptr).length > 0
-                    }
+    /**
+     * Retutrns true, if the font is already part of the font manager
+     *
+     * Font can be a Font object, a reference pointer of a font object a font name or a base font
+     * */
+    public hasFont(font_ptr : Font | ReferencePointer | string) : boolean {
+        if (font_ptr instanceof Font && font_ptr.object_id) {
+            font_ptr = font_ptr.object_id
+        } else if (typeof font_ptr === "string") {
+            return this.fonts.filter(f => f.name === font_ptr ||
+                f.baseFont === font_ptr).length > 0
+        }
 
-                    return this.fonts.filter(f => f.object_id && f.object_id.obj === (font_ptr as ReferencePointer).obj &&
-                        f.object_id.generation === (font_ptr as ReferencePointer).generation).length > 0
-                }
+        return this.fonts.filter(f => f.object_id && f.object_id.obj === (font_ptr as ReferencePointer).obj &&
+            f.object_id.generation === (font_ptr as ReferencePointer).generation).length > 0
+    }
 
-                /**
-                 * Returns true, if the font with the given name is registered, or if it is the name of a standard font.
-                 * */
-                public isRegisteredFont(font : string | Font) : boolean {
-                    if (typeof font === 'string') {
-                        if (Font.isStandardFont(font))
-                            return true
+    /**
+     * Returns true, if the font with the given name is registered, or if it is the name of a standard font.
+     * */
+    public isRegisteredFont(font : string | Font) : boolean {
+        if (typeof font === 'string') {
+            if (Font.isStandardFont(font))
+                return true
 
-                        for(let _font of this.fonts) {
-                            if (_font.name === font) {
-                                return true
-                            }
-                        }
-                    } else if (font instanceof Font) {
-                        for(let _font of this.fonts) {
-                            if (_font.name === font.name) {
-                                return true
-                            }
-                        }
-                    }
-
-                    return false
-                }
-
-                /**
-                 * Returns the new fonts that must be appended to the document
-                 * */
-                public getFontsToWrite() : Font[] {
-                    return this.fonts.filter(x => x.is_new)
+            for(let _font of this.fonts) {
+                if (_font.name === font) {
+                    return true
                 }
             }
+        } else if (font instanceof Font) {
+            for(let _font of this.fonts) {
+                if (_font.name === font.name) {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
+    /**
+     * Returns the new fonts that must be appended to the document
+     * */
+    public getFontsToWrite() : Font[] {
+        return this.fonts.filter(x => x.is_new)
+    }
+}

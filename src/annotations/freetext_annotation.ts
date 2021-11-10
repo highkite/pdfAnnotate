@@ -80,11 +80,11 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
         let ret : number[] = super.writeAnnotationObject(cryptoInterface)
 
         debugger;
-        let font : Font = this.factory.parser.fontManager.getFont(this.font)
+        let font : Font = this.factory.parser.getFonts().getFont(this.font)
 
         if(!font) {
             console.warn(`Could not find font ${this.font}`)
-            font = this.factory.parser.fontManager.addFont(this.font)
+            font = this.factory.parser.getFonts().addFont(this.font)
         }
 
         if (!this.resources) {

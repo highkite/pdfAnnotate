@@ -218,12 +218,13 @@ test('FreeTextAnnotation_font_obj_available', () => {
 /**
  * Choose Helvetica font which is a standard font NOT available in test.pdf
  * */
-test('FreeTextAnnotation_font_standard_not_available', () => {
+test.only('FreeTextAnnotation_font_standard_not_available', () => {
     let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
     let factory = new AnnotationFactory(data)
 
     let textAnnotColor = {r:1, g:1, b:0}
 
+    debugger;
     let val = {
         page: 0,
         rect: [30, 30, 50, 50],

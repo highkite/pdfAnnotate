@@ -385,28 +385,6 @@ export class Writer {
             ptr += 2
         }
 
-        // write new fonts
-        let fonts : Font[] = this.parser.getFonts().getFontsToWrite()
-
-        for (let font of fonts) {
-            if (!font.object_id)
-                throw Error("Font has no object id")
-
-            let font_data = font.writeFont()
-            this.xrefs.push({
-                id: font.object_id.obj,
-                pointer: ptr,
-                generation: font.object_id.generation,
-                free: false,
-                update: true
-            })
-
-            new_data = new_data.concat(font_data)
-            ptr += font_data.length
-
-            font.is_new = false
-        }
-
         for (let key in pageWiseSorted) {
             let pageAnnots = pageWiseSorted[key]
 
@@ -490,6 +468,29 @@ export class Writer {
             new_data = new_data.concat(del_data.data)
             ptr += del_data.data.length
         }
+
+        // write new fonts
+        let fonts : Font[] = this.parser.getFonts().getFontsToWrite()
+
+        for (let font of fonts) {
+            if (!font.object_id)
+                throw Error("Font has no object id")
+
+            let font_data = font.writeFont()
+            this.xrefs.push({
+                id: font.object_id.obj,
+                pointer: ptr,
+                generation: font.object_id.generation,
+                free: false,
+                update: true
+            })
+
+            new_data = new_data.concat(font_data)
+            ptr += font_data.length
+
+            font.is_new = false
+        }
+
 
         // at this point all references to annotation objects in pages should be removed and we can free
         // the annotation object ids
