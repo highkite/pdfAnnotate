@@ -6,6 +6,7 @@ import { Color, MarkupAnnotationObj } from './annotations/annotation_types';
 import { XRef } from './document-history'
 import { WriterUtil } from './writer-util'
 import { AppStream, XObjectObj } from './appearance-stream';
+import { Font } from './fonts';
 
 /**
  * Creats the byte array that must be attached to the end of the document
@@ -384,7 +385,27 @@ export class Writer {
             ptr += 2
         }
 
-        console.log("Here start with first writing missing font descriptors!!!")
+        // write new fonts
+        let fonts : Font[] = this.parser.getFonts().getFontsToWrite()
+
+        for (let font of fonts) {
+            if (!font.object_id)
+                throw Error("Font has no object id")
+
+            let font_data = font.writeFont()
+            this.xrefs.push({
+                id: font.object_id.obj,
+                pointer: ptr,
+                generation: font.object_id.generation,
+                free: false,
+                update: true
+            })
+
+            new_data = new_data.concat(font_data)
+            ptr += font_data.length
+
+            font.is_new = false
+        }
 
         for (let key in pageWiseSorted) {
             let pageAnnots = pageWiseSorted[key]

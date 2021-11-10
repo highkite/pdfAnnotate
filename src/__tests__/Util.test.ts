@@ -678,3 +678,7 @@ test('colorToHex', () => {
 
     expect(Util.colorToHex({r: 0.380, g: 0.905, b: 0.235})).toBe("#61E73C")
 })
+
+test('convertStringToHexString', () => {
+    fail()
+})

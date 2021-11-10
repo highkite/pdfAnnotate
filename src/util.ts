@@ -753,4 +753,22 @@ export class Util {
 
         return `#${r.toUpperCase()}${g.toUpperCase()}${b.toUpperCase()}`
     }
+
+    /**
+     * Converts a string into a byte string / hex string <12AFA3>
+     * */
+    public static convertStringToByteString(value : string) : number[] {
+        let ret_value : number[] = [...Util.HEX_STRING_START]
+        let hex_val : string = Util.convertByteArrayToHexString(Util.convertStringToAscii(value))
+        ret_value = ret_value.concat(Util.convertStringToAscii(hex_val))
+        ret_value = ret_value.concat(Util.HEX_STRING_END)
+        return ret_value
+    }
+
+    /**
+     * Converts a string into a byte string / hex string <12AFA3>
+     * */
+    public static convertStringToHexString(value : string) : number[] {
+        return Util.convertStringToByteString(value)
+    }
 }

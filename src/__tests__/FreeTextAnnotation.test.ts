@@ -188,14 +188,60 @@ test('FreeTextAnnotation_font_standard_available_name_selected', () => {
  * Choose a font that was fetched with getFonts() method
  * */
 test('FreeTextAnnotation_font_obj_available', () => {
-    fail("Not yet implemented")
+    let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
+    let factory = new AnnotationFactory(data)
+
+    factory.getFonts().then((fonts) => {
+
+        let textAnnotColor = {r:1, g:1, b:0}
+
+        let val = {
+            page: 0,
+            rect: [30, 30, 50, 50],
+            contents: "Test123",
+            author: "John",
+            updateDate: new Date(2021, 1, 1),
+            creationDate: new Date(2021, 1, 1),
+            id: "test-id-123",
+            color: textAnnotColor,
+            freeTextType: FreeTextType.FreeTextCallout,
+            calloutLine: [20, 20, 40, 40],
+            lineEndingStyle: LineEndingStyle.RClosedArrow,
+            font: fonts[0]
+        }
+        factory.createFreeTextAnnotation(val)
+
+        expect(CryptoUtil.MD5Hex(factory.write())).toBe("b6254b558755543f0bc6c6774211a1fc")
+    }).catch(console.log)
 })
 
 /**
  * Choose Helvetica font which is a standard font NOT available in test.pdf
  * */
 test('FreeTextAnnotation_font_standard_not_available', () => {
-    fail("Not yet implemented")
+    let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
+    let factory = new AnnotationFactory(data)
+
+    let textAnnotColor = {r:1, g:1, b:0}
+
+    let val = {
+        page: 0,
+        rect: [30, 30, 50, 50],
+        contents: "Test123",
+        author: "John",
+        updateDate: new Date(2021, 1, 1),
+        creationDate: new Date(2021, 1, 1),
+        id: "test-id-123",
+        color: textAnnotColor,
+        freeTextType: FreeTextType.FreeTextCallout,
+        calloutLine: [20, 20, 40, 40],
+        lineEndingStyle: LineEndingStyle.RClosedArrow,
+        font: "Helvetica"
+    }
+    factory.createFreeTextAnnotation(val)
+    factory.save("test123.pdf")
+
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("b6254b558755543f0bc6c6774211a1fc")
 })
 
 test('FreeTextAnnotation_font_size_change', () => {

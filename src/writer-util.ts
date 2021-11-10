@@ -29,9 +29,40 @@ export class WriterUtil {
     public static HEX_STRING_START: number[] = [60]
     public static HEX_STRING_END: number[] = [62]
     public static DICT_END: number[] = [62, 62]
+    public static TYPE0: number[] = [ 47, 84, 121, 112, 101, 48 ] // /Type0
+    public static TYPE1: number[] = [ 47, 84, 121, 112, 101, 49 ] // /Type1
+    public static TYPE3: number[] = [ 47, 84, 121, 112, 101, 51 ] // /Type3
+    public static MMTYPE1: number[] = [ 47,  77,  77, 84, 121, 112, 101, 49 ] // /MMType1
+    public static TRUETYPE: number[] = [ 47, 84, 114, 117, 101, 84, 121, 112, 101 ] // /TrueType
+    public static CIDFONTTYPE0: number[] = [ 47,  67,  73, 68,  70, 111, 110, 116, 84, 121, 112, 101,  48 ] // /CIDFontType0
+    public static CIDFONTTYPE2: number[] = [ 47,  67,  73, 68,  70, 111, 110, 116, 84, 121, 112, 101,  50 ] // /CIDFontType2
     public static TYPE_ANNOT: number[] = [47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 65, 110, 110, 111, 116]
     public static TYPE_XOBJECT: number[] = [47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 88, 79, 98, 106, 101, 99, 116]
     public static TYPE_EXTGSTATE: number[] = [47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 69, 120, 116, 71, 83, 116, 97, 116, 101]
+    public static TYPE_FONTDESCRIPTOR: number[] = [ 47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 70, 111, 110, 116,  68, 101, 115, 99, 114, 105, 112, 116, 111, 114]
+    public static TYPE_FONT: number[] = [ 47, 84, 121, 112, 101, WriterUtil.SPACE, 47, 70, 111, 110, 116]
+    public static FONTNAME: number[] = [ 47, 70, 111, 110, 116, 78,  97, 109, 101 ] // = '/FontName'
+    public static FONTFAMILY: number[] = [ 47,  70, 111, 110, 116,  70,  97, 109, 105, 108, 121 ] // = '/FontFamily'
+    public static FONTSTRETCH: number[] = [ 47,  70, 111, 110, 116, 83, 116, 114, 101, 116, 99, 104 ] // = '/FontStretch'
+    public static FLAGS: number[] = [ 47, 70, 108, 97, 103, 115 ] // = '/Flags'
+    public static FONTBBOX: number[] = [ 47, 70, 111, 110, 116, 66,  66, 111, 120 ] // = '/FontBBox'
+    public static ITALICANGLE: number[] = [ 47,  73, 116,  97, 108, 105,  99,  65, 110, 103, 108, 101 ] // = '/ItalicAngle'
+    public static ASCENT: number[] = [ 47,  65, 115, 99, 101, 110, 116 ] // = '/Ascent'
+    public static DESCENT: number[] = [ 47,  68, 101, 115, 99, 101, 110, 116 ] // = '/Descent'
+    public static LEADING: number[] = [ 47,  76, 101,  97, 100, 105, 110, 103 ] // = '/Leading'
+    public static CAPHEIGHT: number[] = [ 47,  67,  97, 112, 72, 101, 105, 103, 104, 116 ] // = '/CapHeight'
+    public static XHEIGHT: number[] = [ 47,  88,  72, 101, 105, 103, 104, 116 ] // = '/XHeight'
+    public static STEMV: number[] = [ 47, 83, 116, 101, 109, 86 ] // = '/StemV'
+    public static ENCODING: number[] = [ 47,  69, 110,  99, 111, 100, 105, 110, 103 ] // = '/Encoding'
+    public static STEMH: number[] = [ 47, 83, 116, 101, 109, 2 ] // = '/StemH'
+    public static AVGWIDTH: number[] = [ 47,  65, 118, 103, 87, 105, 100, 116, 104 ] // = '/AvgWidth'
+    public static MAXWIDTH: number[] = [ 47,  77,  97, 120, 87, 105, 100, 116, 104 ] // = '/MaxWidth'
+    public static MISSINGWIDTH: number[] = [ 47,  77, 105, 115, 115, 105, 110, 103,  87, 105, 100, 116, 104 ] // = '/MissingWidth'
+    public static FIRSTCHAR: number[] = [ 47,  70, 105, 114, 115, 116,  67, 104, 97, 114 ] // = '/FirstChar'
+    public static LASTCHAR: number[] = [ 47, 76,  97, 115, 116, 67, 104,  97, 114 ] // = '/LastChar'
+    public static BASEFONT: number[] = [ 47, 66,  97, 115, 101, 70, 111, 110, 116 ] // = '/BaseFont'
+    public static WIDTHS: number[] = [ 47,  87, 105, 100, 116, 104, 115 ] // = '/Widths'
+    public static FONTDESCRIPTOR: number[] = [ 47,  70, 111, 110, 116, 68, 101, 115,  99, 114, 105, 112, 116, 111, 114 ] // = '/FontDescriptor'
     public static XOBJECT: number[] = [47, 88, 79, 98, 106, 101, 99, 116] // = '/XObject'
     public static EXTGSTATE: number[] = [47, 69, 120, 116, 71, 83, 116, 97, 116, 101] // = '/ExtGState'
     public static COLORSPACE: number[] = [47, 67, 111, 108, 111, 114, 83, 112, 97, 99, 101] // = '/ColorSpace'

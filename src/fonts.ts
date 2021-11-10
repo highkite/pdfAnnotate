@@ -1,25 +1,32 @@
 import { ReferencePointer, PDFDocumentParser } from './parser';
+import { STANDARD_FONT_DATA } from './font-data';
+import { WriterUtil } from './writer-util';
+import { Util } from './util';
 
 export enum FontType {
     Type0, Type1, Type3, MMType1, TrueType, CIDFontType0, CIDFontType2
 }
-const STANDARD_FONT_WIDTHS = {
-    "Times-Roman"  : [250,333,408,500,500,833,778,333,333,333,500,564,250,333,250,278,500,500,500,500,500,500,500,500,500,500,278,278,564,564,564,444,921,722,667,667,722,611,556,722,722,333,389,722,611,889,722,722,556,722,667,556,611,722,722,944,722,722,611,333,278,333,469,500,333,444,500,444,500,444,333,500,500,278,278,500,278,778,500,500,500,500,333,389,278,500,500,722,500,500,444,480,200,480,541,333,500,500,167,500,500,500,500,180,444,500,333,333,556,556,500,500,500,250,453,350,333,444,444,500,1000,1000,444,333,333,333,333,333,333,333,333,333,333,333,333,333,1000,889,276,611,722,889,310,667,278,278,500,722,500,333,444,444,500,444,722,564,722,722,444,722,500,389,444,722,722,444,722,500,611,722,250,760,611,444,444,722,278,444,611,667,444,611,389,389,278,471,667,722,500,444,722,333,444,611,556,722,667,556,588,722,500,300,722,722,722,564,500,611,476,500,722,278,611,444,444,444,500,500,722,333,564,200,760,722,333,600,611,333,500,611,611,549,722,667,278,326,444,722,722,722,444,444,278,722,500,444,389,278,722,722,612,500,300,722,500,278,500,611,500,750,556,344,722,611,980,444,333,333,611,750,549,500,500,722,611,444,500,750,556,556,722,400,500,667,500,453,722,333,722,500,667,611,722,722,722,722,444,611,333,500,564,333,500,278,564,500,500,549,500,500,444,500,300,278,500],
-    "ZapfDingbats"  : [278,974,961,974,980,719,789,790,791,690,960,939,549,855,911,933,911,945,974,755,846,762,761,571,677,763,760,759,754,494,552,537,577,692,786,788,788,790,793,794,816,823,789,841,823,833,816,831,923,744,723,749,790,792,695,776,768,792,759,707,708,682,701,826,815,789,789,707,687,696,689,786,787,713,791,785,791,873,761,762,762,759,759,892,892,788,784,438,138,277,415,392,392,668,668,390,390,317,317,276,276,509,509,410,410,234,234,334,334,732,544,544,910,667,760,760,776,595,694,626,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,788,894,838,1016,458,748,924,748,918,927,928,928,834,873,828,924,924,917,930,931,463,883,836,836,867,867,696,696,874,874,760,946,771,865,771,888,967,888,831,873,927,970,918],
-    "Helvetica"  : [278,278,355,556,556,889,667,222,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,222,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,333,556,556,167,556,556,556,556,191,333,556,333,333,500,500,556,556,556,278,537,350,222,333,333,556,1000,1000,611,333,333,333,333,333,333,333,333,333,333,333,333,333,1000,1000,370,556,778,1000,365,889,278,222,611,944,611,278,556,556,556,556,667,584,667,667,556,722,500,500,556,722,722,556,722,556,667,722,250,737,667,500,556,722,222,556,611,722,556,667,500,500,278,471,722,778,556,556,667,333,500,611,667,778,722,667,643,722,556,333,778,667,667,584,556,611,476,500,722,278,667,556,556,500,556,556,722,278,584,260,737,778,278,600,667,333,556,611,611,549,722,722,222,317,556,722,667,667,556,500,222,778,556,556,500,278,778,722,612,556,333,778,556,278,556,667,556,834,667,299,667,556,1000,556,278,278,556,834,549,556,556,722,667,556,556,834,667,667,778,400,556,722,556,453,722,333,722,556,722,556,667,667,667,778,500,667,278,500,584,278,556,278,584,556,556,549,556,556,500,556,333,278,556],
-    "Courier-Oblique"  : [600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600],
-    "Times-BoldItalic"  : [250,389,555,500,500,833,778,333,333,333,500,570,250,333,250,278,500,500,500,500,500,500,500,500,500,500,333,333,570,570,570,500,832,667,667,667,722,667,667,722,778,389,500,667,611,889,722,722,611,722,667,556,611,722,667,889,667,611,611,333,278,333,570,500,333,500,500,444,500,444,333,500,556,278,278,500,278,778,556,500,500,500,389,389,278,556,444,667,500,444,389,348,220,348,570,389,500,500,167,500,500,500,500,278,500,500,333,333,556,556,500,500,500,250,500,350,333,500,500,500,1000,1000,500,333,333,333,333,333,333,333,333,333,333,333,333,333,1000,944,266,611,722,944,300,722,278,278,500,722,500,389,444,500,556,444,611,570,611,667,500,722,444,389,444,722,722,500,722,556,667,722,250,747,667,444,500,722,278,500,611,667,500,667,389,389,278,494,667,722,556,500,667,389,444,611,611,722,667,556,608,722,556,300,722,667,667,570,556,611,494,444,722,278,667,500,444,444,556,556,722,389,570,220,747,722,389,600,667,389,500,611,611,549,722,667,278,366,444,722,667,667,444,389,278,722,500,500,389,278,722,722,612,500,300,722,576,278,500,667,500,750,556,382,667,611,1000,444,389,389,611,750,549,500,556,722,667,444,500,750,556,556,722,400,500,667,556,549,722,389,722,500,667,611,667,667,667,722,389,667,389,500,606,389,556,278,606,500,556,549,500,500,389,556,300,278,500],
-    "Courier-BoldOblique"  : [600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600],
-    "Times-Bold"  : [250,333,555,500,500,1000,833,333,333,333,500,570,250,333,250,278,500,500,500,500,500,500,500,500,500,500,333,333,570,570,570,500,930,722,667,722,722,667,611,778,778,389,500,778,667,944,722,778,611,778,722,556,667,722,722,1000,722,722,667,333,278,333,581,500,333,500,556,444,556,444,333,500,556,278,333,556,278,833,556,500,556,556,444,389,333,556,500,722,500,500,444,394,220,394,520,333,500,500,167,500,500,500,500,278,500,500,333,333,556,556,500,500,500,250,540,350,333,500,500,500,1000,1000,500,333,333,333,333,333,333,333,333,333,333,333,333,333,1000,1000,300,667,778,1000,330,722,278,278,500,722,556,389,444,500,556,444,722,570,722,722,500,722,500,389,444,722,722,500,722,556,667,722,250,747,667,444,500,722,278,500,667,722,500,667,389,389,278,494,722,778,556,500,722,444,444,667,611,778,722,556,672,722,556,300,778,722,722,570,556,667,494,500,722,278,667,500,444,444,556,556,722,389,570,220,747,778,389,600,667,444,500,667,667,549,722,722,278,416,444,722,722,722,444,444,278,778,500,500,389,278,778,722,612,556,300,778,556,278,500,667,556,750,556,394,778,667,1000,444,389,389,667,750,549,500,556,722,667,444,500,750,556,556,778,400,500,722,556,549,722,444,722,500,722,667,722,722,722,778,444,667,389,556,570,389,556,333,570,500,556,549,500,500,444,556,300,278,500],
-    "Courier"  : [600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600],
-    "Helvetica-BoldOblique"  : [278,333,474,556,556,889,722,278,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,278,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,333,556,556,167,556,556,556,556,238,500,556,333,333,611,611,556,556,556,278,556,350,278,500,500,556,1000,1000,611,333,333,333,333,333,333,333,333,333,333,333,333,333,1000,1000,370,611,778,1000,365,889,278,278,611,944,611,278,556,556,611,556,667,584,667,722,556,722,556,556,556,722,722,556,722,611,667,722,250,737,667,556,556,722,278,556,611,722,556,667,556,556,278,494,722,778,611,556,722,389,556,611,667,778,722,667,743,722,611,333,778,722,722,584,611,611,494,556,722,278,667,556,556,556,611,611,722,278,584,280,737,778,278,600,667,389,611,611,611,549,722,722,278,389,556,722,722,722,556,500,278,778,611,556,556,278,778,722,612,611,333,778,611,278,611,667,611,834,667,400,722,611,1000,556,278,278,611,834,549,611,611,722,667,556,611,834,667,667,778,400,611,722,611,549,722,389,722,611,722,611,722,722,722,778,500,667,278,556,584,278,611,333,584,611,611,549,611,611,500,611,333,278,556],
-    "Helvetica-Bold"  : [278,333,474,556,556,889,722,278,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,278,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,333,556,556,167,556,556,556,556,238,500,556,333,333,611,611,556,556,556,278,556,350,278,500,500,556,1000,1000,611,333,333,333,333,333,333,333,333,333,333,333,333,333,1000,1000,370,611,778,1000,365,889,278,278,611,944,611,278,556,556,611,556,667,584,667,722,556,722,556,556,556,722,722,556,722,611,667,722,250,737,667,556,556,722,278,556,611,722,556,667,556,556,278,494,722,778,611,556,722,389,556,611,667,778,722,667,743,722,611,333,778,722,722,584,611,611,494,556,722,278,667,556,556,556,611,611,722,278,584,280,737,778,278,600,667,389,611,611,611,549,722,722,278,389,556,722,722,722,556,500,278,778,611,556,556,278,778,722,612,611,333,778,611,278,611,667,611,834,667,400,722,611,1000,556,278,278,611,834,549,611,611,722,667,556,611,834,667,667,778,400,611,722,611,549,722,389,722,611,722,611,722,722,722,778,500,667,278,556,584,278,611,333,584,611,611,549,611,611,500,611,333,278,556],
-    "Times-Italic"  : [250,333,420,500,500,833,778,333,333,333,500,675,250,333,250,278,500,500,500,500,500,500,500,500,500,500,333,333,675,675,675,500,920,611,611,667,722,611,611,722,722,333,444,667,556,833,667,722,611,722,611,500,556,722,611,833,611,556,556,389,278,389,422,500,333,500,500,444,500,444,278,500,500,278,278,444,278,722,500,500,500,500,389,389,278,500,444,667,444,444,389,400,275,400,541,389,500,500,167,500,500,500,500,214,556,500,333,333,500,500,500,500,500,250,523,350,333,556,556,500,889,1000,500,333,333,333,333,333,333,333,333,333,333,333,333,333,889,889,276,556,722,944,310,667,278,278,500,667,500,333,444,500,500,444,556,675,556,611,500,722,444,389,444,722,722,500,722,500,611,722,250,760,611,444,500,667,278,500,556,667,500,611,389,389,278,471,611,722,500,500,611,389,444,556,611,722,611,500,544,722,500,300,722,611,611,675,500,556,476,444,667,278,611,500,444,444,500,500,667,333,675,275,760,722,333,600,611,389,500,556,556,549,722,667,278,300,444,722,611,611,444,389,278,722,500,500,389,278,722,722,612,500,300,722,500,278,500,611,500,750,500,300,667,556,980,444,333,333,611,750,549,500,500,722,611,444,500,750,500,500,722,400,500,667,500,453,722,389,667,500,611,556,611,611,611,722,389,611,333,444,675,333,500,278,675,500,500,549,500,500,389,500,300,278,500],
-    "Symbol"  : [250,333,713,500,549,833,778,439,333,333,500,549,250,549,250,278,500,500,500,500,500,500,500,500,500,500,278,278,549,549,549,444,549,722,667,722,612,611,763,603,722,333,631,722,686,889,722,722,768,741,556,592,611,690,439,768,645,795,611,333,863,333,658,500,500,631,549,549,494,439,521,411,603,329,603,549,549,576,521,549,549,521,549,603,439,576,713,686,493,686,494,480,200,480,549,750,620,247,549,167,713,500,753,753,753,753,1042,987,603,987,603,400,549,411,549,549,713,494,460,549,549,549,549,1000,603,1000,658,823,686,795,987,768,768,823,768,768,713,713,713,713,713,713,713,768,713,790,790,890,823,549,250,713,603,603,1042,987,603,987,603,494,329,790,790,786,713,384,384,384,384,384,384,494,494,494,494,329,274,686,686,686,384,384,384,384,384,384,494,494,494,790],
-    "Courier-Bold"  : [600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600],
-    "Helvetica-Oblique"  : [278,278,355,556,556,889,667,222,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,222,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,333,556,556,167,556,556,556,556,191,333,556,333,333,500,500,556,556,556,278,537,350,222,333,333,556,1000,1000,611,333,333,333,333,333,333,333,333,333,333,333,333,333,1000,1000,370,556,778,1000,365,889,278,222,611,944,611,278,556,556,556,556,667,584,667,667,556,722,500,500,556,722,722,556,722,556,667,722,250,737,667,500,556,722,222,556,611,722,556,667,500,500,278,471,722,778,556,556,667,333,500,611,667,778,722,667,643,722,556,333,778,667,667,584,556,611,476,500,722,278,667,556,556,500,556,556,722,278,584,260,737,778,278,600,667,333,556,611,611,549,722,722,222,317,556,722,667,667,556,500,222,778,556,556,500,278,778,722,612,556,333,778,556,278,556,667,556,834,667,299,667,556,1000,556,278,278,556,834,549,556,556,722,667,556,556,834,667,667,778,400,556,722,556,453,722,333,722,556,722,556,667,667,667,778,500,667,278,500,584,278,556,278,584,556,556,549,556,556,500,556,333,278,556]
-}
 
+
+export interface FontDescriptor {
+    fontName : string
+    fontFamily? : string | undefined
+    fontStretch? : string | undefined
+    fontWeight? : string | undefined
+    flags : number | undefined
+    fontBBox? : number[] | undefined
+    italicAngle : number
+    ascent? : number | undefined
+    descent? : number | undefined
+    leading? : number | undefined
+    capHeight? : number | undefined
+    xHeight? : number | undefined
+    stemV? : number | undefined
+    stemH? : number | undefined
+    avgWidth? : number | undefined
+    maxWidth? : number | undefined
+    missingWidth? : number | undefined
+}
 
 export class Font {
     object_id : ReferencePointer | undefined = undefined
@@ -33,6 +40,8 @@ export class Font {
     firstChar: number | undefined = undefined
     lastChar: number | undefined = undefined
     widths: number[] | undefined = undefined
+    fontDescriptor : FontDescriptor | undefined = undefined
+    encoding: string | undefined = undefined
 
     constructor(fontType: FontType | undefined = undefined, name : string | undefined = undefined, baseFont : string | undefined = undefined) {
         this.fontType = fontType
@@ -49,38 +58,52 @@ export class Font {
 
 
         if (this.baseFont && Font.isStandardFont(this.baseFont)) {
-            this.widths = Font.standardFontToWidths(this.baseFont)
+            this.populateStandardFontData(this.baseFont)
 
             if(!this.widths) {
                 throw Error(`No widths found for standard font "${this.baseFont}"`)
             }
-
-            this.firstChar = 0
-            this.lastChar = this.widths.length
         }
     }
 
     /**
      * Returns the widths array of a standard font
      * */
-    private static standardFontToWidths(font_name : string) : number[] {
+    private populateStandardFontData(font_name : string) {
         if(font_name.startsWith("/")) {
             font_name = font_name.substring(1)
         }
 
-        let key = Object.keys(STANDARD_FONT_WIDTHS).filter(name => name.indexOf(font_name) === 0)
+        let key = Object.keys(STANDARD_FONT_DATA).filter(name => font_name.localeCompare(name) === 0)
 
         if (!key || key.length === 0 || key.length > 1) {
             throw Error(`No font widths for standard font ${font_name}`)
         }
 
-        let widths : number[] =  STANDARD_FONT_WIDTHS[key[0] as keyof typeof STANDARD_FONT_WIDTHS]
+        let font_data =  STANDARD_FONT_DATA[key[0] as keyof typeof STANDARD_FONT_DATA]
 
-        if(!widths) {
-            throw Error(`No font widths for standard font ${font_name}`)
+        if(!font_data) {
+            throw Error(`No font data for standard font ${font_name}`)
         }
 
-        return widths as number[]
+        this.widths = font_data.widths
+        this.firstChar = font_data.firstChar
+        this.lastChar = font_data.lastChar
+        this.fontDescriptor = {
+            fontName: this.baseFont!,
+            fontFamily : font_data.familyName,
+            fontWeight: font_data.fontWeight,
+            italicAngle: font_data.italicAngle,
+            fontBBox: font_data.fontBBox,
+            capHeight: (font_data as any).capHeight,
+            xHeight: (font_data as any).xHeight,
+            ascent: (font_data as any).ascent,
+            descent: (font_data as any).descent,
+            stemH: font_data.stemH,
+            stemV: font_data.stemV,
+            flags: font_data.flag
+        }
+
     }
 
     /**
@@ -137,6 +160,241 @@ export class Font {
                 return false
         }
     }
+
+    private typeToNumberArray(fontType : FontType) : number[] {
+        switch (fontType) {
+            case FontType.Type0:
+                return WriterUtil.TYPE0
+                break
+            case FontType.Type1:
+                return WriterUtil.TYPE1
+                break
+            case FontType.Type3:
+                return WriterUtil.TYPE3
+                break
+            case FontType.MMType1:
+                return WriterUtil.MMTYPE1
+                break
+            case FontType.TrueType:
+                return WriterUtil.TRUETYPE
+                break
+            case FontType.CIDFontType0:
+                return WriterUtil.CIDFONTTYPE0
+                break
+            case FontType.CIDFontType2:
+                return WriterUtil.CIDFONTTYPE2
+                break
+        }
+
+        return []
+    }
+
+    public writeFontDescriptor() : number[] {
+        if (!this.fontDescriptor)
+            return []
+
+        let ret: number[] = []
+
+        ret = ret.concat(WriterUtil.DICT_START)
+        ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(WriterUtil.TYPE_FONTDESCRIPTOR)
+        ret.push(WriterUtil.SPACE)
+
+        if(this.baseFont) {
+            ret = ret.concat(WriterUtil.FONTNAME)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertStringToAscii(this.baseFont))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.fontFamily) {
+            ret = ret.concat(WriterUtil.FONTFAMILY)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertStringToByteString(this.fontDescriptor.fontFamily))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.fontStretch) {
+            ret = ret.concat(WriterUtil.FONTSTRETCH)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertStringToAscii(this.fontDescriptor.fontStretch))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.flags) {
+            ret = ret.concat(WriterUtil.FLAGS)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.fontDescriptor.flags))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.fontBBox) {
+            ret = ret.concat(WriterUtil.FONTBBOX)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(WriterUtil.writeNumberArray(this.fontDescriptor.fontBBox))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.italicAngle) {
+            ret = ret.concat(WriterUtil.ITALICANGLE)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.fontDescriptor.italicAngle))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.ascent) {
+            ret = ret.concat(WriterUtil.ASCENT)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.fontDescriptor.ascent))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.descent) {
+            ret = ret.concat(WriterUtil.DESCENT)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.fontDescriptor.descent))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.leading) {
+            ret = ret.concat(WriterUtil.LEADING)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.fontDescriptor.leading))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.capHeight) {
+            ret = ret.concat(WriterUtil.CAPHEIGHT)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.fontDescriptor.capHeight))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.xHeight) {
+            ret = ret.concat(WriterUtil.XHEIGHT)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.fontDescriptor.xHeight))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.stemV) {
+            ret = ret.concat(WriterUtil.STEMV)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.fontDescriptor.stemV))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.stemH) {
+            ret = ret.concat(WriterUtil.STEMH)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.fontDescriptor.stemH))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.avgWidth) {
+            ret = ret.concat(WriterUtil.AVGWIDTH)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.fontDescriptor.avgWidth))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.maxWidth) {
+            ret = ret.concat(WriterUtil.MAXWIDTH)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.fontDescriptor.maxWidth))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor.missingWidth) {
+            ret = ret.concat(WriterUtil.MISSINGWIDTH)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.fontDescriptor.missingWidth))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        ret = ret.concat(WriterUtil.DICT_END)
+        ret.push(WriterUtil.SPACE)
+
+        return ret
+    }
+
+    public writeFont() : number[] {
+        if(!this.object_id)
+            throw Error("object_id of font not set")
+
+        let ret: number[] = WriterUtil.writeReferencePointer(this.object_id)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(WriterUtil.OBJ)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
+        ret = ret.concat(WriterUtil.DICT_START)
+        ret.push(WriterUtil.SPACE)
+
+        ret = ret.concat(WriterUtil.TYPE_FONT)
+        ret.push(WriterUtil.SPACE)
+
+        if (!this.fontType) {
+            throw Error("Font Type not set")
+        }
+
+        ret = ret.concat(WriterUtil.SUBTYPE)
+        ret.push(WriterUtil.SPACE)
+        ret = ret.concat(this.typeToNumberArray(this.fontType))
+        ret.push(WriterUtil.SPACE)
+
+        if (this.baseFont) {
+            ret = ret.concat(WriterUtil.BASEFONT)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertStringToAscii(this.baseFont))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.firstChar) {
+            ret = ret.concat(WriterUtil.FIRSTCHAR)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.firstChar))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.lastChar) {
+            ret = ret.concat(WriterUtil.LASTCHAR)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertNumberToCharArray(this.lastChar))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.widths) {
+            ret = ret.concat(WriterUtil.WIDTHS)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(WriterUtil.writeNumberArray(this.widths))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.fontDescriptor) {
+            ret = ret.concat(WriterUtil.FONTDESCRIPTOR)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(this.writeFontDescriptor())
+            ret.push(WriterUtil.SPACE)
+        }
+
+        if (this.encoding) {
+            ret = ret.concat(WriterUtil.ENCODING)
+            ret.push(WriterUtil.SPACE)
+            ret = ret.concat(Util.convertStringToAscii(this.encoding))
+            ret.push(WriterUtil.SPACE)
+        }
+
+        ret = ret.concat(WriterUtil.DICT_END)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
+
+        ret = ret.concat(WriterUtil.ENDOBJ)
+        ret.push(WriterUtil.CR)
+        ret.push(WriterUtil.LF)
+
+        return ret
+    }
 }
 
 export class FontManager {
@@ -152,12 +410,23 @@ export class FontManager {
      *
      * If there is no such font it returns undefined
      * */
-    public getFont(font : ReferencePointer | string) : Font | undefined {
+    public getFont(font : ReferencePointer | Font | string) : Font | undefined {
         for (let f of this.fonts) {
             if (typeof font === 'string') {
                 if (f.name === font || f.baseFont === font)
                     return f
-            } else {
+            } else if (font instanceof Font) {
+                if(font.object_id && f.object_id) {
+                    if (f.object_id.obj === font.object_id.obj && f.object_id.generation === font.object_id.generation)
+                        return f
+                } else if(font.name && f.name) {
+                    if (f.name === font.name)
+                        return f
+                } else if(font.baseFont && f.baseFont) {
+                    if (f.baseFont === font.baseFont)
+                        return f
+                }
+            } else{
                 if (f.object_id!.obj === (font as ReferencePointer).obj && f.object_id!.generation === (font as ReferencePointer).generation)
                     return f
             }
@@ -192,59 +461,65 @@ export class FontManager {
         return font
     }
 
-    /**
-     * Returns a font name that is not used yet
-     * */
-    public getUnusedFontName() : string {
-        let font_name : string = `/F${this.fonts.length}`
+                /**
+                 * Returns a font name that is not used yet
+                 * */
+                public getUnusedFontName() : string {
+                    let font_name : string = `/F${this.fonts.length}`
 
-        let i = 1
-        while(this.hasFont(font_name)) {
-            font_name = `/F${this.fonts.length + i++}`
-        }
+                    let i = 1
+                    while(this.hasFont(font_name)) {
+                        font_name = `/F${this.fonts.length + i++}`
+                    }
 
-        return font_name
-    }
+                    return font_name
+                }
 
-    /**
-     * Retutrns true, if the font is already part of the font manager
-     *
-     * Font can be a Font object, a reference pointer of a font object a font name or a base font
-     * */
-    public hasFont(font_ptr : Font | ReferencePointer | string) : boolean {
-        if (font_ptr instanceof Font && font_ptr.object_id) {
-            font_ptr = font_ptr.object_id
-        } else if (typeof font_ptr === "string") {
-            return this.fonts.filter(f => f.name === font_ptr ||
-                f.baseFont === font_ptr).length > 0
-        }
+                /**
+                 * Retutrns true, if the font is already part of the font manager
+                 *
+                 * Font can be a Font object, a reference pointer of a font object a font name or a base font
+                 * */
+                public hasFont(font_ptr : Font | ReferencePointer | string) : boolean {
+                    if (font_ptr instanceof Font && font_ptr.object_id) {
+                        font_ptr = font_ptr.object_id
+                    } else if (typeof font_ptr === "string") {
+                        return this.fonts.filter(f => f.name === font_ptr ||
+                            f.baseFont === font_ptr).length > 0
+                    }
 
-        return this.fonts.filter(f => f.object_id && f.object_id.obj === (font_ptr as ReferencePointer).obj &&
-            f.object_id.generation === (font_ptr as ReferencePointer).generation).length > 0
-    }
+                    return this.fonts.filter(f => f.object_id && f.object_id.obj === (font_ptr as ReferencePointer).obj &&
+                        f.object_id.generation === (font_ptr as ReferencePointer).generation).length > 0
+                }
 
-    /**
-     * Returns true, if the font with the given name is registered, or if it is the name of a standard font.
-     * */
-    public isRegisteredFont(font : string | Font) : boolean {
-        if (typeof font === 'string') {
-            if (Font.isStandardFont(font))
-                return true
+                /**
+                 * Returns true, if the font with the given name is registered, or if it is the name of a standard font.
+                 * */
+                public isRegisteredFont(font : string | Font) : boolean {
+                    if (typeof font === 'string') {
+                        if (Font.isStandardFont(font))
+                            return true
 
-            for(let _font of this.fonts) {
-                if (_font.name === font) {
-                    return true
+                        for(let _font of this.fonts) {
+                            if (_font.name === font) {
+                                return true
+                            }
+                        }
+                    } else if (font instanceof Font) {
+                        for(let _font of this.fonts) {
+                            if (_font.name === font.name) {
+                                return true
+                            }
+                        }
+                    }
+
+                    return false
+                }
+
+                /**
+                 * Returns the new fonts that must be appended to the document
+                 * */
+                public getFontsToWrite() : Font[] {
+                    return this.fonts.filter(x => x.is_new)
                 }
             }
-        } else if (font instanceof Font) {
-            for(let _font of this.fonts) {
-                if (_font.name === font.name) {
-                    return true
-                }
-            }
-        }
-
-        return false
-    }
-
-}
