@@ -175,15 +175,6 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
             ret.push(WriterUtil.SPACE)
         }
 
-        // 1. get current font and font name
-        // 2. get font size
-        // 3. get color
-        // 4. write DA string
-        // 5. write DS string
-        // 6. add resources dictionary to annotation object for the used font name in DA
-        // 7. If no font was set and Helvetica default font is not yet defined in the document it must be
-        // created and added to the document
-
         return ret
     }
 
