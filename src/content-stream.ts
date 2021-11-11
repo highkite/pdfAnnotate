@@ -246,9 +246,7 @@ export class GraphicsObject extends Operator {
         if (!color)
             color = {r: 0, g: 0, b: 0}
 
-        if (color.r > 1) color.r /= 255
-        if (color.g > 1) color.g /= 255
-        if (color.b > 1) color.b /= 255
+        color = Util.colorToRange01(color)
         this.addOperator("RG", [color.r, color.g, color.b])
         return this
     }
@@ -257,9 +255,7 @@ export class GraphicsObject extends Operator {
         if (!color)
             color = {r: 0, g: 0, b: 0}
 
-        if (color.r > 1) color.r /= 255
-        if (color.g > 1) color.g /= 255
-        if (color.b > 1) color.b /= 255
+        color = Util.colorToRange01(color)
         this.addOperator("rg", [color.r, color.g, color.b])
         return this
     }
@@ -303,9 +299,7 @@ export class TextObject extends Operator {
         if (!color)
             color = {r: 0, g: 0, b: 0}
 
-        if (color.r > 1) color.r /= 255
-        if (color.g > 1) color.g /= 255
-        if (color.b > 1) color.b /= 255
+        color = Util.colorToRange01(color)
         this.addOperator("rg", [color.r, color.g, color.b])
         return this
     }

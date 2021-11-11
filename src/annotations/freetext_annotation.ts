@@ -82,7 +82,6 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
         let font : Font = this.factory.parser.getFonts().getFont(this.font)
 
         if(!font) {
-            console.warn(`Could not find font ${this.font}`)
             font = this.factory.parser.getFonts().addFont(this.font)
         }
 
@@ -219,6 +218,16 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
     }
 
     public createDefaultAppearanceStream() {
+        let font : Font = this.factory.parser.getFonts().getFont(this.font)
+
+        if(!font) {
+            font = this.factory.parser.getFonts().addFont(this.font)
+        }
+
+        if (!font.name) {
+            font.name = this.factory.parser.getFonts().getUnusedFontName()
+        }
+
         this.appearanceStream = new AppStream(this)
         this.appearanceStream.new_object = true
         let xobj = new XObjectObj()
@@ -226,19 +235,22 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
         xobj.new_object = true
         xobj.bBox = this.rect
         xobj.matrix = [1, 0, 0, 1, -this.rect[0], -this.rect[1]]
+        if(!xobj.resources) {
+            xobj.resources = new Resource()
+        }
+        xobj.resources.addFontDef({name: font.name!, refPtr: font.object_id})
+
         let cs  = new ContentStream()
         xobj.contentStream = cs
         let cmo = cs.addMarkedContentObject(["/Tx"])
         let go = cmo.addGraphicObject()
-        go.setLineColor()
+        go.setFillColor(this.color)
+        go.fillRect(this.rect[0], this.rect[1], this.rect[2], this.rect[3])
         let to = go.addTextObject()
         to.addOperator("Tm", [1, 0, 0, 1, this.rect[0], this.rect[1]])
 
-        // 1. get used font
-        // 2. get name and define font and name in resources of xobj
-        // 3. if font is not yet defined in the document and not already defined by another annotation or so create and add it to the document
-        // 4. set the font
-        to.setFont()
+        to.setColor(this.textColor)
+        to.setFont(font.name, this.fontSize)
         to.setText(this.contents, [0, 0])
 
         // 1) determine text width with the font
