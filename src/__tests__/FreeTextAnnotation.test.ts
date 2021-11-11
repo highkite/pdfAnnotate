@@ -35,7 +35,7 @@ test('FreeTextAnnotation', () => {
     }
     factory.createFreeTextAnnotation(val)
 
-    expect(CryptoUtil.MD5Hex(factory.write())).toBe("0dd4fb94c5588de0f3c92ca49c3cdbeb")
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("533f34dca7ce4b0faa390c3a8ce89c31")
 })
 
 test('FreeTextAnnotation_color', () => {
@@ -56,7 +56,7 @@ test('FreeTextAnnotation_color', () => {
     }
     factory.createFreeTextAnnotation(val)
 
-    expect(CryptoUtil.MD5Hex(factory.write())).toBe("2f1b132bcac43e29fd9d20eb09a0ed42")
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("88f1244c3b125a61ee4f55d83eaec648")
 })
 
 test('FreeTextAnnotation_text_justification', () => {
@@ -78,7 +78,7 @@ test('FreeTextAnnotation_text_justification', () => {
     }
     factory.createFreeTextAnnotation(val)
 
-    expect(CryptoUtil.MD5Hex(factory.write())).toBe("96ed5ffab06f1ec7a648bb7280b25c6d")
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("fcd57e7410c40cc5903af5bcf3e861f5")
 })
 
 test('FreeTextAnnotation_callout_line', () => {
@@ -102,7 +102,7 @@ test('FreeTextAnnotation_callout_line', () => {
     }
     factory.createFreeTextAnnotation(val)
 
-    expect(CryptoUtil.MD5Hex(factory.write())).toBe("eb5e713b6d2be5c96e9e7279bcf36ad8")
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("cb924478b6e40a4a167696165a033791")
 })
 
 /**
@@ -218,13 +218,12 @@ test('FreeTextAnnotation_font_obj_available', () => {
 /**
  * Choose Helvetica font which is a standard font NOT available in test.pdf
  * */
-test.only('FreeTextAnnotation_font_standard_not_available', () => {
+test('FreeTextAnnotation_font_standard_not_available', () => {
     let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
     let factory = new AnnotationFactory(data)
 
     let textAnnotColor = {r:1, g:1, b:0}
 
-    debugger;
     let val = {
         page: 0,
         rect: [30, 30, 50, 50],
@@ -240,13 +239,31 @@ test.only('FreeTextAnnotation_font_standard_not_available', () => {
         font: "Helvetica"
     }
     factory.createFreeTextAnnotation(val)
-    factory.save("test123.pdf")
 
-    expect(CryptoUtil.MD5Hex(factory.write())).toBe("b6254b558755543f0bc6c6774211a1fc")
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("cb924478b6e40a4a167696165a033791")
 })
 
 test('FreeTextAnnotation_font_size_change', () => {
-    fail("Not yet implemented")
+    let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
+    let factory = new AnnotationFactory(data)
+
+    let textAnnotColor = {r:1, g:1, b:0}
+
+    let val = {
+        page: 0,
+        rect: [30, 30, 50, 50],
+        contents: "Test123",
+        author: "John",
+        updateDate: new Date(2021, 1, 1),
+        creationDate: new Date(2021, 1, 1),
+        id: "test-id-123",
+        color: textAnnotColor,
+        font: "Helvetica",
+        fontSize: 3
+    }
+    factory.createFreeTextAnnotation(val)
+
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("ee93e3de9965546d03bcb4122157310d")
 })
 
 test('FreeTextAnnotation_appearance_stream', () => {
@@ -289,8 +306,6 @@ test('FreeTextAnnotation_appearance_stream_long_text', () => {
     }
     let ta = factory.createFreeTextAnnotation(val)
     ta.createDefaultAppearanceStream()
-
-    factory.save("test123.pdf")
 
     expect(CryptoUtil.MD5Hex(factory.write())).toBe("eb5e713b6d2be5c96e9e7279bcf36ad8")
 })

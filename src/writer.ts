@@ -487,8 +487,6 @@ export class Writer {
 
             new_data = new_data.concat(font_data)
             ptr += font_data.length
-
-            font.is_new = false
         }
 
 

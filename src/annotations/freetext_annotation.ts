@@ -79,7 +79,6 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
     public writeAnnotationObject(cryptoInterface : CryptoInterface) : number[] {
         let ret : number[] = super.writeAnnotationObject(cryptoInterface)
 
-        debugger;
         let font : Font = this.factory.parser.getFonts().getFont(this.font)
 
         if(!font) {
