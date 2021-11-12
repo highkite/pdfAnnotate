@@ -67,6 +67,82 @@ export class Font {
     }
 
     /**
+     * Calculates the dimensions of the text using this font
+     *
+     * It also proposes linebreak positions for the provided width
+     * */
+    public proposeLinebreaks(text : string, fontSize : number, width : number) : {dimensions: number[], positions: number[]} {
+        if(!this.widths) {
+            return {dimensions: [], positions: []}
+        }
+
+        if(!this.firstChar) {
+            this.firstChar = 0
+        }
+
+        let ascii : number[] = Util.convertStringToAscii(text)
+
+        let positions: number[] = []
+
+        let line_width = 0, last_space = -1
+        for(let l = 0; l < ascii.length; ++l) {
+            line_width += this.widths[ascii[l] - this.firstChar] / 1000 * fontSize
+
+            if (ascii[l] === Util.SPACE) {
+                last_space = l
+            }
+
+            if (line_width > width) {
+                // backtrack to last space in the same line and move remainder in the next line
+                if (last_space !== -1) {
+                    positions.push(last_space)
+                    l = last_space + 1
+                    last_space = -1
+                } else { // if no such last space is in the line return line_width - last letter width
+                    positions.push(l - 1)
+                }
+            }
+        }
+
+        return {dimensions: [width, fontSize * positions.length], positions: positions}
+    }
+
+    /**
+     * Calculates the dimensions of the text using this font
+     *
+     * Returns [width, height]
+     * */
+    public calculateTextDimensions(text : string, fontSize : number) : number[] {
+        if(!this.widths) {
+            return []
+        }
+
+        if(!this.firstChar) {
+            this.firstChar = 0
+        }
+
+        let ascii : number[] = Util.convertStringToAscii(text)
+
+        let width : number = 0
+
+        for(let letter of ascii) {
+            width += this.widths[letter - this.firstChar] / 1000 * fontSize
+        }
+
+        return [width, fontSize]
+    }
+
+    /**
+     * Calculates the dimensions of the text using this font in mm
+     *
+     * Returns [width, height]
+     * */
+    public calculateTextDimensionsInMM(text : string, fontSize : number) : number[] {
+        let values = this.calculateTextDimensions(text, fontSize)
+        return [values[0] * 25.4 / 72, values[1]]
+    }
+
+    /**
      * Returns the widths array of a standard font
      * */
     private populateStandardFontData(font_name : string) {

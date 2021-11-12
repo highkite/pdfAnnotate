@@ -450,7 +450,7 @@ AnnotationFactory.loadFile(path).then((factory) => {
 
 ### <a name="createfreetext"></a>createFreeTextAnnotation(...)
 
-Creates a free text annotations. It puts a label at an arbitrary position. Notice that in particular the chrome PDF viewer and the Firefox PDF viewer are not able to render these annotations.
+Creates a free text annotations. It puts a label at an arbitrary position. Notice that in particular the chrome PDF viewer and the Firefox PDF viewer are only able to render the annotation when using a default appearance stream.
 
 ![ Example of a free text annotation](./documentation/FreeTextAnnotation.png  "Example of a free text annotation")
 

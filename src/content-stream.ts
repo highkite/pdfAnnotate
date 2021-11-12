@@ -2,6 +2,8 @@ import { ReferencePointer } from './parser';
 import { Util } from './util';
 import { WriterUtil } from './writer-util';
 import { Color } from './annotations/annotation_types';
+import { Font } from './fonts';
+import { TextJustification } from './annotations/freetext_annotation';
 
 export class Operator {
     operators: Operator[] = []
@@ -284,6 +286,37 @@ export class TextObject extends Operator {
             this.addOperator("Td", pos)
         }
         this.addOperator("Tj", [text])
+
+        return this
+    }
+
+    /**
+     * Places a text in the rectangle defined by 'rect'. It applies text justification.
+     *
+     * It applies line breaks. It first tries linebreaking at spaces between words and if that is not possible it will break between letters
+     * */
+    formatText(text: string, font : Font, textSize : number, rect : number[], justification : TextJustification | undefined = undefined) : TextObject {
+        let rect_width : number = Math.abs(rect[2] - rect[0])
+        let prop_lb = font.proposeLinebreaks(text, textSize, rect_width)
+        let threshold = 100
+
+        // If text fits into the rectangle
+        // just place the text
+        if (prop_lb.dimensions[0] <= rect_width) {
+            this.setText(text, [rect[0], rect[1]])
+            return this
+        } else if (rect_width < threshold ) { // if provided rectangle is too small to present a single letter just write it but warn
+            console.warn(`Overull hbox ${rect_width} is below minimal threshold of ${threshold}`)
+            this.setText(text, [rect[0], rect[1]])
+            return this
+        } else { // we need to apply line breaks
+            let last_pos = 0, y_offset = 0
+            for(let pos of prop_lb.positions) {
+                this.setText(text.substring(last_pos, pos), [0, y_offset])
+                y_offset += textSize
+                last_pos = pos
+            }
+        }
 
         return this
     }

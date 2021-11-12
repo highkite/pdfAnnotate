@@ -251,12 +251,7 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
 
         to.setColor(this.textColor)
         to.setFont(font.name, this.fontSize)
-        to.setText(this.contents, [0, 0])
-
-        // 1) determine text width with the font
-        // 2) determine line breaks
-        // 3) write the text in a way that it automatically implements linebreak at spaces.
-        // 4) allow user to disable this feature and just write text (overflowing the defined rect dimensions)
+        to.formatText(this.contents, font, this.fontSize, this.rect, this.textJustification)
 
         this.appearanceStream.N = xobj
         this.additional_objects_to_write.push({obj: xobj, func: ((ob: any) => ob.writeXObject())})
