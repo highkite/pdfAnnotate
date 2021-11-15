@@ -18,7 +18,7 @@ test('calculateTextDimensions', () => {
     // Result shows discrepancies to 69.5499999999999 Kerning? or space between chars?
     expect(
         font.calculateTextDimensions(
-            "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.", 1)[0]).toEqual(69.97299999999989);
+            "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.", 1)[0]).toEqual(69.8479999999999);
 })
 
 test('calculateTextDimensionsInMM', () => {
@@ -37,5 +37,52 @@ test('calculateTextDimensionsInMM', () => {
     // Result shows discrepancies to 392.5711111111105 Kerning? or space between chars?
     expect(
         font.calculateTextDimensionsInMM(
-            "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.", 16)[0]).toEqual(394.95871111111046);
+            "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.", 16)[0]).toEqual(394.25315555555494);
+})
+
+test('getTextWidthArray', () => {
+    let font : Font = Font.createStandardFont({obj: 0, generation: 0}, "/F1", "/Courier")
+
+    expect(font.getTextWidthArray("uesday", 1)).toEqual([
+        0.6,
+        0.6,
+        0.6,
+        0.6,
+        0.6,
+        0.6
+    ]);
+
+    expect(font.getTextWidthArray("Tuesday", 1)).toEqual([
+        0.6,
+        0.6,
+        0.6,
+        0.6,
+        0.6,
+        0.6,
+        0.6
+    ]);
+
+})
+
+test('getTextWidthArray_kerning', () => {
+    let font : Font = Font.createStandardFont({obj: 0, generation: 0}, "/F1", "/Helvetica")
+
+    expect(font.getTextWidthArray("uesday", 1)).toEqual([
+        0.556,
+        0.556,
+        0.5,
+        0.556,
+        0.556,
+        0.47
+    ]);
+
+    expect(font.getTextWidthArray("Tuesday", 1)).toEqual([
+        0.611,
+        0.436,
+        0.556,
+        0.5,
+        0.556,
+        0.556,
+        0.47
+    ]);
 })

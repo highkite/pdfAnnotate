@@ -42,6 +42,7 @@ export class Font {
     widths: number[] | undefined = undefined
     fontDescriptor : FontDescriptor | undefined = undefined
     encoding: string | undefined = undefined
+    kernings : Map<number, number[][]> | undefined = undefined
 
     constructor(fontType: FontType | undefined = undefined, name : string | undefined = undefined, baseFont : string | undefined = undefined) {
         this.fontType = fontType
@@ -113,23 +114,10 @@ export class Font {
      * Returns [width, height]
      * */
     public calculateTextDimensions(text : string, fontSize : number) : number[] {
-        if(!this.widths) {
-            return []
-        }
+        let widths : number[] = this.getTextWidthArray(text, fontSize)
 
-        if(!this.firstChar) {
-            this.firstChar = 0
-        }
-
-        let ascii : number[] = Util.convertStringToAscii(text)
-
-        let width : number = 0
-
-        for(let letter of ascii) {
-            width += this.widths[letter - this.firstChar] / 1000 * fontSize
-        }
-
-        return [width, fontSize]
+        // calculate the sum of the widths array
+        return [widths.reduce((pv, cv) => pv + cv, 0), fontSize]
     }
 
     /**
@@ -140,6 +128,59 @@ export class Font {
     public calculateTextDimensionsInMM(text : string, fontSize : number) : number[] {
         let values = this.calculateTextDimensions(text, fontSize)
         return [values[0] * 25.4 / 72, values[1]]
+    }
+
+    /**
+     * Helper method to lookup the kerning value
+     * */
+    private getKerningValue(previousChar : number, currentChar : number) : number {
+        if(!this.kernings)
+            return 0
+
+        let list = this.kernings.get(previousChar)
+
+        if(!list)
+            return 0
+
+        list = list.filter((x : number[]) => x[0] === currentChar)
+
+        if (list.length === 1) {
+            return list[0][1]
+        }
+
+        return 0
+    }
+
+    /**
+     * Returns the array of letter widths that are contained in the string
+     * */
+    public getTextWidthArray(text : string, fontSize : number) : number[] {
+        if(!this.widths) {
+            return []
+        }
+
+        if(!this.firstChar) {
+            this.firstChar = 0
+        }
+
+        let ascii : number[] = Util.convertStringToAscii(text)
+
+        let ret_val : number[] = []
+        let previous_char : number = -1
+        for(let letter of ascii) {
+
+            let kerning_value = 0
+
+            if(previous_char != -1 && this.kernings) {
+                kerning_value = this.getKerningValue(previous_char, letter)
+            }
+
+            ret_val.push((this.widths[letter - this.firstChar] + kerning_value) / 1000 * fontSize)
+
+            previous_char = letter
+        }
+
+        return ret_val
     }
 
     /**
@@ -180,7 +221,22 @@ export class Font {
             flags: font_data.flag
         }
 
+        // setup hash map that contains the kerning data
+        if (font_data.kernings) {
+            this.kernings = new Map<number, number[][]>()
+
+            for (let value of font_data.kernings) {
+                let _list : number[][] = []
+                if (this.kernings.has(value[0])) {
+                    _list = this.kernings.get(value[0])!
+                }
+
+                _list.push(value.slice(1))
+                this.kernings.set(value[0], _list)
+            }
+        }
     }
+
 
     /**
      * Returns a standard font
