@@ -680,5 +680,6 @@ test('colorToHex', () => {
 })
 
 test('convertStringToHexString', () => {
-    fail()
+    expect(Util.convertAsciiToString(Util.convertStringToHexString("A B"))).toBe("<412042>")
+    expect(Util.convertAsciiToString(Util.convertStringToHexString("Test123"))).toBe("<54657374313233>")
 })

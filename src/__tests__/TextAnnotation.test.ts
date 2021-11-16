@@ -396,7 +396,7 @@ test('TextAnnotation_appearance_stream_help', () => {
     let ta = factory.createTextAnnotation(val)
     ta.createDefaultAppearanceStream()
 
-    expect(CryptoUtil.MD5Hex(factory.write())).toBe("ea797f71e6c85a190c00d1243e98ec50")
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("4744cc80a23d7342b7748397bc430d1e")
 })
 
 
@@ -426,6 +426,6 @@ test('TextAnnotation_appearance_stream_opacity', () => {
     let ta = factory.createTextAnnotation(val)
     ta.createDefaultAppearanceStream()
 
-    expect(CryptoUtil.MD5Hex(factory.write())).toBe("68651ff0447d857be2cf77709fc702de")
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("2321171769448158021526b37c48f591")
 })
 //    factory.save("test123.pdf")

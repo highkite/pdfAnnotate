@@ -37,7 +37,7 @@ test('FreeTextAnnotation', () => {
     }
     factory.createFreeTextAnnotation(val)
 
-    expect(CryptoUtil.MD5Hex(factory.write())).toBe("533f34dca7ce4b0faa390c3a8ce89c31")
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("2362469e826451a906304dd1e2b6de2b")
 })
 
 test('FreeTextAnnotation_color', () => {
@@ -58,7 +58,7 @@ test('FreeTextAnnotation_color', () => {
     }
     factory.createFreeTextAnnotation(val)
 
-    expect(CryptoUtil.MD5Hex(factory.write())).toBe("88f1244c3b125a61ee4f55d83eaec648")
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("1fb3b10a51b258e89324d79f84c9a2ae")
 })
 
 test('FreeTextAnnotation_text_justification', () => {
@@ -80,7 +80,7 @@ test('FreeTextAnnotation_text_justification', () => {
     }
     factory.createFreeTextAnnotation(val)
 
-    expect(CryptoUtil.MD5Hex(factory.write())).toBe("fcd57e7410c40cc5903af5bcf3e861f5")
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("aa0d5cbdc84466bf77f30697461ce01e")
 })
 
 test('FreeTextAnnotation_callout_line', () => {
@@ -104,7 +104,7 @@ test('FreeTextAnnotation_callout_line', () => {
     }
     factory.createFreeTextAnnotation(val)
 
-    expect(CryptoUtil.MD5Hex(factory.write())).toBe("cb924478b6e40a4a167696165a033791")
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("370b10eb7e3af868948654a9042d75e0")
 })
 
 /**
@@ -242,7 +242,7 @@ test('FreeTextAnnotation_font_standard_not_available', () => {
     }
     factory.createFreeTextAnnotation(val)
 
-    expect(CryptoUtil.MD5Hex(factory.write())).toBe("cb924478b6e40a4a167696165a033791")
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("370b10eb7e3af868948654a9042d75e0")
 })
 
 test('FreeTextAnnotation_font_size_change', () => {
@@ -265,7 +265,7 @@ test('FreeTextAnnotation_font_size_change', () => {
     }
     factory.createFreeTextAnnotation(val)
 
-    expect(CryptoUtil.MD5Hex(factory.write())).toBe("ee93e3de9965546d03bcb4122157310d")
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("7ee1ce66e312a44a89cbf46d8bc9578c")
 })
 
 test('FreeTextAnnotation_appearance_stream', () => {
@@ -400,8 +400,6 @@ test('FreeTextAnnotation_appearance_stream_long_text', () => {
     }
     let ta = factory.createFreeTextAnnotation(val)
     ta.createDefaultAppearanceStream()
-
-    factory.save("test123.pdf")
 
     expect(CryptoUtil.MD5Hex(factory.write())).toBe("eb5e713b6d2be5c96e9e7279bcf36ad8")
 })
