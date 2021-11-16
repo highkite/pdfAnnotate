@@ -333,9 +333,6 @@ test('FreeTextAnnotation_appearance_stream_right', () => {
     let ta = factory.createFreeTextAnnotation(val)
     ta.createDefaultAppearanceStream()
 
-    console.log(Util.convertAsciiToString((ta.appearanceStream!.N! as XObjectObj)!.contentStream!.writeContentStream()))
-    factory.save("test123.pdf")
-
     expect(CryptoUtil.MD5Hex(factory.write())).toBe("cec8ff07992a3dbe04a3af63af45bb53")
 })
 

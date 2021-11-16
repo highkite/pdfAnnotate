@@ -341,7 +341,7 @@ export class TextObject extends Operator {
             } else if (justification === TextJustification.Right) {
                 return  rect_width + rect[0] - textwidth
             } else {
-                return 0
+                return rect[0]
             }
         }
 
