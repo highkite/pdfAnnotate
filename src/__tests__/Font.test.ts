@@ -89,9 +89,17 @@ test('getTextWidthArray_kerning', () => {
 
 test('proposeLinebreaks', () => {
     let font : Font = Font.createStandardFont({obj: 0, generation: 0}, "/F1", "/Helvetica")
-    let res_val : {dimensions: number[], positions: number[]} = font.proposeLinebreaks("hello world", 18, 200)
-    expect(res_val.positions.length).toBe(0)
+    let res_val = font.proposeLinebreaks("hello world", 18, 200)
+    expect(res_val[0].start).toBe(0)
+    expect(res_val[0].end).toBe(10)
+    expect(res_val[0].width).toBe(86.112)
 
     res_val = font.proposeLinebreaks("hello world", 18, 50)
-    expect(res_val.positions.length).toBe(0)
+    expect(res_val[0].start).toBe(0)
+    expect(res_val[0].end).toBe(4)
+    expect(res_val[0].width).toBe(38.016)
+
+    expect(res_val[1].start).toBe(6)
+    expect(res_val[1].end).toBe(10)
+    expect(res_val[1].width).toBe(43.092)
 })
