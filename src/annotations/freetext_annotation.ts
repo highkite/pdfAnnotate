@@ -247,10 +247,10 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
         go.setFillColor(this.color)
         go.fillRect(this.rect[0], this.rect[1], this.rect[2], this.rect[3])
         let to = go.addTextObject()
-        to.addOperator("Tm", [1, 0, 0, 1, this.rect[0], this.rect[1]])
 
         to.setColor(this.textColor)
         to.setFont(font.name, this.fontSize)
+        debugger;
         to.formatText(this.contents, font, this.fontSize, this.rect, this.textJustification)
 
         this.appearanceStream.N = xobj

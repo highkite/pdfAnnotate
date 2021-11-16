@@ -81,31 +81,36 @@ export class Font {
             this.firstChar = 0
         }
 
-        let ascii : number[] = Util.convertStringToAscii(text)
+        let ascii : number[] = this.getTextWidthArray(text, fontSize)
 
         let positions: number[] = []
 
-        let line_width = 0, last_space = -1
+        let max_line_width : number = 0
+        let line_width = 0, last_space = -1, current_width = 0
         for(let l = 0; l < ascii.length; ++l) {
-            line_width += this.widths[ascii[l] - this.firstChar] / 1000 * fontSize
 
-            if (ascii[l] === Util.SPACE) {
+            if (text.charAt(l) === " ") {
                 last_space = l
             }
 
-            if (line_width > width) {
+            if (line_width + ascii[l] > width) {
                 // backtrack to last space in the same line and move remainder in the next line
                 if (last_space !== -1) {
                     positions.push(last_space)
+                    max_line_width = Math.max(max_line_width, line_width - ascii.slice(last_space + 1, l - 1).reduce((x, y) => x + y, 0))
                     l = last_space + 1
                     last_space = -1
                 } else { // if no such last space is in the line return line_width - last letter width
                     positions.push(l - 1)
+                    max_line_width = Math.max(max_line_width, line_width)
                 }
+                line_width = 0
             }
+
+            line_width += ascii[l]
         }
 
-        return {dimensions: [width, fontSize * positions.length], positions: positions}
+        return {dimensions: [max_line_width, fontSize * positions.length], positions: positions}
     }
 
     /**

@@ -264,13 +264,25 @@ export class GraphicsObject extends Operator {
 }
 
 export class TextObject extends Operator {
+    public static readonly SINGLE_CHAR_WIDTH = 10
+
     constructor() {
         super("BT")
     }
 
-    setText(text: string, pos : number[] | undefined = undefined) : TextObject {
+    /**
+     * Places text relative from the last given position or Tm object (origin) with + x_rel, + y_rel location
+     * */
+    setTextRelative(text: string, x_rel : number | number[] | undefined = undefined, y_rel : number | undefined = undefined) {
         if (text === "")
             return this
+
+        if (x_rel && Array.isArray(x_rel)) {
+            y_rel = (x_rel as number[])[1]
+            x_rel = (x_rel as number[])[0]
+        } else if (x_rel && typeof x_rel === 'number' && (!y_rel || typeof y_rel === 'number')) {
+            throw Error("Invalid number of positioning elements. Must be x and y coordinate")
+        }
 
         text = text.trim()
 
@@ -278,12 +290,36 @@ export class TextObject extends Operator {
             text = `(${text})`
         }
 
-        if (pos) {
-            if (pos.length !== 2) {
-                throw Error("Invalid number of positioning elements. Must be x and y coordinate")
-            }
+        if (typeof x_rel !== 'undefined' && typeof y_rel !== 'undefined') {
+            this.addOperator("Td", [x_rel, y_rel])
+        }
+        this.addOperator("Tj", [text])
+    }
 
-            this.addOperator("Td", pos)
+    /**
+     * Places text absolut at the current position or if provided at the x, y coordinates
+     *
+     * Uses a '1 0 0 1 x y Tm' for placing. So this method cannot be used for scaling.
+     * */
+    setText(text: string, x : number | number[] | undefined = undefined, y : number | undefined = undefined) : TextObject {
+        if (text === "")
+            return this
+
+        if (x && Array.isArray(x) && x.length >= 2) {
+            y = (x as number[])[1]
+            x = (x as number[])[0]
+        } else if (x && typeof x === 'number' && (!y || typeof y === 'number')) {
+            throw Error("Invalid number of positioning elements. Must be x and y coordinate")
+        }
+
+        text = text.trim()
+
+        if (text.charAt(0) !== "(" || text.charAt(text.length -1) !== ")") {
+            text = `(${text})`
+        }
+
+        if (typeof x !== 'undefined' && typeof y !== 'undefined') {
+            this.addOperator("Tm", [1, 0, 0, 1, x, y])
         }
         this.addOperator("Tj", [text])
 
@@ -297,23 +333,27 @@ export class TextObject extends Operator {
      * */
     formatText(text: string, font : Font, textSize : number, rect : number[], justification : TextJustification | undefined = undefined) : TextObject {
         let rect_width : number = Math.abs(rect[2] - rect[0])
+        let rect_height : number = Math.abs(rect[3] - rect[1])
         let prop_lb = font.proposeLinebreaks(text, textSize, rect_width)
-        let threshold = 100
+
+        let justification_offset = 0
 
         // If text fits into the rectangle
         // just place the text
-        if (prop_lb.dimensions[0] <= rect_width) {
-            this.setText(text, [rect[0], rect[1]])
+        if (rect_width < TextObject.SINGLE_CHAR_WIDTH) { // if provided rectangle is too small to present a single letter just write it but warn
+            console.warn(`Overull hbox ${rect_width} is below minimal threshold of ${TextObject.SINGLE_CHAR_WIDTH}`)
+            this.setText(text, [justification_offset, rect_height - textSize * 1.2])
             return this
-        } else if (rect_width < threshold ) { // if provided rectangle is too small to present a single letter just write it but warn
-            console.warn(`Overull hbox ${rect_width} is below minimal threshold of ${threshold}`)
-            this.setText(text, [rect[0], rect[1]])
-            return this
-        } else { // we need to apply line breaks
-            let last_pos = 0, y_offset = 0
-            for(let pos of prop_lb.positions) {
-                this.setText(text.substring(last_pos, pos), [0, y_offset])
-                y_offset += textSize
+        } else {
+            let positions : number[] = prop_lb.positions
+            positions.push(text.length)
+            let last_pos = positions[0]
+            let pos : number = 0;
+            this.setText(text.substring(0, last_pos), [justification_offset + rect[0], rect_height - textSize * 1.2 + rect[1]])
+
+            for(let i = 1; i < prop_lb.positions.length; ++i) {
+                pos = prop_lb.positions[i]
+                this.setTextRelative(text.substring(last_pos, pos), [justification_offset, -textSize])
                 last_pos = pos
             }
         }
