@@ -334,27 +334,34 @@ export class TextObject extends Operator {
     formatText(text: string, font : Font, textSize : number, rect : number[], justification : TextJustification | undefined = undefined) : TextObject {
         let rect_width : number = Math.abs(rect[2] - rect[0])
         let rect_height : number = Math.abs(rect[3] - rect[1])
-        let prop_lb = font.proposeLinebreaks(text, textSize, rect_width)
 
-        let justification_offset = 0
+        let calc_just = (textwidth : number) => {
+            if (justification === TextJustification.Centered) {
+                return rect_width / 2 - textwidth / 2 + rect[0]
+            } else if (justification === TextJustification.Right) {
+                return  rect_width + rect[0] - textwidth
+            } else {
+                return 0
+            }
+        }
+
 
         // If text fits into the rectangle
         // just place the text
         if (rect_width < TextObject.SINGLE_CHAR_WIDTH) { // if provided rectangle is too small to present a single letter just write it but warn
-            console.warn(`Overull hbox ${rect_width} is below minimal threshold of ${TextObject.SINGLE_CHAR_WIDTH}`)
-            this.setText(text, [justification_offset, rect_height - textSize * 1.2])
+            console.warn(`Overfull hbox ${rect_width} is below minimal threshold of ${TextObject.SINGLE_CHAR_WIDTH}`)
+            this.setText(text, [calc_just(font.calculateTextDimensions(text, textSize)[0]), rect_height - textSize * 1.2 + rect[1]])
             return this
         } else {
-            let positions : number[] = prop_lb.positions
-            positions.push(text.length)
-            let last_pos = positions[0]
-            let pos : number = 0;
-            this.setText(text.substring(0, last_pos), [justification_offset + rect[0], rect_height - textSize * 1.2 + rect[1]])
+            let positions : {start : number, end : number, width : number}[] = font.proposeLinebreaks(text, textSize, rect_width)
+            let last_pos : number = calc_just(positions[0].width)
 
-            for(let i = 1; i < prop_lb.positions.length; ++i) {
-                pos = prop_lb.positions[i]
-                this.setTextRelative(text.substring(last_pos, pos), [justification_offset, -textSize])
-                last_pos = pos
+            this.setText(text.substring(positions[0].start, positions[0].end + 1), [last_pos, rect_height - textSize * 1.2 + rect[1]])
+
+            for(let i = 1; i < positions.length; ++i) {
+                let x_pos = calc_just(positions[i].width)
+                this.setTextRelative(text.substring(positions[i].start, positions[i].end + 1), [x_pos - last_pos, -textSize])
+                last_pos = x_pos
             }
         }
 

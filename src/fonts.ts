@@ -72,9 +72,9 @@ export class Font {
      *
      * It also proposes linebreak positions for the provided width
      * */
-    public proposeLinebreaks(text : string, fontSize : number, width : number) : {dimensions: number[], positions: number[]} {
+    public proposeLinebreaks(text : string, fontSize : number, width : number) : {start: number, end: number, width: number}[] {
         if(!this.widths) {
-            return {dimensions: [], positions: []}
+            return []
         }
 
         if(!this.firstChar) {
@@ -83,10 +83,9 @@ export class Font {
 
         let ascii : number[] = this.getTextWidthArray(text, fontSize)
 
-        let positions: number[] = []
+        let positions: {start : number, end : number, width : number}[] = []
 
-        let max_line_width : number = 0
-        let line_width = 0, last_space = -1, current_width = 0
+        let line_width = 0, last_space = -1, last_pos = 0
         for(let l = 0; l < ascii.length; ++l) {
 
             if (text.charAt(l) === " ") {
@@ -96,13 +95,13 @@ export class Font {
             if (line_width + ascii[l] > width) {
                 // backtrack to last space in the same line and move remainder in the next line
                 if (last_space !== -1) {
-                    positions.push(last_space)
-                    max_line_width = Math.max(max_line_width, line_width - ascii.slice(last_space + 1, l - 1).reduce((x, y) => x + y, 0))
+                    positions.push({start: last_pos, end: last_space - 1, width: ascii.slice(last_pos, last_space).reduce((x,y) => x + y, 0)})
                     l = last_space + 1
+                    last_pos = l
                     last_space = -1
                 } else { // if no such last space is in the line return line_width - last letter width
-                    positions.push(l - 1)
-                    max_line_width = Math.max(max_line_width, line_width)
+                    positions.push({start: last_pos, end: l - 1, width: ascii.slice(last_pos, l).reduce((x,y) => x + y,0)})
+                    last_pos = l
                 }
                 line_width = 0
             }
@@ -110,7 +109,11 @@ export class Font {
             line_width += ascii[l]
         }
 
-        return {dimensions: [max_line_width, fontSize * positions.length], positions: positions}
+        if (last_pos !== ascii.length) {
+            positions.push({start: last_pos, end: ascii.length - 1, width: ascii.slice(last_pos, ascii.length).reduce((x,y) => x + y,0)})
+        }
+
+        return positions
     }
 
     /**

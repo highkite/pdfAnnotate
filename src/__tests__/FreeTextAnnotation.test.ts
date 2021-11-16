@@ -3,6 +3,8 @@ import { AnnotationFactory } from '../annotation';
 import { CryptoUtil } from '../crypto-util';
 import { TextJustification, FreeTextType } from '../annotations/freetext_annotation';
 import { LineEndingStyle } from '../annotations/annotation_types';
+import { Util } from '../util';
+import { XObjectObj } from '../appearance-stream';
 
 // @ts-ignore
 const { window } = global
@@ -281,6 +283,78 @@ test('FreeTextAnnotation_appearance_stream', () => {
         creationDate: new Date(2021, 1, 1),
         id: "test-id-123",
         color: textAnnotColor
+    }
+    let ta = factory.createFreeTextAnnotation(val)
+    ta.createDefaultAppearanceStream()
+
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("cec8ff07992a3dbe04a3af63af45bb53")
+})
+
+test('FreeTextAnnotation_appearance_stream_centered', () => {
+    let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
+    let factory = new AnnotationFactory(data)
+
+    let textAnnotColor = {r:1, g:1, b:0}
+
+    let val = {
+        page: 0,
+        rect: [30, 30, 80, 80],
+        contents: "Test123",
+        author: "John",
+        updateDate: new Date(2021, 1, 1),
+        creationDate: new Date(2021, 1, 1),
+        id: "test-id-123",
+        color: textAnnotColor,
+        textJustification: TextJustification.Centered
+    }
+    let ta = factory.createFreeTextAnnotation(val)
+    ta.createDefaultAppearanceStream()
+
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("cec8ff07992a3dbe04a3af63af45bb53")
+})
+
+test('FreeTextAnnotation_appearance_stream_right', () => {
+    let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
+    let factory = new AnnotationFactory(data)
+
+    let textAnnotColor = {r:1, g:1, b:0}
+
+    let val = {
+        page: 0,
+        rect: [30, 30, 80, 80],
+        contents: "Test123",
+        author: "John",
+        updateDate: new Date(2021, 1, 1),
+        creationDate: new Date(2021, 1, 1),
+        id: "test-id-123",
+        color: textAnnotColor,
+        textJustification: TextJustification.Right
+    }
+    let ta = factory.createFreeTextAnnotation(val)
+    ta.createDefaultAppearanceStream()
+
+    console.log(Util.convertAsciiToString((ta.appearanceStream!.N! as XObjectObj)!.contentStream!.writeContentStream()))
+    factory.save("test123.pdf")
+
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("cec8ff07992a3dbe04a3af63af45bb53")
+})
+
+test('FreeTextAnnotation_appearance_stream_hello_world', () => {
+    let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
+    let factory = new AnnotationFactory(data)
+
+    let textAnnotColor = {r:1, g:1, b:0}
+
+    let val = {
+        page: 0,
+        rect: [30, 30, 80, 80],
+        contents: "hello world",
+        author: "John",
+        updateDate: new Date(2021, 1, 1),
+        creationDate: new Date(2021, 1, 1),
+        id: "test-id-123",
+        color: textAnnotColor,
+        fontSize: 18
     }
     let ta = factory.createFreeTextAnnotation(val)
     ta.createDefaultAppearanceStream()
