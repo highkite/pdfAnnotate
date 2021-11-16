@@ -27,34 +27,34 @@ export interface PDFVersion {
  * */
 export class Util {
 
-    public static VERSION: number[] = [37, 80, 68, 70, 45] // %PDF-
-    public static COMMENT_START: number[] = [37] // '%'
-    public static NULL: number[] = [110, 117, 108, 108] // null
-    public static DOT: number = 46
-    public static CR: number = 13
-    public static LF: number = 10
-    public static TYPE: string = "/Type "
-    public static SPACE: number = 32
-    public static OBJ: number[] = [111, 98, 106] // 'obj'
-    public static ENDOBJ: number[] = [101, 110, 100, 111, 98, 106] // 'endobj'
-    public static ARRAY_START: number[] = [91] // '['
-    public static ARRAY_END: number[] = [93] // ']'
-    public static LITERAL_STRING_START: number[] = [40] // '('
-    public static HEX_STRING_START: number[] = [60] // '<'
-    public static LITERAL_STRING_END: number[] = [41] // ')'
-    public static HEX_STRING_END: number[] = [62] // '>'
-    public static R: number[] = [82] // 'R'
-    public static ANNOTS: number[] = [47, 65, 110, 110, 111, 116, 115] // '/Annot'
-    public static DICT_START: number[] = [60, 60] // '<<'
-    public static DICT_END: number[] = [62, 62] // '>>'
-    public static PAGE: number[] = [47, 80, 97, 103, 101]
-    public static SIZE: number[] = [47, 83, 105, 122, 101] // /Size
-    public static ROOT: number[] = [47, 82, 111, 111, 116] // /Root
-    public static PREV: number[] = [47, 80, 114, 101, 118] // /Prev
-    public static STARTXREF: number[] = [115, 116, 97, 114, 116, 120, 114, 101, 102] // = 'startxref'
-    public static XREF: number[] = [120, 114, 101, 102] // = 'xref'
-    public static STREAM: number[] = [115, 116, 114, 101, 97, 109] // = 'stream'
-    public static TRAILER: number[] = [116, 114, 97, 105, 108, 101, 114] // = 'trailer'
+    public static readonly VERSION: number[] = [37, 80, 68, 70, 45] // %PDF-
+    public static readonly COMMENT_START: number[] = [37] // '%'
+    public static readonly NULL: number[] = [110, 117, 108, 108] // null
+    public static readonly DOT: number = 46
+    public static readonly CR: number = 13
+    public static readonly LF: number = 10
+    public static readonly TYPE: string = "/Type "
+    public static readonly SPACE: number = 32
+    public static readonly OBJ: number[] = [111, 98, 106] // 'obj'
+    public static readonly ENDOBJ: number[] = [101, 110, 100, 111, 98, 106] // 'endobj'
+    public static readonly ARRAY_START: number[] = [91] // '['
+    public static readonly ARRAY_END: number[] = [93] // ']'
+    public static readonly LITERAL_STRING_START: number[] = [40] // '('
+    public static readonly HEX_STRING_START: number[] = [60] // '<'
+    public static readonly LITERAL_STRING_END: number[] = [41] // ')'
+    public static readonly HEX_STRING_END: number[] = [62] // '>'
+    public static readonly R: number[] = [82] // 'R'
+    public static readonly ANNOTS: number[] = [47, 65, 110, 110, 111, 116, 115] // '/Annot'
+    public static readonly DICT_START: number[] = [60, 60] // '<<'
+    public static readonly DICT_END: number[] = [62, 62] // '>>'
+    public static readonly PAGE: number[] = [47, 80, 97, 103, 101]
+    public static readonly SIZE: number[] = [47, 83, 105, 122, 101] // /Size
+    public static readonly ROOT: number[] = [47, 82, 111, 111, 116] // /Root
+    public static readonly PREV: number[] = [47, 80, 114, 101, 118] // /Prev
+    public static readonly STARTXREF: number[] = [115, 116, 97, 114, 116, 120, 114, 101, 102] // = 'startxref'
+    public static readonly XREF: number[] = [120, 114, 101, 102] // = 'xref'
+    public static readonly STREAM: number[] = [115, 116, 114, 101, 97, 109] // = 'stream'
+    public static readonly TRAILER: number[] = [116, 114, 97, 105, 108, 101, 114] // = 'trailer'
 
     /**
      * Extracts the version information of a PDF file
