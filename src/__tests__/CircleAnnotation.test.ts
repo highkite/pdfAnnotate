@@ -92,3 +92,64 @@ test('CircleAnnotation_fill_color', () => {
 
     expect(CryptoUtil.MD5Hex(factory.write())).toBe("4c240e3237389186d72031c6d11f1f0f")
 })
+
+test('CircleAnnotation_appearance_stream', () => {
+    let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
+    let factory = new AnnotationFactory(data)
+
+    let val = {
+        page: 0,
+        rect: [50, 50, 80, 80],
+        contents: "Test123",
+        author: "John",
+        updateDate: new Date(2021, 1, 1),
+        creationDate: new Date(2021, 1, 1),
+        id: "test-id-123"
+    }
+    let ta = factory.createCircleAnnotation(val)
+    ta.createDefaultAppearanceStream()
+
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("38a0721e3023fc6d1a6f8b8a52561c30")
+})
+
+test('CircleAnnotation_appearance_stream_oval', () => {
+    let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
+    let factory = new AnnotationFactory(data)
+
+    let val = {
+        page: 0,
+        rect: [50, 50, 80, 100],
+        contents: "Test123",
+        author: "John",
+        updateDate: new Date(2021, 1, 1),
+        creationDate: new Date(2021, 1, 1),
+        id: "test-id-123"
+    }
+    let ta = factory.createCircleAnnotation(val)
+    ta.createDefaultAppearanceStream()
+
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("1efacb2a6c6f157fa6d25a3a87680b41")
+})
+
+test('CircleAnnotation_appearance_stream_color', () => {
+    let data = new Uint8Array(loadFromFile("./test_documents/test.pdf"))
+    let factory = new AnnotationFactory(data)
+
+    let color = {r:1, g:0, b:0}
+    let color2 = {r:1, g:1, b:0}
+
+    let val = {
+        page: 0,
+        rect: [50, 50, 80, 80],
+        contents: "Test123",
+        author: "John",
+        updateDate: new Date(2021, 1, 1),
+        creationDate: new Date(2021, 1, 1),
+        id: "test-id-123",
+        color: color2,
+        fill: color
+    }
+    factory.createCircleAnnotation(val)
+
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("9b686e0ae27c3a45f71399b188bcd6da")
+})

@@ -172,6 +172,55 @@ export class GraphicsObject extends Operator {
         return this
     }
 
+    drawFillCircle(x_1 : number, y_1 : number, x_2 : number, y_2 : number, linewidth : number = 2) : GraphicsObject {
+        x_1 += linewidth
+        y_1 += linewidth
+        x_2 -= linewidth
+        y_2 -= linewidth
+        let rect_width : number = Math.abs(x_2 - x_1)
+        let rect_height : number = Math.abs(y_2 - y_1)
+        this.addOperator("w", [linewidth])
+        this.addOperator("m", [x_1 + rect_width / 2, y_1])
+        this.addOperator("c", [x_1 + rect_width / 2, y_1, x_2, y_1, x_2, y_1 + rect_height / 2])
+        this.addOperator("c", [x_2, y_1 + rect_height / 2, x_2, y_2, x_1 + rect_width / 2, y_2])
+        this.addOperator("c", [x_1 + rect_width / 2, y_2, x_1, y_2, x_1, y_1 + rect_height / 2])
+        this.addOperator("c", [x_1, y_1 + rect_height / 2, x_1, y_1, x_1 + rect_width / 2, y_1])
+        this.addOperator("B")
+        return this
+    }
+
+    fillCircle(x_1 : number, y_1 : number, x_2 : number, y_2 : number) : GraphicsObject {
+        let rect_width : number = Math.abs(x_2 - x_1)
+        let rect_height : number = Math.abs(y_2 - y_1)
+        this.addOperator("m", [x_1 + rect_width / 2, y_1])
+        this.addOperator("v", [x_2, y_1, x_2, y_1 + rect_height / 2])
+        this.addOperator("v", [x_2, y_2, x_1 + rect_width / 2, y_2])
+        this.addOperator("v", [x_1, y_2, x_1, y_1 + rect_height / 2])
+        this.addOperator("v", [x_1, y_1, x_1 + rect_width / 2, y_1])
+        this.addOperator("f")
+        return this
+    }
+
+    /**
+     * Draws a circle (or an oval) where the rectangle defined by the coordinates represents the bounding box
+     * */
+    drawCircle(x_1 : number, y_1 : number, x_2 : number, y_2 : number, linewidth : number = 2) : GraphicsObject {
+        x_1 += linewidth
+        y_1 += linewidth
+        x_2 -= linewidth
+        y_2 -= linewidth
+        let rect_width : number = Math.abs(x_2 - x_1)
+        let rect_height : number = Math.abs(y_2 - y_1)
+        this.addOperator("w", [linewidth])
+        this.addOperator("m", [x_1 + rect_width / 2, y_1])
+        this.addOperator("v", [x_2, y_1, x_2, y_1 + rect_height / 2])
+        this.addOperator("v", [x_2, y_2, x_1 + rect_width / 2, y_2])
+        this.addOperator("v", [x_1, y_2, x_1, y_1 + rect_height / 2])
+        this.addOperator("v", [x_1, y_1, x_1 + rect_width / 2, y_1])
+        this.addOperator("s")
+        return this
+    }
+
     drawRect(x_1 : number, y_1 : number, x_2 : number, y_2 : number, cornerRadius : number | undefined = undefined, linewidth : number = 2) : GraphicsObject {
         this.addOperator("w", [linewidth])
 
