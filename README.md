@@ -276,8 +276,8 @@ Note that there are more optional parameters available, as described in [Configu
 In *evince* the annotation icons ar displayed as follows:
 
 | ![AnnotationIcon.Help](./documentation/icon_help.png  "Annotation Icon Help") | ![AnnotationIcon.Insert](./documentation/icon_insert.png  "Annotation Icon Insert") | ![AnnotationIcon.Key](./documentation/icon_key.png  "Annotation Icon Key") | ![AnnotationIcon.NewParagraph](./documentation/icon_new_paragraph.png  "Annotation Icon New Paragraph") | ![AnnotationIcon.Paragraph](./documentation/icon_paragraph.png  "Annotation Icon Paragraph") | ![AnnotationIcon.Note](./documentation/icon_note.png  "Annotation Icon Note") |
-|-------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|----------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
-| AnnationIcon.Help                                                             | AnnotationIcon.Insert                                                               | AnnotationIcon.Key                                                         | AnnotationIcon.NewParagraph                                                                             | AnnotationIcon.Paragraph                                                                     | AnnotationIcon.Note                                                           |
+|-------------------------|----------------------------|---------------|---------------|---------------|-------------|
+| AnnationIcon.Help | AnnotationIcon.Insert | AnnotationIcon.Key | AnnotationIcon.NewParagraph | AnnotationIcon.Paragraph | AnnotationIcon.Note |
 
 When using the default appearance stream, the icons look as follows:
 
