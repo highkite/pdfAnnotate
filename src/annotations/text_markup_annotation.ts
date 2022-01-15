@@ -122,7 +122,7 @@ export class HighlightAnnotationObj extends TextMarkupAnnotationObj {
         }
 
         this.appearanceStream.N = xobj
-        this.additional_objects_to_write.push({obj: xobj, func: ((ob: any) => ob.writeXObject())})
+        this.additional_objects_to_write.push({obj: xobj, func: ((ob: any, cryptoInterface : CryptoInterface) => ob.writeXObject(cryptoInterface))})
     }
 
     public validate(enact : boolean = true) : ErrorList {
@@ -202,7 +202,7 @@ export class UnderlineAnnotationObj extends TextMarkupAnnotationObj {
         }
 
         this.appearanceStream.N = xobj
-        this.additional_objects_to_write.push({obj: xobj, func: ((ob: any) => ob.writeXObject())})
+        this.additional_objects_to_write.push({obj: xobj, func: ((ob: any, cryptoInterface : CryptoInterface) => ob.writeXObject(cryptoInterface))})
     }
 }
 
@@ -280,7 +280,7 @@ export class SquigglyAnnotationObj extends TextMarkupAnnotationObj {
         }
 
         this.appearanceStream.N = xobj
-        this.additional_objects_to_write.push({obj: xobj, func: ((ob: any) => ob.writeXObject())})
+        this.additional_objects_to_write.push({obj: xobj, func: ((ob: any, cryptoInterface : CryptoInterface) => ob.writeXObject(cryptoInterface))})
     }
 }
 
@@ -345,6 +345,6 @@ export class StrikeOutAnnotationObj extends TextMarkupAnnotationObj {
         }
 
         this.appearanceStream.N = xobj
-        this.additional_objects_to_write.push({obj: xobj, func: ((ob: any) => ob.writeXObject())})
+        this.additional_objects_to_write.push({obj: xobj, func: ((ob: any, cryptoInterface : CryptoInterface) => ob.writeXObject(cryptoInterface))})
     }
 }

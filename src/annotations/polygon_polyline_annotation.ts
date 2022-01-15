@@ -151,7 +151,7 @@ export class PolyLineAnnotationObj extends PolygonPolyLineAnnotationObj implemen
         go.setLineColor({r: 0, g: 0, b:0}).setFillColor(this.color).drawPolygon(this.vertices)
 
         this.appearanceStream.N = xobj
-        this.additional_objects_to_write.push({obj: xobj, func: ((ob : any) => ob.writeXObject())})
+        this.additional_objects_to_write.push({obj: xobj, func: ((ob : any, cryptoInterface : CryptoInterface) => ob.writeXObject(cryptoInterface))})
     }
 }
 
@@ -210,6 +210,6 @@ export class PolygonAnnotationObj extends PolygonPolyLineAnnotationObj implement
         go.setLineColor({r: 0, g: 0, b:0}).setFillColor(this.color).drawFillPolygon(this.vertices)
 
         this.appearanceStream.N = xobj
-        this.additional_objects_to_write.push({obj: xobj, func: ((ob : any) => ob.writeXObject())})
+        this.additional_objects_to_write.push({obj: xobj, func: ((ob : any, cryptoInterface : CryptoInterface) => ob.writeXObject(cryptoInterface))})
     }
 }

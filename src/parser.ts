@@ -767,8 +767,6 @@ export class PDFDocumentParser {
 
             throw Error("Does not work for compressed data")
         }
-
-        throw Error("Could not identify catalog object")
     }
 
     /**

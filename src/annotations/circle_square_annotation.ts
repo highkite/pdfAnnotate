@@ -115,7 +115,7 @@ export class CircleAnnotationObj extends CircleSquareAnnotationObj {
         go.setLineColor({r: 0, g: 0, b:0}).setFillColor(this.color).drawFillCircle(this.rect[0], this.rect[1], this.rect[2], this.rect[3])
 
         this.appearanceStream.N = xobj
-        this.additional_objects_to_write.push({obj: xobj, func: ((ob : any) => ob.writeXObject())})
+        this.additional_objects_to_write.push({obj: xobj, func: ((ob : any, cryptoInterface : CryptoInterface) => ob.writeXObject(cryptoInterface))})
     }
 }
 
@@ -161,7 +161,7 @@ export class SquareAnnotationObj extends CircleSquareAnnotationObj {
 
             let gsp = new GraphicsStateParameter(this.factory.parser.getFreeObjectId())
             gsp.CA = gsp.ca = this.opacity
-            this.additional_objects_to_write.push({obj: gsp, func: ((ob: any) => ob.writeGStateParameter())})
+            this.additional_objects_to_write.push({obj: gsp, func: ((ob: any, cryptoInterface : CryptoInterface) => ob.writeGStateParameter(cryptoInterface))})
             let res = new Resource()
             res.addGStateDef({name: "/GParameters", refPtr: gsp.object_id})
             xobj.resources = res
@@ -170,6 +170,6 @@ export class SquareAnnotationObj extends CircleSquareAnnotationObj {
         go.setLineColor({r: 0, g: 0, b:0}).setFillColor(this.color).drawFillRect(this.rect[0], this.rect[1], this.rect[2], this.rect[3])
 
         this.appearanceStream.N = xobj
-        this.additional_objects_to_write.push({obj: xobj, func: ((ob : any) => ob.writeXObject())})
+        this.additional_objects_to_write.push({obj: xobj, func: ((ob : any, cryptoInterface : CryptoInterface) => ob.writeXObject(cryptoInterface))})
     }
 }

@@ -253,6 +253,6 @@ export class FreeTextAnnotationObj extends MarkupAnnotationObj implements FreeTe
         to.formatText(this.contents, font, this.fontSize, this.rect, this.textJustification)
 
         this.appearanceStream.N = xobj
-        this.additional_objects_to_write.push({obj: xobj, func: ((ob: any) => ob.writeXObject())})
+        this.additional_objects_to_write.push({obj: xobj, func: ((ob: any, cryptoInterface : CryptoInterface) => ob.writeXObject(cryptoInterface))})
     }
 }

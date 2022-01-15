@@ -92,8 +92,6 @@ export class ObjectUtil {
             // handle Reference
             return ObjectUtil.extractDictKeyRec(data, value_end_ptr, dict)
         }
-
-        throw Error(`Could not interpret: ${Util.convertAsciiToString(next_string)}`)
     }
 
     /**

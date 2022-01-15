@@ -113,3 +113,49 @@ test('encryptionTest18', () => {
 
     expect(CryptoUtil.MD5Hex(factory.write())).toBe("b5813cf6be156f22e513f38957de3553")
 })
+
+test('encryptionTest18_appearance_stream', () => {
+    let factory = new AnnotationFactory(new Uint8Array(loadFromFile("./test_documents/test18.pdf")), "123", "")
+    factory.getAnnotations().then(vals => {
+        let annotations = vals[0]
+
+        expect(annotations[0].object_id!.obj).toBe(7)
+        expect(annotations[0].object_id!.generation).toBe(0)
+        expect(annotations[0].type).toBe('/Highlight')
+        expect(annotations[0].page).toBe(0)
+        expect(annotations[0].rect).toEqual([69.697, 47.4148, 96.4646, 58.2598])
+        expect(annotations[0].border).toEqual([0, 0, 1])
+        expect(annotations[0].color).toEqual([1, 1, 0])
+        expect(annotations[0].updateDate).toBe("D:20190101153417")
+
+        expect(annotations[1].object_id!.obj).toBe(8)
+        expect(annotations[1].object_id!.generation).toBe(0)
+        expect(annotations[1].type).toBe('/Text')
+        expect(annotations[1].page).toBe(0)
+        expect(annotations[1].rect).toEqual([77.7777777778, 83.7931904161, 83.7777777778, 89.7856242119])
+        expect(annotations[1].border).toEqual([0, 0, 1])
+        expect(annotations[1].color).toEqual([1, 1, 0])
+        expect(annotations[1].updateDate).toBe("D:20190101154225")
+        expect(annotations[1].contents).toBe("Pop up note")
+        expect((annotations[1] as MarkupAnnotationObj).author).toBe("highway")
+    })
+
+    let textAnnotColor = {r:1, g:1, b:0}
+
+    let val = {
+        page: 0,
+        rect: [50, 50, 70, 80],
+        contents: "Test123",
+        author: "John",
+        updateDate: new Date(2021, 1, 1),
+        creationDate: new Date(2021, 1, 1),
+        color: textAnnotColor,
+        id: "test-id-123",
+        subject: "A subject",
+        richtextString: "A very rich text string"
+    }
+    let ta = factory.createTextAnnotation(val)
+    ta.createDefaultAppearanceStream()
+
+    expect(CryptoUtil.MD5Hex(factory.write())).toBe("7d3c2f1d58babc3372a2c5a752a2f302")
+})

@@ -4,6 +4,7 @@ import { Util } from './util';
 import { Operator, ContentStream } from './content-stream';
 import { FlateStream } from './stream';
 import { Resource } from './resources';
+import { CryptoInterface } from './parser';
 
 export interface OnOffAppearanceStream {
     on: XObject
@@ -143,7 +144,7 @@ export class XObjectObj implements XObject {
         this.contentStream.addOperator(operator, parameters)
     }
 
-    public writeXObject() : number[] {
+    public writeXObject(cryptoInterface : CryptoInterface) : number[] {
         if(!this.object_id)
             throw Error("object_id of XObject not set")
 
@@ -186,7 +187,7 @@ export class XObjectObj implements XObject {
 
         let stream_data: number[] = (this.contentStream) ? this.contentStream.writeContentStream() : []
 
-        return WriterUtil.writeStreamObject(this.object_id, ret, new FlateStream(new Uint8Array(stream_data), undefined, true))
+        return WriterUtil.writeStreamObject(this.object_id, ret, new FlateStream(new Uint8Array(stream_data), undefined, true, cryptoInterface, this.object_id))
     }
 }
 

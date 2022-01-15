@@ -1,6 +1,7 @@
 import { Util } from './util'
 import { ObjectUtil } from './object-util';
 import { XRef } from './document-history';
+import { ReferencePointer, CryptoInterface } from './parser';
 import * as Pako from 'pako'
 
 export interface FilterParameters {
@@ -76,7 +77,7 @@ export class FlateStream extends Stream {
     /**
      * rawData : if true, the provided data is not compressed yet.
      * */
-    constructor(protected data: Uint8Array, private decodeParameters: FilterParameters | undefined = undefined, private rawData : boolean = false) {
+    constructor(protected data: Uint8Array, private decodeParameters: FilterParameters | undefined = undefined, private rawData : boolean = false, private cryptoInterface : CryptoInterface | undefined = undefined, private object_id : ReferencePointer | undefined = undefined) {
         super(data)
 
         if (this.data.length > 0 && !rawData) {
@@ -101,7 +102,13 @@ export class FlateStream extends Stream {
             int_data = this.applyEncoding(int_data, this.decodeParameters)
         }
 
-        return Pako.deflate(int_data)
+        let compressed_data = Pako.deflate(int_data)
+
+        if (this.cryptoInterface && this.object_id) {
+            return this.cryptoInterface.encrypt(compressed_data, this.object_id)
+        }
+
+        return compressed_data
     }
 
     private applyEncoding(data: Uint8Array, decodeParameters: FilterParameters): Uint8Array {

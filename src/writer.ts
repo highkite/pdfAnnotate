@@ -423,7 +423,7 @@ export class Writer {
                  * write additional objects, that are related to the newly created or adapted annotation
                  * */
                 for (let add_obj of annot.additional_objects_to_write) {
-                    let data : number[] = add_obj.func(add_obj.obj)
+                    let data : number[] = add_obj.func(add_obj.obj, this.cryptoInterface)
                     this.xrefs.push({
                         id: add_obj.obj.object_id.obj,
                         pointer: ptr,

@@ -82,6 +82,6 @@ export class InkAnnotationObj extends MarkupAnnotationObj implements InkAnnotati
         }
 
         this.appearanceStream.N = xobj
-        this.additional_objects_to_write.push({obj: xobj, func: ((ob : any) => ob.writeXObject())})
+        this.additional_objects_to_write.push({obj: xobj, func: ((ob : any, cryptoInterface : CryptoInterface) => ob.writeXObject(cryptoInterface))})
     }
 }
