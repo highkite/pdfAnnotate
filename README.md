@@ -15,29 +15,30 @@
     4. [API Documentation](#API)
         1. [Configuration Options](#configurationOptions)
         2. [Backward Compatibility](#backwardCompatibility)
-        3. [constructor(...)](#constructor)
-        4. [loadFile(...)](#loadfile)
-        5. [createTextAnnotation(...)](#createtext)
-        6. [createHighlightAnnotation(...)](#createhighlight)
-        7. [createUnderlineAnnotation(...)](#createunderline)
-        8. [createSquigglyAnnotation(...)](#createsquiggly)
-        9. [createStrikeOutAnnotation(...)](#createstrikeout)
-        10. [createFreeTextAnnotation(...)](#createfreetext)
-        11. [createLineAnnotation(...)](#createline)
-        12. [createCircleAnnotation(...)](#createcircle)
-        13. [createSquareAnnotation(...)](#createsquare)
-        14. [createPolygonAnnotation(...)](#createpolygon)
-        15. [createPolyLineAnnotation(...)](#createpolyline)
-        16. [createStampAnnotation(...)](#createstamp)
-        17. [createCaretAnnotation(...)](#createcaret)
-        18. [createInkAnnotation(...)](#createink)
-        19. [createPopupAnnotation(...)](#createpopup)
-        20. [deleteAnnotation(...)](#deleteAnnotation)
-        21. [getAnnotations()](#getAnnotations)
-        22. [getFonts()](#getFonts)
-        23. [write(...)](#write)
-        24. [download(...)](#download)
-        25. [save(...)](#save)
+        3. [Appearance Stream Support](#appearanceStreamSupport)
+        4. [constructor(...)](#constructor)
+        5. [loadFile(...)](#loadfile)
+        6. [createTextAnnotation(...)](#createtext)
+        7. [createHighlightAnnotation(...)](#createhighlight)
+        8. [createUnderlineAnnotation(...)](#createunderline)
+        9. [createSquigglyAnnotation(...)](#createsquiggly)
+        10. [createStrikeOutAnnotation(...)](#createstrikeout)
+        11. [createFreeTextAnnotation(...)](#createfreetext)
+        12. [createLineAnnotation(...)](#createline)
+        13. [createCircleAnnotation(...)](#createcircle)
+        14. [createSquareAnnotation(...)](#createsquare)
+        15. [createPolygonAnnotation(...)](#createpolygon)
+        16. [createPolyLineAnnotation(...)](#createpolyline)
+        17. [createStampAnnotation(...)](#createstamp)
+        18. [createCaretAnnotation(...)](#createcaret)
+        19. [createInkAnnotation(...)](#createink)
+        20. [createPopupAnnotation(...)](#createpopup)
+        21. [deleteAnnotation(...)](#deleteAnnotation)
+        22. [getAnnotations()](#getAnnotations)
+        23. [getFonts()](#getFonts)
+        24. [write(...)](#write)
+        25. [download(...)](#download)
+        26. [save(...)](#save)
     5. [How does the Library Works?](#HowWorks)
         1. [Trivia](#Trivia)
         2. [Adding an Annotation](#AddingAnnotation)
@@ -225,6 +226,19 @@ AnnotationFactory.loadFile(path).then((factory) => {
                         })
                         factory.download()
 })
+```
+
+### <a name="appearanceStreamSupport"></a>Appearance Stream Support
+
+With version `1.0.15` the library supports appearance streams for the visual representation of annotations. This has the advantage, that the annotations are displayed
+equally on different PDF renderers independent from any default-appearances. Also annotations, that are not supported, as for instance the freetext annotation in
+pdfjs are displayed.
+
+To use the libraries default appearance stream use the method `createDefaultAppearanceStream()` on the returen created annotation object.
+
+```
+    let ta = factory.createPolygonAnnotation(val)
+    ta.createDefaultAppearanceStream()
 ```
 
 ### <a name="constructor"></a>constructor(...)
