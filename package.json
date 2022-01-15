@@ -1,6 +1,6 @@
 {
         "name": "annotpdf",
-        "version": "1.0.14",
+        "version": "1.0.15",
         "description": "Javascript library for creating annotations in PDF documents",
         "main": "lib/index.js",
         "types": "lib/index.d.ts",
