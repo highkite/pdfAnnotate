@@ -161,16 +161,29 @@ export class Util {
     }
 
     /**
-     * Transforms a string into an array of the corresponding ascii values
+     * Transforms a string into an array of the corresponding ascii values if possible, otherwise it returns a UTF-16BE encoded array
      * */
     public static convertStringToAscii(toConvert: string): number[] {
-        let asciis: number[] = []
+        if (!toConvert) return [];
 
-        for (let i = 0; i < toConvert.length; ++i) {
-            asciis.push(+toConvert.charCodeAt(i))
+        const isAsciiOnly = /^[\x00-\x7F]*$/.test(toConvert);
+
+        if (isAsciiOnly) {
+            const asciis = [];
+            for (let i = 0; i < toConvert.length; ++i) {
+                asciis.push(toConvert.charCodeAt(i));
+            }
+            return asciis;
         }
 
-        return asciis
+        const result = [0xfe, 0xff];
+
+        for (let i = 0; i < toConvert.length; i++) {
+            const code = toConvert.charCodeAt(i);
+            result.push((code >> 8) & 0xff);
+            result.push(code & 0xff);
+        }
+        return result;
     }
 
     public static isSpace(value: number): boolean {
